@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -31,7 +31,7 @@ const COLORS = [
 const pickColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const SwipeSorterGame = ({ isActive, onNextGame, currentUser }) => {
+const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [card, setCard]           = useState(() => pickColor());
@@ -56,6 +56,8 @@ const SwipeSorterGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+
+  const { submit, loading: isSubmittingScore } = useSubmitScore(userId, GAME_IDS.SwipeSorterGame);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -198,10 +200,10 @@ const SwipeSorterGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("swipe-sorter", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -211,7 +213,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, submit, gameState]);
   const progress   = GLOBAL_TIME > 0 ? timeLeft / GLOBAL_TIME : 0;
   const rotation   = dragX * 0.08; // grados de rotación según arrastra
   const opacity    = exiting ? 0 : 1;

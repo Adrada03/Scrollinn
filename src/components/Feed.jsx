@@ -233,7 +233,7 @@ const GameFeed = ({
           {currentGame.gameComponent && GAME_COMPONENTS[currentGame.gameComponent] ? (
             (() => {
               const GameComp = GAME_COMPONENTS[currentGame.gameComponent];
-              return <GameComp isActive={!isCountingDown} onNextGame={() => navigate("next")} currentUser={currentUser} />;
+              return <GameComp isActive={!isCountingDown} onNextGame={() => navigate("next")} userId={currentUser?.id} />;
             })()
           ) : (
             <PlaceholderGame

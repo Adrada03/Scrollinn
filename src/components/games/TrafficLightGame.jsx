@@ -15,7 +15,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", WAITING: "waiting", GREEN: "green", ENDED: "ended" };
@@ -48,7 +48,7 @@ function getAccentColor(ms) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const TrafficLightGame = ({ isActive, onNextGame, currentUser }) => {
+const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [reactionMs, setReactionMs] = useState(null);
   const [falseStart, setFalseStart] = useState(false);
@@ -60,6 +60,8 @@ const TrafficLightGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+
+  const { submit, loading: isSubmittingScore } = useSubmitScore(userId, GAME_IDS.TrafficLightGame);
 
   /* ── Arrancar: pasar a WAITING (pantalla roja) ── */
   const startGame = useCallback(() => {
@@ -115,10 +117,10 @@ const TrafficLightGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && reactionMs !== null && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("traffic-light", reactionMs, currentUser?.id)
+      submit(reactionMs, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -128,7 +130,7 @@ const TrafficLightGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, reactionMs, currentUser, gameState]);
+  }, [isEnded, reactionMs, submit, gameState]);
 
   // Color de fondo según estado
   let bgClass = "bg-zinc-950";

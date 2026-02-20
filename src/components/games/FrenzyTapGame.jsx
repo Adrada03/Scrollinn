@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -20,7 +20,7 @@ const GAME_DURATION = 10; // segundos
 const TICK_MS = 50;       // intervalo del timer (50ms → resolución 0.05s)
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const FrenzyTapGame = ({ isActive, onNextGame, currentUser }) => {
+const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [timeLeft, setTimeLeft]   = useState(GAME_DURATION);
@@ -95,14 +95,15 @@ const FrenzyTapGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("frenzy-tap", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
     }
+      const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.FrenzyTapGame);
     if (gameState === STATES.IDLE) {
       scoreSubmitted.current = false;
       setRanking([]);

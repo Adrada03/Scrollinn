@@ -15,7 +15,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES  = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -52,7 +52,7 @@ function getAccentColor(diff) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const TimerGame = ({ isActive, onNextGame, currentUser }) => {
+const TimerGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [displayMs, setDisplayMs] = useState(0);       // ms que se muestran
   const [stoppedMs, setStoppedMs] = useState(null);     // ms en el que paró
@@ -66,6 +66,8 @@ const TimerGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+
+  const { submit, loading: isSubmittingScore } = useSubmitScore(userId, GAME_IDS.TimerGame);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -133,10 +135,10 @@ const TimerGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && score !== null && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("timer", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -146,7 +148,7 @@ const TimerGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, submit, gameState]);
   const timeStr   = formatTime(displayMs);
 
   // En estado "playing" separamos segundos y milisegundos del display

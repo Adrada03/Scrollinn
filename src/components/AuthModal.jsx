@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { authenticate } from "../services/authService";
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
   const [username, setUsername] = useState("");
@@ -28,13 +29,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password }),
-      });
-
-      const data = await res.json();
+      const data = await authenticate(username.trim(), password);
 
       if (!data.ok) {
         setError(data.error);

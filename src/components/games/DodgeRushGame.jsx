@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -121,7 +121,7 @@ const drawShape = (ctx, shape, x, y, r, rot, color) => {
 };
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const DodgeRushGame = ({ isActive, onNextGame, currentUser }) => {
+const DodgeRushGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [lives, setLives]         = useState(MAX_LIVES);
@@ -357,15 +357,16 @@ const DodgeRushGame = ({ isActive, onNextGame, currentUser }) => {
   const isPlaying = gameState === STATES.PLAYING;
   const isEnded   = gameState === STATES.ENDED;
 
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.DodgeRushGame);
   // Enviar puntuación al terminar
   useEffect(() => {
     if (isEnded && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("dodge-rush", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -375,7 +376,7 @@ const DodgeRushGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, submit, gameState]);
 
   return (
     <div className="relative h-full w-full flex items-center justify-center bg-zinc-950 overflow-hidden select-none">

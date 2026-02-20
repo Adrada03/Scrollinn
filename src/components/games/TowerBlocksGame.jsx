@@ -14,7 +14,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 
@@ -473,7 +473,7 @@ class TowerBlocksEngine {
 
 /* ─────────── Componente React ─────────── */
 
-const TowerBlocksGame = ({ isActive, onNextGame, currentUser }) => {
+const TowerBlocksGame = ({ isActive, onNextGame, userId }) => {
   const mountRef = useRef(null);
   const engineRef = useRef(null);
   const [score, setScore] = useState(0);
@@ -482,6 +482,7 @@ const TowerBlocksGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.TowerBlocksGame);
 
   // Inicializar motor 3D
   useEffect(() => {
@@ -505,10 +506,10 @@ const TowerBlocksGame = ({ isActive, onNextGame, currentUser }) => {
     if (status === GAME_STATES.ENDED && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("tower-blocks", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => {
           setScoreMessage("Error al enviar puntuación.");
@@ -523,7 +524,7 @@ const TowerBlocksGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [status, score, currentUser]);
+  }, [status, score, submit]);
 
   // No auto-start — el jugador clickea para empezar
 

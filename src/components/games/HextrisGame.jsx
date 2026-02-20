@@ -12,7 +12,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ═══════════════════ CONSTANTS (matching original) ═══════════════════ */
 const COLORS = ["#e74c3c", "#f1c40f", "#3498db", "#2ecc71"];
@@ -558,7 +558,7 @@ function drawComboTimer(ctx, g, cx, cy, outerR) {
 /* ═══════════════════ REACT COMPONENT ═══════════════════ */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
 
-const HextrisGame = ({ isActive, onNextGame, currentUser }) => {
+const HextrisGame = ({ isActive, onNextGame, userId }) => {
   const canvasRef   = useRef(null);
   const stateRef    = useRef(STATES.IDLE);
   const gameRef     = useRef(null);
@@ -571,15 +571,17 @@ const HextrisGame = ({ isActive, onNextGame, currentUser }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.HextrisGame);
+
   // Enviar puntuación al terminar
   useEffect(() => {
     if (uiState === STATES.ENDED && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("hextris", finalScore, currentUser?.id)
+      submit(finalScore, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -589,7 +591,7 @@ const HextrisGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [uiState, finalScore, currentUser]);
+  }, [uiState, finalScore, submit]);
 
   const startGame = useCallback(() => {
     const canvas = canvasRef.current;

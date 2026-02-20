@@ -15,7 +15,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 
@@ -133,7 +133,7 @@ function isBoardSolved(board) {
    Componente principal
    ═══════════════════════════════════════════ */
 
-const ColorMatchGame = ({ isActive, onNextGame, currentUser }) => {
+const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(GAME_STATES.IDLE);
   const [board, setBoard] = useState([]);
   const [colors, setColors] = useState([]);
@@ -148,15 +148,16 @@ const ColorMatchGame = ({ isActive, onNextGame, currentUser }) => {
   const isPlaying = gameState === GAME_STATES.PLAYING;
   const isEnded = gameState === GAME_STATES.ENDED;
 
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.ColorMatchGame);
   // Enviar puntuación al terminar (solo si ganó: menos movimientos = mejor)
   useEffect(() => {
     if (isEnded && won && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("color-match", moves, currentUser?.id)
+      submit(moves, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -164,8 +165,8 @@ const ColorMatchGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && !won && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       // No ganó — solo cargar ranking sin guardar
-      submitScore("color-match", moves, null)
-        .then((result) => setRanking(result.ranking || []))
+      submit(moves, null)
+        .then((result) => setRanking(result?.data?.ranking || []))
         .catch(() => {});
     }
     if (gameState === GAME_STATES.IDLE) {
@@ -173,7 +174,7 @@ const ColorMatchGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, won, moves, currentUser, gameState]);
+  }, [isEnded, won, moves, submit, gameState]);
 
   /* ─── Iniciar juego nuevo ─── */
   const startGame = useCallback(() => {

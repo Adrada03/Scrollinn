@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -60,7 +60,7 @@ function generateQuestion() {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const MathRushGame = ({ isActive, onNextGame, currentUser }) => {
+const MathRushGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [question, setQuestion]   = useState(() => generateQuestion());
@@ -175,14 +175,15 @@ const MathRushGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("math-rush", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
     }
+      const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.MathRushGame);
     if (gameState === STATES.IDLE) {
       scoreSubmitted.current = false;
       setRanking([]);

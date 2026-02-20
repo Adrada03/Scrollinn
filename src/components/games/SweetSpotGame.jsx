@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", PAUSED: "paused", ENDED: "ended" };
@@ -37,7 +37,7 @@ function randomZoneLeft(zonePct) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const SweetSpotGame = ({ isActive, onNextGame, currentUser }) => {
+const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [lives, setLives]         = useState(MAX_LIVES);
@@ -60,6 +60,8 @@ const SweetSpotGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+
+  const { submit, loading: isSubmittingScore } = useSubmitScore(userId, GAME_IDS.SweetSpotGame);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -199,10 +201,10 @@ const SweetSpotGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("sweet-spot", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -212,7 +214,7 @@ const SweetSpotGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, submit, gameState]);
 
   return (
     <div

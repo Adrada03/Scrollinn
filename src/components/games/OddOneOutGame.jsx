@@ -15,7 +15,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 
@@ -61,7 +61,7 @@ function generateGrid(level) {
 
 /* ─────────── Componente React ─────────── */
 
-const OddOneOutGame = ({ isActive, onNextGame, currentUser }) => {
+const OddOneOutGame = ({ isActive, onNextGame, userId }) => {
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(INITIAL_TIME);
@@ -76,6 +76,8 @@ const OddOneOutGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.OddOneOutGame);
 
   const timerRef = useRef(null);
   const hasStartedRef = useRef(false);
@@ -168,10 +170,10 @@ const OddOneOutGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("odd-one-out", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -181,7 +183,7 @@ const OddOneOutGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, submit, gameState]);
 
   const gapPx = grid.size <= 3 ? 10 : grid.size <= 5 ? 6 : grid.size <= 7 ? 4 : 3;
   const radius = grid.size <= 4 ? 12 : grid.size <= 6 ? 8 : 5;

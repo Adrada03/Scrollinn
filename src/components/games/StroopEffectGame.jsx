@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -54,7 +54,7 @@ function shuffle(arr) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const StroopEffectGame = ({ isActive, onNextGame, currentUser }) => {
+const StroopEffectGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [textIdx, setTextIdx]     = useState(0);
@@ -72,6 +72,8 @@ const StroopEffectGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+
+  const { submit, loading: isSubmittingScore } = useSubmitScore(userId, GAME_IDS.StroopEffectGame);
 
   /* ── Nueva ronda ── */
   const nextRound = useCallback((prevTI, prevII) => {
@@ -172,10 +174,10 @@ const StroopEffectGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("stroop-effect", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -185,7 +187,7 @@ const StroopEffectGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, submit, gameState]);
   const timerPct   = Math.max(0, (timeLeft / GAME_DURATION) * 100);
   const isLowTime  = timeLeft <= 5;
   const wordColor  = COLORS[inkIdx];

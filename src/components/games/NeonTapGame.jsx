@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -47,7 +47,7 @@ function pickNeon(prevIdx) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const NeonTapGame = ({ isActive, onNextGame, currentUser }) => {
+const NeonTapGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [timeLeft, setTimeLeft]   = useState(GAME_DURATION);
@@ -60,6 +60,8 @@ const NeonTapGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.NeonTapGame);
 
   const intervalRef = useRef(INITIAL_INTERVAL);
   const timerIdRef  = useRef(null);
@@ -185,10 +187,10 @@ const NeonTapGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("neon-tap", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -198,7 +200,7 @@ const NeonTapGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, submit, gameState]);
   const timerPct    = Math.min(100, (timeLeft / GAME_DURATION) * 100);
   const isLowTime   = timeLeft <= 5;
   const neon        = NEON_PALETTE[neonIdx];

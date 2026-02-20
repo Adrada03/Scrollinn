@@ -16,7 +16,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 
@@ -51,7 +51,7 @@ function createCircle(w, h, type, score) {
 
 /* ─────────── Componente React ─────────── */
 
-const CircleNinjaGame = ({ isActive, onNextGame, currentUser }) => {
+const CircleNinjaGame = ({ isActive, onNextGame, userId }) => {
   const canvasRef = useRef(null);
   const stateRef = useRef({
     gameState: GAME_STATES.IDLE,
@@ -76,15 +76,16 @@ const CircleNinjaGame = ({ isActive, onNextGame, currentUser }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.CircleNinjaGame);
   // Enviar puntuación al terminar
   useEffect(() => {
     if (gameState === GAME_STATES.ENDED && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("circle-ninja", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -94,7 +95,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [gameState, score, currentUser]);
+  }, [gameState, score, submit]);
 
   /* ── Arrancar cuando isActive llega ── */
   useEffect(() => {

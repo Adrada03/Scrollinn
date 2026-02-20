@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Fases del juego ─────────── */
 const PHASE = {
@@ -57,7 +57,7 @@ function rand(a, b) { return a + Math.random() * (b - a); }
 /* ═══════════════════════════════════════════════════════
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
-const StickBridgeGame = ({ isActive, onNextGame, currentUser }) => {
+const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
   const containerRef = useRef(null);
 
   /* ── Estado de fase y puntuación ── */
@@ -94,6 +94,8 @@ const StickBridgeGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage]   = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted                    = useRef(false);
+
+  const { submit, loading: isSubmittingScore } = useSubmitScore(userId, GAME_IDS.StickBridgeGame);
 
   /* ─────────── Helpers ─────────── */
   const clearTimers = useCallback(() => {
@@ -250,10 +252,10 @@ const StickBridgeGame = ({ isActive, onNextGame, currentUser }) => {
     if (phase === PHASE.ENDED && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("stick-bridge", scoreRef.current, currentUser?.id)
+      submit(scoreRef.current, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -263,7 +265,7 @@ const StickBridgeGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [phase, currentUser]);
+  }, [phase, submit]);
 
   /* ─────────── Cleanup general ─────────── */
   useEffect(() => {

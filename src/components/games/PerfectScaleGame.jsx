@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", READY: "ready", INFLATING: "inflating", ENDED: "ended" };
@@ -28,7 +28,7 @@ const MAX_GROW   = 210; // px/s velocidad máxima de crecimiento
 const START_SIZE = 12;  // px diámetro inicial del globo (puntito)
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const PerfectScaleGame = ({ isActive, onNextGame, currentUser }) => {
+const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [targetSize, setTargetSize] = useState(220);
   const [balloonSize, setBalloonSize] = useState(START_SIZE);
@@ -47,6 +47,8 @@ const PerfectScaleGame = ({ isActive, onNextGame, currentUser }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.PerfectScaleGame);
 
   /* ── Generar objetivo aleatorio y preparar ── */
   const initRound = useCallback(() => {
@@ -119,10 +121,10 @@ const PerfectScaleGame = ({ isActive, onNextGame, currentUser }) => {
     if (isEnded && score !== null && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("perfect-scale", score, currentUser?.id)
+      submit(score, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -132,7 +134,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, submit, gameState]);
 
   // Precisión visual: de 0 (lejos) a 1 (perfecto)
   const precision   = score !== null ? Math.max(0, 1 - score / 150) : 0;

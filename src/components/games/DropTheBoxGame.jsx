@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
-import { submitScore } from "../../services/scoreService";
+import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 
 /* ─────────── Estados ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", DROPPING: "dropping", ENDED: "ended" };
@@ -53,7 +53,7 @@ function getBoxColor(index) {
 /* ═══════════════════════════════════════════════════════
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
-const DropTheBoxGame = ({ isActive, onNextGame, currentUser }) => {
+const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
   const containerRef = useRef(null);
 
   /* ── Estado del juego ── */
@@ -239,15 +239,16 @@ const DropTheBoxGame = ({ isActive, onNextGame, currentUser }) => {
     setGameState(STATES.DROPPING);
   }, [gameState]);
 
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.DropTheBoxGame);
   /* ─────────── Enviar puntuación al terminar ─────────── */
   useEffect(() => {
     if (gameState === STATES.ENDED && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
       setIsRankingLoading(true);
-      submitScore("drop-the-box", scoreRef.current, currentUser?.id)
+      submit(scoreRef.current, () => {})
         .then((result) => {
-          setRanking(result.ranking || []);
-          setScoreMessage(result.message || "");
+          setRanking(result?.data?.ranking || []);
+          setScoreMessage(result?.message || "");
         })
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
@@ -257,7 +258,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, currentUser }) => {
       setRanking([]);
       setScoreMessage("");
     }
-  }, [gameState, currentUser]);
+  }, [gameState, submit]);
 
   /* ─────────── Cleanup ─────────── */
   useEffect(() => {

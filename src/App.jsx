@@ -17,7 +17,8 @@ import AuthModal from "./components/AuthModal";
 // Datos
 import GAMES from "./data/games";
 
-const API_URL = "";
+// Servicios Supabase
+import { getLikesMap, toggleLike } from "./services/gameService";
 
 /**
  * Estado inicial vacío — se rellena al cargar desde la BD.
@@ -46,21 +47,14 @@ function App() {
    */
   const fetchLikes = useCallback(async (userId) => {
     try {
-      const url = userId
-        ? `${API_URL}/api/games/likes?userId=${userId}`
-        : `${API_URL}/api/games/likes`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.ok) {
-        // Merge: mantener juegos locales que no estén en la BD
-        setLikesMap((prev) => {
-          const merged = { ...prev };
-          for (const [gameId, info] of Object.entries(data.likesMap)) {
-            merged[gameId] = info;
-          }
-          return merged;
-        });
-      }
+      const likesMapData = await getLikesMap(userId);
+      setLikesMap((prev) => {
+        const merged = { ...prev };
+        for (const [gameId, info] of Object.entries(likesMapData)) {
+          merged[gameId] = info;
+        }
+        return merged;
+      });
     } catch (err) {
       console.warn("No se pudieron cargar los likes desde la BD:", err.message);
     }
@@ -105,9 +99,6 @@ function App() {
    */
   const handleToggleLike = useCallback(
     async (gameId) => {
-      // Calcular si estamos quitando o poniendo like
-      const wasLiked = likesMap[gameId]?.liked || false;
-
       // Optimistic update local
       setLikesMap((prev) => {
         const current = prev[gameId];
@@ -120,29 +111,20 @@ function App() {
         };
       });
 
-      // Sincronizar con la BD (tanto logueado como anónimo)
+      // Sincronizar con Supabase
       try {
-        const body = currentUser
-          ? { userId: currentUser.id }
-          : { delta: wasLiked ? -1 : 1 };
-
-        const res = await fetch(`${API_URL}/api/games/${gameId}/like`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        if (data.ok) {
+        const result = await toggleLike(currentUser?.id, gameId);
+        if (result.success) {
           setLikesMap((prev) => ({
             ...prev,
-            [gameId]: { count: data.totalLikes, liked: data.liked },
+            [gameId]: { count: result.totalLikes, liked: result.liked },
           }));
         }
       } catch (err) {
         console.warn("Error al sincronizar like con la BD:", err.message);
       }
     },
-    [currentUser, likesMap]
+    [currentUser]
   );
 
   /**
