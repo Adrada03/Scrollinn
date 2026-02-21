@@ -349,22 +349,7 @@ const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
         </div>
       )}
 
-      {/* ====== IDLE — hint ====== */}
-      {gameState === GAME_STATES.IDLE && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-[3]">
-          <div className="flex flex-col items-center gap-3 animate-pulse">
-            <img
-              src="/logo-colormatch.png"
-              alt="Color Match"
-              className="w-16 h-16 object-contain drop-shadow-lg"
-              draggable={false}
-            />
-            <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-              Conquista el tablero con colores
-            </span>
-          </div>
-        </div>
-      )}
+      {/* ====== IDLE — oculto: el Countdown del feed ya muestra instrucciones ====== */}
 
       {/* ====== GAME OVER ====== */}
       {isEnded && (

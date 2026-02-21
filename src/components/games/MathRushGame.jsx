@@ -222,7 +222,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
 
       {/* ── Barra de tiempo ── */}
       {gameState !== STATES.IDLE && !isEnded && (
-        <div className="absolute top-14 left-6 right-6 z-3">
+        <div className="absolute top-14 left-6 right-16 z-3">
           <div className="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
             <div
               className="h-full rounded-full"
@@ -249,7 +249,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
       )}
 
       {/* ── Operación matemática ── */}
-      {(isPlaying || gameState === STATES.IDLE) && (
+      {isPlaying && (
         <div className="relative z-2 flex flex-col items-center -mt-16">
           <span
             className="text-6xl sm:text-7xl font-black text-white tabular-nums tracking-tight leading-none"
@@ -257,9 +257,6 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
           >
             {question.text}
           </span>
-          {gameState === STATES.IDLE && (
-            <span className="text-sm text-white/30 mt-4">Esperando…</span>
-          )}
         </div>
       )}
 
@@ -319,22 +316,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
         </div>
       )}
 
-      {/* ── Hint IDLE ── */}
-      {gameState === STATES.IDLE && (
-        <div className="absolute inset-x-0 bottom-[28vh] flex justify-center pointer-events-none z-4">
-          <div className="flex flex-col items-center gap-3 animate-pulse">
-            <img
-              src="/logo-mathrush.png"
-              alt="Math Rush"
-              className="w-16 h-16 object-contain drop-shadow-lg"
-              draggable={false}
-            />
-            <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-              ¿Verdadero o falso? ¡Rápido!
-            </span>
-          </div>
-        </div>
-      )}
+      {/* ── Hint IDLE — oculto: el Countdown del feed ya muestra instrucciones ── */}
 
       {/* ── GAME OVER ── */}
       {isEnded && (

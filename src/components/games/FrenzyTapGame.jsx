@@ -232,22 +232,7 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
         </>
       )}
 
-      {/* ── Hint IDLE ── */}
-      {gameState === STATES.IDLE && (
-        <div className="absolute inset-x-0 bottom-[28vh] flex justify-center pointer-events-none z-3">
-          <div className="flex flex-col items-center gap-3 animate-pulse">
-            <img
-              src="/logo-frenzytap.png"
-              alt="Frenzy Tap"
-              className="w-16 h-16 object-contain drop-shadow-lg"
-              draggable={false}
-            />
-            <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-              ¡Machaca el botón lo más rápido posible!
-            </span>
-          </div>
-        </div>
-      )}
+      {/* ── Hint IDLE — oculto: el Countdown del feed ya muestra instrucciones ── */}
 
       {/* ── GAME OVER ── */}
       {isEnded && (

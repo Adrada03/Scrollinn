@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 // Componentes
 import GameFeed from "./components/Feed";
@@ -165,6 +166,9 @@ function App() {
         onAuthSuccess={setCurrentUser}
         currentUser={currentUser}
       />
+
+      {/* Vercel Analytics */}
+      <Analytics />
     </>
   );
 }
