@@ -16,6 +16,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 
@@ -134,6 +135,7 @@ function isBoardSolved(board) {
    ═══════════════════════════════════════════ */
 
 const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(GAME_STATES.IDLE);
   const [board, setBoard] = useState([]);
   const [colors, setColors] = useState([]);
@@ -159,7 +161,7 @@ const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (isEnded && !won && !scoreSubmitted.current) {
@@ -245,7 +247,7 @@ const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
           {/* Movimientos */}
           <div className="flex items-center gap-2">
             <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
-              Movimientos
+              {t("colormatch.moves")}
             </span>
             <span
               className={`text-lg font-black tabular-nums ${
@@ -260,7 +262,7 @@ const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
           {/* Progreso */}
           <div className="flex items-center gap-2">
             <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
-              Zona
+              {t("colormatch.zone")}
             </span>
             <span className="text-lg font-black text-white/90 tabular-nums">
               {progress}%
@@ -354,9 +356,9 @@ const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
       {/* ====== GAME OVER ====== */}
       {isEnded && (
         <GameOverPanel
-          title={won ? "¡Victoria!" : "Game Over"}
+          title={won ? t("colormatch.victory") : "Game Over"}
           score={won ? `${moves} mov.` : `${progress}%`}
-          subtitle={won ? `Completaste el tablero en ${moves} movimientos` : `Llegaste al ${progress}% del tablero`}
+          subtitle={won ? t("colormatch.completed", { moves }) : t("colormatch.reached", { progress })}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

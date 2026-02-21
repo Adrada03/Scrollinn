@@ -18,6 +18,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 
@@ -105,6 +106,7 @@ function addTarget(s) {
 /* ─────────── Componente React ─────────── */
 
 const CirclePathGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const canvasRef = useRef(null);
   const [ranking, setRanking] = useState([]);
   const [scoreMessage, setScoreMessage] = useState("");
@@ -394,7 +396,7 @@ const CirclePathGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === GAME_STATES.IDLE) {
@@ -439,7 +441,7 @@ const CirclePathGame = ({ isActive, onNextGame, userId }) => {
       {isPlaying && score === 0 && (
         <div className="absolute inset-x-0 top-[28vh] text-center pointer-events-none z-[3] animate-pulse">
           <span className="text-sm font-medium text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full">
-            Toca para saltar al siguiente círculo
+            {t("circlepath.instruction")}
           </span>
         </div>
       )}
@@ -452,7 +454,7 @@ const CirclePathGame = ({ isActive, onNextGame, userId }) => {
         <GameOverPanel
           title="Game Over"
           score={score}
-          subtitle={`Has alcanzado ${score} ${score === 1 ? "punto" : "puntos"}`}
+          subtitle={t("circlepath.reached", { score, unit: score === 1 ? t("circlepath.point") : t("circlepath.points") })}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { submitScore, getDailyTop20 } from '../services/gameService';
+import { t } from '../i18n';
 
 /**
  * Transforma el array raw de scores al formato de GameOverPanel.
@@ -40,7 +41,7 @@ export function useSubmitScore(userId, gameId) {
           result = {
             success: false,
             data: { ranking },
-            message: 'Regístrate para guardar tu puntuación',
+            message: t('svc.register_to_save'),
           };
           setLastResult(result);
         }
@@ -75,6 +76,7 @@ export const GAME_IDS = {
   DodgeRushGame: 'dodge-rush',
   ColorMatchGame: 'color-match',
   CircleNinjaGame: 'circle-ninja',
+  CirclePathGame: 'circle-path',
   HextrisGame: 'hextris',
   OddOneOutGame: 'odd-one-out',
 };

@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", PAUSED: "paused", ENDED: "ended" };
@@ -38,6 +39,7 @@ function randomZoneLeft(zonePct) {
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [lives, setLives]         = useState(MAX_LIVES);
@@ -206,7 +208,7 @@ const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -275,7 +277,7 @@ const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
           <div className="w-full max-w-md flex flex-col items-center gap-6">
             {/* Instrucción */}
             <span className="text-sm font-medium text-white/30 tracking-wider uppercase">
-              Toca cuando esté en verde
+              {t("sweetspot.tap_green")}
             </span>
 
             {/* Barra */}
@@ -320,7 +322,7 @@ const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
               {score}
             </span>
             <span className="text-lg text-white/50 font-semibold">
-              aciertos seguidos
+              {t("sweetspot.consecutive")}
             </span>
           </div>
         )}
@@ -336,7 +338,7 @@ const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
                 draggable={false}
               />
               <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-                Detén la línea en la zona verde
+                {t("sweetspot.instruction")}
               </span>
             </div>
           </div>
@@ -347,7 +349,7 @@ const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
           <GameOverPanel
             title="Game Over"
             score={score}
-            subtitle="aciertos"
+            subtitle={t("sweetspot.subtitle")}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

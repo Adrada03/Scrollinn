@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import { t } from '../i18n';
 
 // Utilidad para obtener la medianoche de hoy en UTC
 function getTodayMidnightUTC() {
@@ -52,7 +53,7 @@ export async function toggleLike(userId, gameId) {
   try {
     if (!userId) {
       // Anónimo: no podemos hacer toggle, ignorar
-      return { success: false, liked: false, totalLikes: 0, message: 'Debes iniciar sesión para dar like' };
+      return { success: false, liked: false, totalLikes: 0, message: t('svc.login_required') };
     }
 
     // ¿Ya existe el like?
@@ -93,7 +94,7 @@ export async function toggleLike(userId, gameId) {
     if (gameError) throw gameError;
     const totalLikes = game ? Number(game.total_likes) : 0;
 
-    return { success: true, liked, totalLikes, message: liked ? 'Like añadido' : 'Like eliminado' };
+    return { success: true, liked, totalLikes, message: liked ? t('svc.like_added') : t('svc.like_removed') };
   } catch (error) {
     return { success: false, liked: false, totalLikes: 0, message: error.message };
   }
@@ -108,7 +109,7 @@ export async function getDailyTop20(gameId) {
       .eq('id', gameId)
       .maybeSingle();
     if (gameError) throw gameError;
-    if (!game) return { success: false, data: null, message: 'Juego no encontrado' };
+    if (!game) return { success: false, data: null, message: t('svc.game_not_found') };
 
     const midnight = getTodayMidnightUTC();
     // Query de scores + join username
@@ -156,7 +157,7 @@ export async function submitScore(userId, gameId, score) {
       .eq('id', gameId)
       .maybeSingle();
     if (gameError) throw gameError;
-    if (!game) return { success: false, data: null, message: 'Juego no encontrado' };
+    if (!game) return { success: false, data: null, message: t('svc.game_not_found') };
 
     // 2. Obtener el Top 20 de hoy (antes de insertar)
     const top20Res = await getDailyTop20(gameId);
@@ -172,7 +173,7 @@ export async function submitScore(userId, gameId, score) {
         .from('scores')
         .insert([{ user_id: userId, game_id: gameId, score }]);
       if (insertError) throw insertError;
-      message = '¡Puntuación registrada!';
+      message = t('svc.score_saved');
     } else {
       // Hay 20, comprobar si es mejor que la peor
       const worst = top20[top20.length - 1];
@@ -184,9 +185,9 @@ export async function submitScore(userId, gameId, score) {
           .from('scores')
           .insert([{ user_id: userId, game_id: gameId, score }]);
         if (insertError) throw insertError;
-        message = '¡Has entrado en el Top 20 de hoy!';
+        message = t('svc.top20_made');
       } else {
-        message = 'No has superado el Top 20 de hoy';
+        message = t('svc.top20_failed');
       }
     }
 

@@ -16,6 +16,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 
@@ -62,6 +63,7 @@ function generateGrid(level) {
 /* ─────────── Componente React ─────────── */
 
 const OddOneOutGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(INITIAL_TIME);
@@ -175,7 +177,7 @@ const OddOneOutGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === GAME_STATES.IDLE) {
@@ -249,7 +251,7 @@ const OddOneOutGame = ({ isActive, onNextGame, userId }) => {
                 {score}
               </span>
               <span className="text-white/30 text-[10px] font-medium tracking-wider uppercase">
-                Nivel {level}
+                {t("oddoneout.level", { level })}
               </span>
             </div>
           </div>
@@ -296,7 +298,7 @@ const OddOneOutGame = ({ isActive, onNextGame, userId }) => {
             <div className="flex flex-col items-center gap-3 animate-pulse">
               <img src="/logo-oddoneout.png" alt="Odd One Out" className="w-16 h-16 object-contain drop-shadow-lg" draggable={false} />
               <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-                Encuentra al infiltrado
+                {t("oddoneout.instruction")}
               </span>
             </div>
           </div>
@@ -307,7 +309,7 @@ const OddOneOutGame = ({ isActive, onNextGame, userId }) => {
           <GameOverPanel
             title="Game Over"
             score={score}
-            subtitle={`Nivel alcanzado: ${level}`}
+            subtitle={t("oddoneout.reached", { level })}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

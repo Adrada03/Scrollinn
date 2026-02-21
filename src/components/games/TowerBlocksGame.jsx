@@ -15,6 +15,7 @@ import * as THREE from "three";
 import gsap from "gsap";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 
@@ -474,6 +475,7 @@ class TowerBlocksEngine {
 /* ─────────── Componente React ─────────── */
 
 const TowerBlocksGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const mountRef = useRef(null);
   const engineRef = useRef(null);
   const [score, setScore] = useState(0);
@@ -512,7 +514,7 @@ const TowerBlocksGame = ({ isActive, onNextGame, userId }) => {
           setScoreMessage(result?.message || "");
         })
         .catch(() => {
-          setScoreMessage("Error al enviar puntuación.");
+          setScoreMessage(t("svc.score_error"));
         })
         .finally(() => {
           setIsRankingLoading(false);
@@ -570,12 +572,12 @@ const TowerBlocksGame = ({ isActive, onNextGame, userId }) => {
       {status === GAME_STATES.READY && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-[3] pointer-events-none">
           <p className="text-sm font-bold text-[#333344]/70 text-center mb-1 max-w-xs leading-snug">
-            Toca en el momento justo para apilar los bloques
+            {t("tower.instruction")}
           </p>
           <div className="flex flex-col items-center gap-4 animate-pulse">
             <img src="/logo-towerblocks.png" alt="Tower Blocks" className="w-20 h-20 object-contain drop-shadow-lg" draggable={false} />
             <span className="text-lg font-bold text-[#333344] bg-white/40 backdrop-blur-sm px-6 py-3 rounded-2xl shadow-lg">
-              Toca para jugar
+              {t("tower.tap_play")}
             </span>
           </div>
         </div>
@@ -602,7 +604,7 @@ const TowerBlocksGame = ({ isActive, onNextGame, userId }) => {
       {isPlaying && score === 0 && (
         <div className="absolute inset-x-0 top-[30vh] text-center pointer-events-none z-[2] animate-pulse">
           <span className="text-sm font-medium text-[#333344]/70 bg-white/30 backdrop-blur-sm px-4 py-2 rounded-full">
-            Toca para colocar el bloque
+            {t("tower.tap_place")}
           </span>
         </div>
       )}
@@ -612,7 +614,7 @@ const TowerBlocksGame = ({ isActive, onNextGame, userId }) => {
         <GameOverPanel
           title="Game Over"
           score={score}
-          subtitle={`Puntuación: ${score}`}
+          subtitle={t("tower.score", { score })}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

@@ -11,19 +11,21 @@
  */
 
 import { motion } from "framer-motion";
+import { useLanguage } from "../i18n";
 
 const btnBase =
   "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-colors " +
   "bg-black/40 backdrop-blur-sm border border-white/15 hover:bg-black/60";
 
 const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenAuth, currentUser }) => {
+  const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center gap-5 md:gap-6">
       {/* === Like === */}
       <button
         onClick={onLike}
         className="flex flex-col items-center gap-1 group cursor-pointer"
-        aria-label="Me gusta"
+        aria-label={t("ui.like")}
       >
         <motion.div
           whileTap={{ scale: 1.4 }}
@@ -52,7 +54,7 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenAuth, currentU
       <button
         onClick={onOpenAuth}
         className="flex flex-col items-center gap-1 group cursor-pointer"
-        aria-label={currentUser ? "Mi cuenta" : "Registrarse"}
+        aria-label={currentUser ? t("ui.my_account") : t("ui.register_aria")}
       >
         <div className={`${btnBase} ${currentUser ? "!bg-emerald-500/50 !border-emerald-400/60 ring-1 ring-emerald-400/30" : ""}`}>
           {currentUser ? (
@@ -66,7 +68,7 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenAuth, currentU
           )}
         </div>
         <span className={`text-xs md:text-sm font-semibold ${currentUser ? "text-emerald-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]" : "text-white/80 drop-shadow"}`}>
-          {currentUser ? currentUser.username : "Registro"}
+          {currentUser ? currentUser.username : t("ui.register_label")}
         </span>
       </button>
 
@@ -74,14 +76,14 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenAuth, currentU
       <button
         onClick={onOpenGallery}
         className="flex flex-col items-center gap-1 group cursor-pointer"
-        aria-label="Galería de juegos"
+        aria-label={t("ui.gallery_aria")}
       >
         <div className={btnBase}>
           <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
           </svg>
         </div>
-        <span className="text-xs md:text-sm font-semibold text-white/80 drop-shadow">Juegos</span>
+        <span className="text-xs md:text-sm font-semibold text-white/80 drop-shadow">{t("ui.games")}</span>
       </button>
     </div>
   );

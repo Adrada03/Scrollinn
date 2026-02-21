@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -32,6 +33,7 @@ const pickColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [card, setCard]           = useState(() => pickColor());
@@ -205,7 +207,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -299,7 +301,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
                 className="text-[0.7rem] font-extrabold text-red-300 tracking-widest"
                 style={{ writingMode: "vertical-lr", textOrientation: "mixed" }}
               >
-                ROJA
+                {t("swipesorter.red")}
               </span>
             </div>
           </div>
@@ -318,7 +320,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
                 className="text-[0.7rem] font-extrabold text-blue-300 tracking-widest"
                 style={{ writingMode: "vertical-lr", textOrientation: "mixed" }}
               >
-                AZUL
+                {t("swipesorter.blue")}
               </span>
             </div>
           </div>
@@ -330,10 +332,10 @@ const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
         <div className="absolute bottom-[20vh] inset-x-0 flex justify-center z-2 pointer-events-none">
           <div className="flex items-center gap-8 text-sm font-bold text-white/40">
             <span className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded bg-red-500/80" /> ← Izquierda
+              <span className="w-4 h-4 rounded bg-red-500/80" /> {t("swipesorter.left")}
             </span>
             <span className="flex items-center gap-2">
-              Derecha → <span className="w-4 h-4 rounded bg-blue-500/80" />
+              {t("swipesorter.right")} <span className="w-4 h-4 rounded bg-blue-500/80" />
             </span>
           </div>
         </div>
@@ -376,7 +378,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
               style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
             />
             <span className="text-2xl sm:text-3xl font-black text-white/90 tracking-wide">
-              {card.label}
+              {t("swipesorter." + card.key)}
             </span>
           </div>
         </div>
@@ -405,7 +407,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
               draggable={false}
             />
             <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-              Desliza al lado correcto
+              {t("swipesorter.instruction")}
             </span>
           </div>
         </div>
@@ -417,7 +419,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
           <GameOverPanel
             title="Game Over"
             score={score}
-            subtitle="cartas clasificadas"
+            subtitle={t("swipesorter.subtitle")}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", READY: "ready", INFLATING: "inflating", ENDED: "ended" };
@@ -29,6 +30,7 @@ const START_SIZE = 12;  // px diámetro inicial del globo (puntito)
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [targetSize, setTargetSize] = useState(220);
   const [balloonSize, setBalloonSize] = useState(START_SIZE);
@@ -126,7 +128,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -148,7 +150,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
 
   // Texto de feedback final
   const feedbackText = score !== null
-    ? score === 0 ? "¡PERFECTO!" : score <= 5 ? "¡Casi perfecto!" : score <= 15 ? "¡Muy bien!" : score <= 30 ? "Nada mal" : "Sigue intentando"
+    ? score === 0 ? t("perfectscale.perfect") : score <= 5 ? t("perfectscale.almost") : score <= 15 ? t("perfectscale.great") : score <= 30 ? t("perfectscale.not_bad") : t("perfectscale.keep_trying")
     : "";
 
   const feedbackColor = score !== null
@@ -225,7 +227,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
         {isReady && (
           <div className="absolute top-20 inset-x-0 flex justify-center">
             <span className="text-sm font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl animate-pulse">
-              Mantén pulsado para inflar
+              {t("perfectscale.hold_inflate")}
             </span>
           </div>
         )}
@@ -233,7 +235,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
         {isInflating && (
           <div className="absolute top-20 inset-x-0 flex justify-center">
             <span className="text-sm font-bold text-cyan-400/70 bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl">
-              ¡Suelta para fijar!
+              {t("perfectscale.release")}
             </span>
           </div>
         )}
@@ -261,7 +263,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
                 draggable={false}
               />
               <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-                Infla el globo hasta el borde
+                {t("perfectscale.inflate_edge")}
               </span>
             </div>
           </div>
@@ -281,12 +283,12 @@ const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
                 {score}
               </span>
               <span className="text-sm text-white/40 font-semibold">
-                px de diferencia
+                {t("perfectscale.px_diff")}
               </span>
               <div className="flex items-center gap-3 mt-2 text-xs text-white/30">
-                <span>Objetivo: {targetSize}px</span>
+                <span>{t("perfectscale.target")}: {targetSize}px</span>
                 <span>·</span>
-                <span>Tu globo: {Math.round(balloonSize)}px</span>
+                <span>{t("perfectscale.your_balloon")}: {Math.round(balloonSize)}px</span>
               </div>
             </div>
           </div>
@@ -298,7 +300,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
             <GameOverPanel
               title="Game Over"
               score={`${score}px`}
-              subtitle="de diferencia"
+              subtitle={t("perfectscale.subtitle")}
               onNext={onNextGame}
               ranking={ranking}
               scoreMessage={scoreMessage}

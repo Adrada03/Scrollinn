@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -122,6 +123,7 @@ const drawShape = (ctx, shape, x, y, r, rot, color) => {
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const DodgeRushGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [lives, setLives]         = useState(MAX_LIVES);
@@ -368,7 +370,7 @@ const DodgeRushGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -432,7 +434,7 @@ const DodgeRushGame = ({ isActive, onNextGame, userId }) => {
                 {score}
               </span>
               <span className="text-lg text-white/50 font-semibold">
-                segundos
+                {t("dodgerush.seconds")}
               </span>
             </div>
           </div>
@@ -444,7 +446,7 @@ const DodgeRushGame = ({ isActive, onNextGame, userId }) => {
             <GameOverPanel
               title="Game Over"
               score={`${score}s`}
-              subtitle="sobrevividos"
+              subtitle={t("dodgerush.subtitle")}
               onNext={onNextGame}
               ranking={ranking}
               scoreMessage={scoreMessage}

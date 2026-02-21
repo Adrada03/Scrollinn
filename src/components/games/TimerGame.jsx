@@ -16,6 +16,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage, t } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES  = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -32,13 +33,13 @@ function formatTime(ms) {
 
 /** Califica la diferencia */
 function getVerdict(diff) {
-  if (diff === 0) return "¡PERFECTO! 🎯";
-  if (diff <= 10) return "¡Increíble! 🔥";
-  if (diff <= 50) return "¡Muy cerca! ⚡";
-  if (diff <= 150) return "¡Buen intento! 👏";
-  if (diff <= 500) return "No está mal 🤔";
-  if (diff <= 1500) return "Puedes mejorar 💪";
-  return "Sigue intentando 😅";
+  if (diff === 0) return t("timer.perfect");
+  if (diff <= 10) return t("timer.incredible");
+  if (diff <= 50) return t("timer.very_close");
+  if (diff <= 150) return t("timer.good_try");
+  if (diff <= 500) return t("timer.not_bad");
+  if (diff <= 1500) return t("timer.can_improve");
+  return t("timer.keep_trying");
 }
 
 /** Color de acento según diferencia */
@@ -53,6 +54,7 @@ function getAccentColor(diff) {
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const TimerGame = ({ isActive, onNextGame, userId }) => {
+  useLanguage(); // subscribe to lang changes for re-render
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [displayMs, setDisplayMs] = useState(0);       // ms que se muestran
   const [stoppedMs, setStoppedMs] = useState(null);     // ms en el que paró
@@ -140,7 +142,7 @@ const TimerGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -183,7 +185,7 @@ const TimerGame = ({ isActive, onNextGame, userId }) => {
         {isPlaying && (
           <div className="mb-4">
             <span className="text-xs font-medium tracking-[0.25em] uppercase text-white/30">
-              Objetivo
+              {t("timer.target")}
             </span>
             <p className="text-center font-mono text-lg text-white/20 tabular-nums">
               09:999
@@ -229,7 +231,7 @@ const TimerGame = ({ isActive, onNextGame, userId }) => {
                        shadow-[0_0_20px_rgba(255,255,255,0.06)]"
           >
             <span className="text-base font-bold text-white/90 tracking-wider uppercase">
-              ¡Toca para parar!
+              {t("timer.tap_stop")}
             </span>
           </button>
         )}
@@ -251,7 +253,7 @@ const TimerGame = ({ isActive, onNextGame, userId }) => {
 
             {/* Diferencia */}
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-white/40 uppercase tracking-wider">Diferencia</span>
+              <span className="text-xs text-white/40 uppercase tracking-wider">{t("timer.difference")}</span>
               <span className={`text-xl font-mono font-black tabular-nums ${getAccentColor(score)}`}>
                 {score} ms
               </span>
@@ -270,7 +272,7 @@ const TimerGame = ({ isActive, onNextGame, userId }) => {
                 draggable={false}
               />
               <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-                Para el cronómetro en 09:999
+                {t("timer.instruction")}
               </span>
             </div>
           </div>
@@ -279,9 +281,9 @@ const TimerGame = ({ isActive, onNextGame, userId }) => {
         {/* ── GAME OVER ── */}
         {isEnded && (
           <GameOverPanel
-            title={score !== null && score <= 50 ? "¡Increíble!" : "Game Over"}
+            title={score !== null && score <= 50 ? t("timer.title_amazing") : "Game Over"}
             score={`${score} ms`}
-            subtitle="de diferencia"
+            subtitle={t("timer.subtitle")}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

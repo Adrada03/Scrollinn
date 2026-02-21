@@ -11,6 +11,7 @@
 
 import { supabase } from '../supabaseClient';
 import bcrypt from 'bcryptjs';
+import { t } from '../i18n';
 
 const SALT_ROUNDS = 10;
 
@@ -24,13 +25,13 @@ const SALT_ROUNDS = 10;
 export async function authenticate(username, password) {
   // Validaciones
   if (!username || !password) {
-    return { ok: false, error: 'Nombre de usuario y contraseña son obligatorios.' };
+    return { ok: false, error: t('svc.username_required') };
   }
   if (username.length > 30) {
-    return { ok: false, error: 'El nombre de usuario no puede tener más de 30 caracteres.' };
+    return { ok: false, error: t('svc.username_too_long') };
   }
   if (password.length < 4) {
-    return { ok: false, error: 'La contraseña debe tener al menos 4 caracteres.' };
+    return { ok: false, error: t('svc.password_too_short') };
   }
 
   try {
@@ -48,7 +49,7 @@ export async function authenticate(username, password) {
       const match = await bcrypt.compare(password, existing.password_hash);
 
       if (!match) {
-        return { ok: false, error: 'Contraseña incorrecta.' };
+        return { ok: false, error: t('svc.wrong_password') };
       }
 
       return {
@@ -70,7 +71,7 @@ export async function authenticate(username, password) {
     if (insertError) {
       // Puede ser conflicto de username (race condition)
       if (insertError.code === '23505') {
-        return { ok: false, error: 'Ese nombre de usuario ya está cogido.' };
+        return { ok: false, error: t('svc.username_taken') };
       }
       throw insertError;
     }
@@ -82,6 +83,6 @@ export async function authenticate(username, password) {
     };
   } catch (err) {
     console.error('authService error:', err);
-    return { ok: false, error: 'Error de conexión con la base de datos.' };
+    return { ok: false, error: t('svc.db_error') };
   }
 }

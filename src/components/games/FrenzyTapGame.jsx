@@ -13,6 +13,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -21,6 +22,7 @@ const TICK_MS = 50;       // intervalo del timer (50ms → resolución 0.05s)
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [timeLeft, setTimeLeft]   = useState(GAME_DURATION);
@@ -101,7 +103,7 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {

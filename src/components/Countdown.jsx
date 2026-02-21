@@ -8,8 +8,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "../i18n";
 
 const Countdown = ({ onComplete, gameId, description }) => {
+  const { t } = useLanguage();
   // null = terminado, 3/2/1/0 = cuenta atrás
   const [count, setCount] = useState(3);
 
@@ -76,7 +78,7 @@ const Countdown = ({ onComplete, gameId, description }) => {
       {description && count !== 0 && (
         <div className="relative mt-6 mx-8 max-w-sm px-6 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50 mb-1.5 text-center">
-            Cómo jugar
+            {t("countdown.how_to_play")}
           </p>
           <p
             className="text-base md:text-lg font-semibold text-white/90 text-center leading-snug"

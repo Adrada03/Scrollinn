@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "../i18n";
 import PlaceholderGame from "./PlaceholderGame";
 import GameInterface from "./GameInterface";
 import TowerBlocksGame from "./games/TowerBlocksGame";
@@ -69,6 +70,7 @@ const GameFeed = ({
   onOpenAuth,
   currentUser,
 }) => {
+  const { t } = useLanguage();
   const touchStartY = useRef(null);
   const isTransitioning = useRef(false);
   const history = useRef([0]);
@@ -274,7 +276,7 @@ const GameFeed = ({
               className="text-white/40 text-xs font-medium tracking-wide"
               style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
             >
-              Desliza para cambiar de juego
+              {t("ui.swipe_hint")}
             </span>
             <motion.svg
               animate={{ y: [0, 5, 0] }}

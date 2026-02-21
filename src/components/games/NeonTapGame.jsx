@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -48,6 +49,7 @@ function pickNeon(prevIdx) {
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const NeonTapGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [timeLeft, setTimeLeft]   = useState(GAME_DURATION);
@@ -192,7 +194,7 @@ const NeonTapGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -308,7 +310,7 @@ const NeonTapGame = ({ isActive, onNextGame, userId }) => {
             <div className="flex flex-col items-center gap-3 animate-pulse">
               <img src="/logo-neontap.png" alt="Neon Tap" className="w-16 h-16 object-contain drop-shadow-lg" draggable={false} />
               <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-                Toca el cuadrado iluminado
+                {t("neontap.instruction")}
               </span>
             </div>
           </div>
@@ -319,7 +321,7 @@ const NeonTapGame = ({ isActive, onNextGame, userId }) => {
           <GameOverPanel
             title="Game Over"
             score={score}
-            subtitle="puntos"
+            subtitle={t("neontap.subtitle")}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

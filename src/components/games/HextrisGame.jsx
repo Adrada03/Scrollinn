@@ -13,6 +13,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ═══════════════════ CONSTANTS (matching original) ═══════════════════ */
 const COLORS = ["#e74c3c", "#f1c40f", "#3498db", "#2ecc71"];
@@ -559,6 +560,7 @@ function drawComboTimer(ctx, g, cx, cy, outerR) {
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
 
 const HextrisGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const canvasRef   = useRef(null);
   const stateRef    = useRef(STATES.IDLE);
   const gameRef     = useRef(null);
@@ -583,7 +585,7 @@ const HextrisGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (uiState === STATES.IDLE) {
@@ -706,7 +708,7 @@ const HextrisGame = ({ isActive, onNextGame, userId }) => {
         <GameOverPanel
           title="Game Over"
           score={String(finalScore)}
-          subtitle="puntos"
+          subtitle={t("hextris.subtitle")}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

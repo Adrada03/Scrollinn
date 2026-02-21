@@ -16,6 +16,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage, t } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", WAITING: "waiting", GREEN: "green", ENDED: "ended" };
@@ -29,13 +30,13 @@ function getRandomWait() {
 }
 
 function getVerdict(ms) {
-  if (ms === PENALTY) return "¡Demasiado pronto! 🚫";
-  if (ms <= 150) return "¡Sobrehumano! ⚡";
-  if (ms <= 220) return "¡Increíble! 🔥";
-  if (ms <= 300) return "¡Muy rápido! 🎯";
-  if (ms <= 450) return "Buen reflejo 👏";
-  if (ms <= 700) return "No está mal 🤔";
-  return "Puedes más rápido 💪";
+  if (ms === PENALTY) return t("traffic.too_soon");
+  if (ms <= 150) return t("traffic.superhuman");
+  if (ms <= 220) return t("traffic.incredible");
+  if (ms <= 300) return t("traffic.very_fast");
+  if (ms <= 450) return t("traffic.good_reflex");
+  if (ms <= 700) return t("traffic.not_bad");
+  return t("traffic.faster");
 }
 
 function getAccentColor(ms) {
@@ -49,6 +50,7 @@ function getAccentColor(ms) {
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
+  useLanguage(); // subscribe to lang changes for re-render
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [reactionMs, setReactionMs] = useState(null);
   const [falseStart, setFalseStart] = useState(false);
@@ -122,7 +124,7 @@ const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -161,10 +163,10 @@ const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
               <div className="w-20 h-20 rounded-full bg-red-500 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.3)]" />
             </div>
             <span className="text-4xl sm:text-5xl font-black text-white/90 tracking-tight">
-              ESPERA...
+              {t("traffic.wait")}
             </span>
             <span className="text-sm text-white/40 font-medium">
-              No toques aún
+              {t("traffic.dont_touch")}
             </span>
           </div>
         )}
@@ -176,7 +178,7 @@ const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
               <div className="w-20 h-20 rounded-full bg-green-300 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.15)]" />
             </div>
             <span className="text-5xl sm:text-6xl font-black text-white tracking-tight">
-              ¡TOCA!
+              {t("traffic.tap")}
             </span>
           </div>
         )}
@@ -191,7 +193,7 @@ const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
               {reactionMs}
             </span>
             <span className="text-lg text-white/50 font-semibold -mt-1">
-              milisegundos
+              {t("traffic.milliseconds")}
             </span>
 
             {/* Veredicto */}
@@ -202,7 +204,7 @@ const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
             {/* Indicador de false start */}
             {falseStart && (
               <span className="text-sm text-red-300/70 font-medium mt-1">
-                Tocaste antes de que se pusiera verde
+                {t("traffic.touched_early")}
               </span>
             )}
           </div>
@@ -219,7 +221,7 @@ const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
                 draggable={false}
               />
               <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-                Toca cuando se ponga verde
+                {t("traffic.tap_when_green")}
               </span>
             </div>
           </div>
@@ -228,9 +230,9 @@ const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
         {/* ── GAME OVER ── */}
         {isEnded && (
           <GameOverPanel
-            title={falseStart ? "¡Demasiado pronto!" : reactionMs <= 220 ? "¡Increíble!" : "Game Over"}
+            title={falseStart ? t("traffic.title_early") : reactionMs <= 220 ? t("traffic.title_amazing") : "Game Over"}
             score={`${reactionMs} ms`}
-            subtitle={falseStart ? "penalización" : "de reacción"}
+            subtitle={falseStart ? t("traffic.penalty") : t("traffic.reaction")}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

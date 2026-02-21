@@ -18,6 +18,8 @@
  *   isLoading   (bool)    — si está cargando el ranking
  */
 
+import { useLanguage } from "../i18n";
+
 const FALLBACK_RANKING = [
   { pos: 1, user: "—", score: "—" },
   { pos: 2, user: "—", score: "—" },
@@ -33,6 +35,7 @@ const GameOverPanel = ({
   scoreMessage = "",
   isLoading = false,
 }) => {
+  const { t } = useLanguage();
   const displayRanking = ranking.length > 0 ? ranking : FALLBACK_RANKING;
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center z-[6]">
@@ -66,13 +69,13 @@ const GameOverPanel = ({
           {/* Header */}
           <div className="grid grid-cols-[2.5rem_1fr_4rem] px-3 py-1.5 text-[10px] font-bold text-white/30 uppercase tracking-wider border-b border-white/5">
             <span>#</span>
-            <span>Usuario</span>
-            <span className="text-right">Puntos</span>
+            <span>{t("gameover.user")}</span>
+            <span className="text-right">{t("gameover.points")}</span>
           </div>
           {/* Loading */}
           {isLoading ? (
             <div className="px-3 py-4 text-center text-sm text-white/30 animate-pulse">
-              Cargando ranking...
+              {t("gameover.loading")}
             </div>
           ) : (
             /* Rows */
@@ -96,7 +99,7 @@ const GameOverPanel = ({
           onClick={onNext}
           className="mt-2 w-full px-6 py-3 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold rounded-2xl text-base transition-all pointer-events-auto border border-white/10 flex items-center justify-center gap-2"
         >
-          Siguiente juego
+          {t("gameover.next")}
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
           </svg>

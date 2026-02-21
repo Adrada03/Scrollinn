@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -55,6 +56,7 @@ function shuffle(arr) {
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const StroopEffectGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [textIdx, setTextIdx]     = useState(0);
@@ -179,7 +181,7 @@ const StroopEffectGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -191,7 +193,7 @@ const StroopEffectGame = ({ isActive, onNextGame, userId }) => {
   const timerPct   = Math.max(0, (timeLeft / GAME_DURATION) * 100);
   const isLowTime  = timeLeft <= 5;
   const wordColor  = COLORS[inkIdx];
-  const wordText   = COLORS[textIdx].name;
+  const wordText   = t("stroop." + COLORS[textIdx].key);
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-[#0d1117]">
@@ -242,7 +244,7 @@ const StroopEffectGame = ({ isActive, onNextGame, userId }) => {
                 {score}
               </span>
               <span className="text-white/30 text-[10px] font-medium tracking-wider uppercase">
-                Puntos
+                {t("stroop.points")}
               </span>
             </div>
           </div>
@@ -274,7 +276,7 @@ const StroopEffectGame = ({ isActive, onNextGame, userId }) => {
                     cursor-pointer select-none`}
                   style={{ textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}
                 >
-                  {c.name}
+                  {t("stroop." + c.key)}
                 </button>
               );
             })}
@@ -287,7 +289,7 @@ const StroopEffectGame = ({ isActive, onNextGame, userId }) => {
             <div className="flex flex-col items-center gap-3 animate-pulse">
               <img src="/logo-stroopeffect.png" alt="Stroop Effect" className="w-16 h-16 object-contain drop-shadow-lg" draggable={false} />
               <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-                Toca el color de la tinta, no la palabra
+                {t("stroop.instruction")}
               </span>
             </div>
           </div>
@@ -298,7 +300,7 @@ const StroopEffectGame = ({ isActive, onNextGame, userId }) => {
           <GameOverPanel
             title="Game Over"
             score={score}
-            subtitle="puntos"
+            subtitle={t("stroop.subtitle")}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

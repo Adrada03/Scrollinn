@@ -17,6 +17,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 
@@ -52,6 +53,7 @@ function createCircle(w, h, type, score) {
 /* ─────────── Componente React ─────────── */
 
 const CircleNinjaGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const canvasRef = useRef(null);
   const stateRef = useRef({
     gameState: GAME_STATES.IDLE,
@@ -87,7 +89,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === GAME_STATES.IDLE) {
@@ -405,7 +407,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, userId }) => {
       {isPlaying && score === 0 && lives === MAX_LIVES && (
         <div className="absolute inset-x-0 top-[28vh] text-center pointer-events-none z-[3] animate-pulse">
           <span className="text-sm font-medium text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full">
-            Desliza para cortar los verdes 🟢
+            {t("circleninja.instruction")}
           </span>
         </div>
       )}
@@ -417,7 +419,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, userId }) => {
         <GameOverPanel
           title="Game Over"
           score={score}
-          subtitle={lives <= 0 ? "Se te escaparon demasiados" : "¡Cortaste un rojo!"}
+          subtitle={lives <= 0 ? t("circleninja.too_many_escaped") : t("circleninja.cut_red")}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

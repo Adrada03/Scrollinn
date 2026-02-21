@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Estados ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", DROPPING: "dropping", ENDED: "ended" };
@@ -54,6 +55,7 @@ function getBoxColor(index) {
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
 const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const containerRef = useRef(null);
 
   /* ── Estado del juego ── */
@@ -250,7 +252,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -406,7 +408,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
               draggable={false}
             />
             <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-              Toca para soltar la caja
+              {t("dropthebox.instruction")}
             </span>
           </div>
         </div>
@@ -416,7 +418,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
       {gameState === STATES.PLAYING && score === 0 && dropX.current < 0 && (
         <div className="absolute inset-x-0 flex justify-center pointer-events-none z-3" style={{ top: CRANE_Y + BOX_H + 60 }}>
           <span className="text-sm font-medium text-white/20 tracking-wider uppercase animate-pulse">
-            Toca para soltar
+            {t("dropthebox.tap_drop")}
           </span>
         </div>
       )}
@@ -425,7 +427,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
       {isPlaying && score >= 5 && (
         <div className="absolute bottom-28 left-0 right-0 flex justify-center pointer-events-none z-3">
           <span className="text-xs text-white/15 font-medium">
-            Velocidad ×{(craneSpeed.current / BASE_SPEED).toFixed(1)}
+            {t("dropthebox.speed")} ×{(craneSpeed.current / BASE_SPEED).toFixed(1)}
           </span>
         </div>
       )}
@@ -440,7 +442,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
             {score}
           </span>
           <span className="text-lg text-white/50 font-semibold">
-            cajas apiladas
+            {t("dropthebox.boxes_stacked")}
           </span>
         </div>
       )}
@@ -449,7 +451,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
         <GameOverPanel
           title="Game Over"
           score={score}
-          subtitle="cajas apiladas"
+          subtitle={t("dropthebox.boxes_stacked")}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

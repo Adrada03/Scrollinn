@@ -9,8 +9,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { authenticate } from "../services/authService";
+import { useLanguage } from "../i18n";
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
+  const { t } = useLanguage();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +25,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
     setSuccess("");
 
     if (!username.trim() || !password.trim()) {
-      setError("Rellena ambos campos.");
+      setError(t("auth.fill_both"));
       return;
     }
 
@@ -40,8 +42,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
       // Éxito
       const msg =
         data.action === "registered"
-          ? `¡Cuenta creada! Bienvenido, ${data.user.username} 🎉`
-          : `¡Hola de nuevo, ${data.user.username}! 👋`;
+          ? t("auth.account_created", { username: data.user.username })
+          : t("auth.welcome_back", { username: data.user.username });
 
       setSuccess(msg);
       onAuthSuccess(data.user);
@@ -55,7 +57,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
         onClose();
       }, 1500);
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError(t("auth.connection_error"));
     } finally {
       setLoading(false);
     }
@@ -97,12 +99,12 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-2">
                 <h2 className="text-base font-bold text-white">
-                  {currentUser ? "Tu cuenta" : "Entrar / Registrarse"}
+                  {currentUser ? t("auth.your_account") : t("auth.login_register")}
                 </h2>
                 <button
                   onClick={onClose}
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/60 text-sm transition-colors cursor-pointer"
-                  aria-label="Cerrar"
+                  aria-label={t("auth.close")}
                 >
                   ✕
                 </button>
@@ -123,7 +125,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
                       onClick={handleLogout}
                       className="w-full py-3 rounded-xl bg-red-500/20 border border-red-400/30 text-red-400 font-semibold text-sm hover:bg-red-500/30 transition-colors cursor-pointer"
                     >
-                      Cerrar sesión
+                      {t("auth.logout")}
                     </button>
                   </div>
                 ) : (
@@ -131,7 +133,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
                   <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div>
                       <label className="block text-white/60 text-xs font-medium mb-1.5 ml-1">
-                        Nombre de usuario
+                        {t("auth.username")}
                       </label>
                       <input
                         type="text"
@@ -139,14 +141,14 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
                         onChange={(e) => setUsername(e.target.value)}
                         maxLength={30}
                         autoComplete="username"
-                        placeholder="Tu nombre..."
+                        placeholder={t("auth.username_ph")}
                         className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-colors"
                       />
                     </div>
 
                     <div>
                       <label className="block text-white/60 text-xs font-medium mb-1.5 ml-1">
-                        Contraseña
+                        {t("auth.password")}
                       </label>
                       <input
                         type="password"
@@ -176,8 +178,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
                         <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.499-2.599 4.499H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.004zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
                       </svg>
                       <p className="text-amber-300/90 text-xs leading-relaxed font-medium">
-                        <span className="font-bold">¡No olvides tu contraseña!</span><br/>
-                        No hay forma de recuperarla. Si la pierdes, no podrás volver a acceder a tu cuenta.
+                        <span className="font-bold">{t("auth.dont_forget")}</span><br/>
+                        {t("auth.no_recovery")}
                       </p>
                     </div>
 
@@ -186,11 +188,11 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
                       disabled={loading}
                       className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-colors cursor-pointer"
                     >
-                      {loading ? "Conectando..." : "Continuar"}
+                      {loading ? t("auth.connecting") : t("auth.continue")}
                     </button>
 
                     <p className="text-white/40 text-xs text-center leading-relaxed">
-                      Si no tienes cuenta, se creará una automáticamente.
+                      {t("auth.auto_create")}
                     </p>
                   </form>
                 )}

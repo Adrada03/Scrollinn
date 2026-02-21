@@ -7,8 +7,10 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "../i18n";
 
 const GalleryModal = ({ isOpen, onClose, games, onSelectGame }) => {
+  const { t } = useLanguage();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -40,12 +42,12 @@ const GalleryModal = ({ isOpen, onClose, games, onSelectGame }) => {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-2">
               <h2 className="text-base font-bold text-white">
-                Elige un juego
+                {t("gallery.choose")}
               </h2>
               <button
                 onClick={onClose}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/60 text-sm transition-colors cursor-pointer"
-                aria-label="Cerrar"
+                aria-label={t("auth.close")}
               >
                 ✕
               </button>

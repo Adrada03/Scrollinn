@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Fases del juego ─────────── */
 const PHASE = {
@@ -58,6 +59,7 @@ function rand(a, b) { return a + Math.random() * (b - a); }
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
 const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const containerRef = useRef(null);
 
   /* ── Estado de fase y puntuación ── */
@@ -257,7 +259,7 @@ const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (phase === PHASE.IDLE) {
@@ -512,7 +514,7 @@ const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
               draggable={false}
             />
             <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
-              Mantén para hacer crecer el puente
+              {t("stickbridge.instruction")}
             </span>
           </div>
         </div>
@@ -522,7 +524,7 @@ const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
       {phase === PHASE.WAITING && (
         <div className="absolute inset-x-0 flex justify-center pointer-events-none z-3" style={{ top: groundY - 80 }}>
           <span className="text-sm font-medium text-white/25 tracking-wider uppercase animate-pulse">
-            Mantén pulsado
+            {t("stickbridge.hold")}
           </span>
         </div>
       )}
@@ -532,7 +534,7 @@ const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
         <GameOverPanel
           title="Game Over"
           score={score}
-          subtitle="plataformas"
+          subtitle={t("stickbridge.subtitle")}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
+import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
@@ -61,6 +62,7 @@ function generateQuestion() {
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const MathRushGame = ({ isActive, onNextGame, userId }) => {
+  const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
   const [question, setQuestion]   = useState(() => generateQuestion());
@@ -181,7 +183,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
           setRanking(result?.data?.ranking || []);
           setScoreMessage(result?.message || "");
         })
-        .catch(() => setScoreMessage("Error al enviar puntuación."))
+        .catch(() => setScoreMessage(t("svc.score_error")))
         .finally(() => setIsRankingLoading(false));
     }
     if (gameState === STATES.IDLE) {
@@ -278,7 +280,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
             <div className="flex flex-col items-center gap-1">
               <span className="text-3xl sm:text-4xl font-black text-white/90">✓</span>
               <span className="text-sm sm:text-base font-extrabold text-white/70 tracking-wide uppercase">
-                Verdadero
+                {t("mathrush.true")}
               </span>
             </div>
           </button>
@@ -297,7 +299,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
             <div className="flex flex-col items-center gap-1">
               <span className="text-3xl sm:text-4xl font-black text-white/90">✗</span>
               <span className="text-sm sm:text-base font-extrabold text-white/70 tracking-wide uppercase">
-                Falso
+                {t("mathrush.false")}
               </span>
             </div>
           </button>
@@ -324,7 +326,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
           <GameOverPanel
             title="Game Over"
             score={score}
-            subtitle="respuestas correctas"
+            subtitle={t("mathrush.subtitle")}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}
