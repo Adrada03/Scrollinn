@@ -154,6 +154,27 @@ function formatRanking(rawScores) {
   }));
 }
 
+/**
+ * Incrementa total_plays +1 de un juego (sin requerir usuario).
+ */
+export async function incrementPlays(gameId) {
+  try {
+    const { data: game, error: gameError } = await supabase
+      .from('games')
+      .select('total_plays')
+      .eq('id', gameId)
+      .maybeSingle();
+    if (gameError || !game) return;
+
+    await supabase
+      .from('games')
+      .update({ total_plays: (game.total_plays || 0) + 1 })
+      .eq('id', gameId);
+  } catch {
+    // silencioso: no bloquear UX por un contador
+  }
+}
+
 export async function submitScore(userId, gameId, score) {
   try {
     // 1. Obtener info del juego

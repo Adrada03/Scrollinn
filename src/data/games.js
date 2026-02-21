@@ -180,7 +180,7 @@ const GAMES = [
     description: "Haz el número exacto de taps sin sobrecalentar el motor",
     color: "bg-zinc-900",
     emoji: "🔥",
-    logo: "/static/img/logoOverheat-noBg.png",
+    logo: "/logo-overheat.png",
     gameComponent: "Overheat",
   },
 ];

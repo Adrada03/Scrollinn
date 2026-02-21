@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { submitScore, getTop5 } from '../services/gameService';
+import { submitScore, getTop5, incrementPlays } from '../services/gameService';
 import { t } from '../i18n';
 
 /**
@@ -35,7 +35,8 @@ export function useSubmitScore(userId, gameId) {
           result = await submitScore(userId, gameId, score);
           setLastResult(result);
         } else if (gameId) {
-          // Usuario no registrado: mostrar ranking pero avisar
+          // Usuario no registrado: incrementar plays, mostrar ranking y avisar
+          await incrementPlays(gameId);
           const top = await getTop5(gameId);
           const ranking = formatRanking(top.success ? top.data : []);
           result = {
