@@ -35,6 +35,7 @@ import MathRushGame from "./games/MathRushGame";
 import StickBridgeGame from "./games/StickBridgeGame";
 import DropTheBoxGame from "./games/DropTheBoxGame";
 import OverheatGame from "./games/OverheatGame";
+import MemoryLoopGame from "./games/MemoryLoopGame";
 
 /** Registro de componentes reales de juego */
 const GAME_COMPONENTS = {
@@ -57,6 +58,7 @@ const GAME_COMPONENTS = {
   StickBridge: StickBridgeGame,
   DropTheBox: DropTheBoxGame,
   Overheat: OverheatGame,
+  MemoryLoop: MemoryLoopGame,
 };
 
 const IDLE_TIMEOUT = 8000; // ms sin interacción para mostrar el hint

@@ -183,6 +183,15 @@ const GAMES = [
     logo: "/logo-overheat.png",
     gameComponent: "Overheat",
   },
+  {
+    id: "memory-loop",
+    title: "Memory Loop",
+    description: "Memoriza la secuencia y repítela sin fallar",
+    color: "bg-violet-900",
+    emoji: "🧠",
+    logo: "/logo-memoryloop.png",
+    gameComponent: "MemoryLoop",
+  },
 ];
 
 export default GAMES;
