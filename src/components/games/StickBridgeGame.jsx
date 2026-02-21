@@ -506,7 +506,7 @@ const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
         <div className="absolute inset-x-0 bottom-[28vh] flex justify-center pointer-events-none z-3">
           <div className="flex flex-col items-center gap-3 animate-pulse">
             <img
-              src="/static/img/logoStickBridge-noBg.png"
+              src="/logo-stickbridge.png"
               alt="Stick Bridge"
               className="w-16 h-16 object-contain drop-shadow-lg"
               draggable={false}

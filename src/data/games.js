@@ -162,7 +162,7 @@ const GAMES = [
     description: "Mantén para hacer crecer el puente y cruza al otro lado",
     color: "bg-zinc-900",
     emoji: "🌉",
-    logo: "/static/img/logoStickBridge-noBg.png",
+    logo: "/logo-stickbridge.png",
     gameComponent: "StickBridge",
   },
   {
@@ -171,7 +171,7 @@ const GAMES = [
     description: "Suelta la caja en el momento justo para apilar la torre",
     color: "bg-zinc-900",
     emoji: "📦",
-    logo: "/static/img/logoDropTheBox-noBg.png",
+    logo: "/logo-dropthebox.png",
     gameComponent: "DropTheBox",
   },
 ];

@@ -400,7 +400,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
         <div className="absolute inset-x-0 bottom-[28vh] flex justify-center pointer-events-none z-3">
           <div className="flex flex-col items-center gap-3 animate-pulse">
             <img
-              src="/static/img/logoDropTheBox-noBg.png"
+              src="/logo-dropthebox.png"
               alt="Drop the Box"
               className="w-16 h-16 object-contain drop-shadow-lg"
               draggable={false}
