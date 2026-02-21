@@ -21,7 +21,7 @@ const GAME_DURATION = 10; // segundos
 const TICK_MS = 50;       // intervalo del timer (50ms → resolución 0.05s)
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
+const FrenzyTapGame = ({ isActive, onNextGame, userId, onScrollLock }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
@@ -40,6 +40,7 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
   const shakeRef     = useRef(false);
   const [shake, setShake] = useState(false);
   const shakeTORef   = useRef(null);
+  const scrollLockTORef = useRef(null);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -50,6 +51,10 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
     setTimeLeft(GAME_DURATION);
     setGameState(STATES.PLAYING);
 
+    // Bloquear scroll mientras se juega
+    clearTimeout(scrollLockTORef.current);
+    onScrollLock?.(true);
+
     timerRef.current = setInterval(() => {
       timeRef.current -= TICK_MS / 1000;
       if (timeRef.current <= 0) {
@@ -58,6 +63,8 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
         gameStateRef.current = STATES.ENDED;
         setTimeLeft(0);
         setGameState(STATES.ENDED);
+        // Desbloquear scroll 2s después de terminar
+        scrollLockTORef.current = setTimeout(() => onScrollLock?.(false), 2000);
       } else {
         setTimeLeft(timeRef.current);
       }
@@ -74,6 +81,8 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
     return () => {
       clearInterval(timerRef.current);
       clearTimeout(shakeTORef.current);
+      clearTimeout(scrollLockTORef.current);
+      onScrollLock?.(false);
     };
   }, []);
 

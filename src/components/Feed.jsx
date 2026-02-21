@@ -75,6 +75,7 @@ const GameFeed = ({
   const { t } = useLanguage();
   const touchStartY = useRef(null);
   const isTransitioning = useRef(false);
+  const scrollLocked = useRef(false);
   const history = useRef([0]);
   const [direction, setDirection] = useState(1);
   const [isCountingDown, setIsCountingDown] = useState(true);
@@ -118,9 +119,14 @@ const GameFeed = ({
   /**
    * Navega al juego siguiente (aleatorio) o anterior (historial).
    */
+  /** Permite a los juegos bloquear/desbloquear el scroll */
+  const handleScrollLock = useCallback((locked) => {
+    scrollLocked.current = locked;
+  }, []);
+
   const navigate = useCallback(
     (dir) => {
-      if (disabled || isTransitioning.current) return;
+      if (disabled || isTransitioning.current || scrollLocked.current) return;
 
       if (dir === "next") {
         isTransitioning.current = true;
@@ -237,7 +243,7 @@ const GameFeed = ({
           {currentGame.gameComponent && GAME_COMPONENTS[currentGame.gameComponent] ? (
             (() => {
               const GameComp = GAME_COMPONENTS[currentGame.gameComponent];
-              return <GameComp isActive={!isCountingDown} onNextGame={() => navigate("next")} userId={currentUser?.id} />;
+              return <GameComp isActive={!isCountingDown} onNextGame={() => navigate("next")} userId={currentUser?.id} onScrollLock={handleScrollLock} />;
             })()
           ) : (
             <PlaceholderGame
