@@ -174,6 +174,15 @@ const GAMES = [
     logo: "/logo-dropthebox.png",
     gameComponent: "DropTheBox",
   },
+  {
+    id: "overheat",
+    title: "Overheat",
+    description: "Haz el número exacto de taps sin sobrecalentar el motor",
+    color: "bg-zinc-900",
+    emoji: "🔥",
+    logo: "/static/img/logoOverheat-noBg.png",
+    gameComponent: "Overheat",
+  },
 ];
 
 export default GAMES;

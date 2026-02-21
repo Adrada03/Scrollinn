@@ -1,11 +1,7 @@
 import { supabase } from '../supabaseClient';
 import { t } from '../i18n';
 
-// Utilidad para obtener la medianoche de hoy en UTC
-function getTodayMidnightUTC() {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0)).toISOString();
-}
+
 
 /**
  * Obtiene el mapa de likes de todos los juegos.
@@ -100,9 +96,11 @@ export async function toggleLike(userId, gameId) {
   }
 }
 
-export async function getDailyTop20(gameId) {
+/**
+ * Obtiene el Top 5 de puntuaciones (mejor score por usuario distinto, all-time).
+ */
+export async function getTop5(gameId) {
   try {
-    // Obtener si el juego es lower better
     const { data: game, error: gameError } = await supabase
       .from('games')
       .select('is_lower_better')
@@ -111,25 +109,33 @@ export async function getDailyTop20(gameId) {
     if (gameError) throw gameError;
     if (!game) return { success: false, data: null, message: t('svc.game_not_found') };
 
-    const midnight = getTodayMidnightUTC();
-    // Query de scores + join username
+    // Traer las mejores puntuaciones ordenadas
     let query = supabase
       .from('scores')
       .select('id, user_id, score, achieved_at, users(username)')
-      .eq('game_id', gameId)
-      .gte('achieved_at', midnight);
+      .eq('game_id', gameId);
 
-    // Ordenar según is_lower_better
     query = game.is_lower_better
       ? query.order('score', { ascending: true })
       : query.order('score', { ascending: false });
-    query = query.order('achieved_at', { ascending: true }); // Desempate por fecha
-    query = query.limit(20);
+    query = query.order('achieved_at', { ascending: true });
+    query = query.limit(200);
 
     const { data: scores, error: scoresError } = await query;
     if (scoresError) throw scoresError;
 
-    return { success: true, data: scores, message: null };
+    // Deduplicar: quedarse con la mejor puntuación de cada usuario
+    const seen = new Set();
+    const unique = [];
+    for (const s of scores) {
+      if (!seen.has(s.user_id)) {
+        seen.add(s.user_id);
+        unique.push(s);
+        if (unique.length >= 5) break;
+      }
+    }
+
+    return { success: true, data: unique, message: null };
   } catch (error) {
     return { success: false, data: null, message: error.message };
   }
@@ -150,7 +156,7 @@ function formatRanking(rawScores) {
 
 export async function submitScore(userId, gameId, score) {
   try {
-    // 1. Obtener is_lower_better
+    // 1. Obtener info del juego
     const { data: game, error: gameError } = await supabase
       .from('games')
       .select('is_lower_better, total_plays')
@@ -159,47 +165,26 @@ export async function submitScore(userId, gameId, score) {
     if (gameError) throw gameError;
     if (!game) return { success: false, data: null, message: t('svc.game_not_found') };
 
-    // 2. Obtener el Top 20 de hoy (antes de insertar)
-    const top20Res = await getDailyTop20(gameId);
-    if (!top20Res.success) throw new Error(top20Res.message);
-    const top20 = top20Res.data;
+    // 2. Insertar la puntuación siempre
+    const { error: insertError } = await supabase
+      .from('scores')
+      .insert([{ user_id: userId, game_id: gameId, score }]);
+    if (insertError) throw insertError;
 
-    let message;
-
-    // 3. Lógica de portero
-    if (top20.length < 20) {
-      // Hay hueco, insertar
-      const { error: insertError } = await supabase
-        .from('scores')
-        .insert([{ user_id: userId, game_id: gameId, score }]);
-      if (insertError) throw insertError;
-      message = t('svc.score_saved');
-    } else {
-      // Hay 20, comprobar si es mejor que la peor
-      const worst = top20[top20.length - 1];
-      const isBetter = game.is_lower_better
-        ? score < worst.score
-        : score > worst.score;
-      if (isBetter) {
-        const { error: insertError } = await supabase
-          .from('scores')
-          .insert([{ user_id: userId, game_id: gameId, score }]);
-        if (insertError) throw insertError;
-        message = t('svc.top20_made');
-      } else {
-        message = t('svc.top20_failed');
-      }
-    }
-
-    // 4. Sumar +1 a total_plays
+    // 3. Sumar +1 a total_plays
     await supabase
       .from('games')
       .update({ total_plays: (game.total_plays || 0) + 1 })
       .eq('id', gameId);
 
-    // 5. Obtener el ranking actualizado (después de la posible inserción)
-    const updatedTop = await getDailyTop20(gameId);
-    const ranking = formatRanking(updatedTop.success ? updatedTop.data : []);
+    // 4. Obtener el ranking actualizado (top 5 usuarios distintos)
+    const updatedTop = await getTop5(gameId);
+    const topData = updatedTop.success ? updatedTop.data : [];
+    const ranking = formatRanking(topData);
+
+    // 5. Comprobar si el usuario aparece en el Top 5
+    const inTop5 = topData.some(s => s.user_id === userId);
+    const message = inTop5 ? t('svc.top5_made') : t('svc.score_saved');
 
     return { success: true, data: { ranking }, message };
   } catch (error) {

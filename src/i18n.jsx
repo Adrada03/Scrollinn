@@ -68,8 +68,7 @@ const translations = {
     "svc.like_removed":       "Like eliminado",
     "svc.game_not_found":     "Juego no encontrado",
     "svc.score_saved":        "¡Puntuación registrada!",
-    "svc.top20_made":         "¡Has entrado en el Top 20 de hoy!",
-    "svc.top20_failed":       "No has superado el Top 20 de hoy",
+    "svc.top5_made":          "¡Estás en el Top 5!",
     "svc.register_to_save":   "Regístrate para guardar tu puntuación",
     "svc.score_error":        "Error al enviar puntuación.",
 
@@ -92,6 +91,7 @@ const translations = {
     "desc.math-rush":      "¿Verdadero o falso? Responde antes de que se agote el tiempo",
     "desc.stick-bridge":   "Mantén para hacer crecer el puente y cruza al otro lado",
     "desc.drop-the-box":   "Suelta la caja en el momento justo para apilar la torre",
+    "desc.overheat":       "Haz el número exacto de taps sin sobrecalentar el motor",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -222,6 +222,14 @@ const translations = {
     "traffic.title_amazing":  "¡Increíble!",
     "traffic.penalty":        "penalización",
     "traffic.reaction":       "de reacción",
+
+    // ── Overheat ────────────────────────────────
+    "overheat.round":     "Ronda",
+    "overheat.score":     "Puntuación",
+    "overheat.target":    "OBJETIVO",
+    "overheat.remaining": "restantes",
+    "overheat.rounds":    "rondas",
+    "overheat.hold":      "¡NO TOQUES!",
   },
 
   en: {
@@ -278,8 +286,7 @@ const translations = {
     "svc.like_removed":       "Like removed",
     "svc.game_not_found":     "Game not found",
     "svc.score_saved":        "Score saved!",
-    "svc.top20_made":         "You made today's Top 20!",
-    "svc.top20_failed":       "You didn't beat today's Top 20",
+    "svc.top5_made":          "You're in the Top 5!",
     "svc.register_to_save":   "Sign up to save your score",
     "svc.score_error":        "Error submitting score.",
 
@@ -302,6 +309,7 @@ const translations = {
     "desc.math-rush":      "True or false? Answer before time runs out",
     "desc.stick-bridge":   "Hold to grow the bridge and cross to the other side",
     "desc.drop-the-box":   "Drop the box at the right moment to stack the tower",
+    "desc.overheat":       "Tap the exact number without overheating the engine",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
@@ -429,6 +437,14 @@ const translations = {
     "traffic.title_amazing":  "Incredible!",
     "traffic.penalty":        "penalty",
     "traffic.reaction":       "reaction time",
+
+    // ── Overheat ────────────────────────────────
+    "overheat.round":     "Round",
+    "overheat.score":     "Score",
+    "overheat.target":    "TARGET",
+    "overheat.remaining": "left",
+    "overheat.rounds":    "rounds",
+    "overheat.hold":      "DON'T TOUCH!",
   },
 };
 

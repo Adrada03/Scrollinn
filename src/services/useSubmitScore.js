@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { submitScore, getDailyTop20 } from '../services/gameService';
+import { submitScore, getTop5 } from '../services/gameService';
 import { t } from '../i18n';
 
 /**
@@ -36,7 +36,7 @@ export function useSubmitScore(userId, gameId) {
           setLastResult(result);
         } else if (gameId) {
           // Usuario no registrado: mostrar ranking pero avisar
-          const top = await getDailyTop20(gameId);
+          const top = await getTop5(gameId);
           const ranking = formatRanking(top.success ? top.data : []);
           result = {
             success: false,
@@ -79,4 +79,5 @@ export const GAME_IDS = {
   CirclePathGame: 'circle-path',
   HextrisGame: 'hextris',
   OddOneOutGame: 'odd-one-out',
+  OverheatGame: 'overheat',
 };

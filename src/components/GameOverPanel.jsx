@@ -4,8 +4,8 @@
  * Muestra:
  *  - Título (Game Over / ¡Victoria!)
  *  - Puntuación del jugador
- *  - Ranking diario real (Top 20 de hoy) o fallback ficticio
- *  - Mensaje de resultado (guardado / no registrado / no superado)
+ *  - Ranking (Top 5 mejores puntuaciones de usuarios distintos)
+ *  - Mensaje de resultado (guardado / Top 5 / no registrado)
  *  - Botón "Siguiente juego" (scrollea al siguiente)
  *
  * Props:
@@ -24,6 +24,8 @@ const FALLBACK_RANKING = [
   { pos: 1, user: "—", score: "—" },
   { pos: 2, user: "—", score: "—" },
   { pos: 3, user: "—", score: "—" },
+  { pos: 4, user: "—", score: "—" },
+  { pos: 5, user: "—", score: "—" },
 ];
 
 const GameOverPanel = ({
