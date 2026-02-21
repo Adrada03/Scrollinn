@@ -34,9 +34,9 @@ function getTPS(score) {
 }
 
 function getTargetRange(score) {
-  // Rango progresivo de taps objetivo
-  const minTaps = Math.floor(5 + score * 0.7);
-  const maxTaps = Math.floor(10 + score * 1.0);
+  // Rango progresivo de taps objetivo (crece más rápido)
+  const minTaps = Math.floor(5 + score * 1.0);
+  const maxTaps = Math.floor(10 + score * 1.5);
   return [minTaps, maxTaps];
 }
 
@@ -46,9 +46,18 @@ function randInt(min, max) {
 
 function generateRound(score) {
   const [minT, maxT] = getTargetRange(score);
-  const target = randInt(minT, maxT);
+
+  // Sesgo progresivo hacia más taps: potencia < 1 → más prob. de valores altos
+  const bias = 1 / (1 + score * 0.15);
+  const target = Math.round(minT + Math.pow(Math.random(), bias) * (maxT - minT));
+
   const tps = getTPS(score);
-  const time = target / tps; // seconds
+  const baseTime = target / tps;
+
+  // Cada ronda da un pelín menos de tiempo (mínimo 65 % del base)
+  const timeFactor = Math.max(0.65, 1 - score * 0.025);
+  const time = baseTime * timeFactor;
+
   return { target, time, tps };
 }
 

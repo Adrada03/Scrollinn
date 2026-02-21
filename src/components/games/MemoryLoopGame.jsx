@@ -372,7 +372,7 @@ const MemoryLoopGame = ({ isActive, onNextGame, userId }) => {
               if (isError) {
                 cellClass += "bg-red-500 scale-95 ring-4 ring-red-400/80 brightness-150 ";
               } else if (isLit || isFlash) {
-                cellClass += `${color.lit} ring-4 ${color.ring} scale-105 brightness-150 opacity-100 `;
+                cellClass += `${color.base} ring-4 ${color.ring} scale-105 brightness-150 opacity-100 `;
               } else {
                 cellClass += `${color.base} opacity-40 `;
               }
