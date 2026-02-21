@@ -71,6 +71,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+  const { submit } = useSubmitScore(userId, GAME_IDS.MathRushGame);
 
   // Refs
   const scoreRef      = useRef(0);
@@ -183,13 +184,12 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
     }
-      const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.MathRushGame);
     if (gameState === STATES.IDLE) {
       scoreSubmitted.current = false;
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, userId, gameState, submit]);
   const progress  = maxTime > 0 ? timeLeft / maxTime : 0;
 
   // Color de la barra

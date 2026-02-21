@@ -28,6 +28,7 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+  const { submit } = useSubmitScore(userId, GAME_IDS.FrenzyTapGame);
 
   // Refs para mantener estado fiable dentro de callbacks/intervals
   const scoreRef     = useRef(0);
@@ -103,13 +104,12 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId }) => {
         .catch(() => setScoreMessage("Error al enviar puntuación."))
         .finally(() => setIsRankingLoading(false));
     }
-      const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.FrenzyTapGame);
     if (gameState === STATES.IDLE) {
       scoreSubmitted.current = false;
       setRanking([]);
       setScoreMessage("");
     }
-  }, [isEnded, score, currentUser, gameState]);
+  }, [isEnded, score, userId, gameState, submit]);
   const progress  = timeLeft / GAME_DURATION;            // 1 → 0
   const heat      = Math.min(1, score / 80);             // 0 → 1 gradual
 
