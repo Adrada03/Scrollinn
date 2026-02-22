@@ -23,8 +23,7 @@ INSERT INTO games (id, name, is_lower_better) VALUES
   ('drop-the-box',  'Drop the Box',   false),
   ('vector-leap',   'Vector Leap',    false),
   ('rps-duel',      'RPS Duel',       false),
-  ('orbit-sniper',   'Orbit Sniper',   false),
-  ('shape-shifter',  'Shape Shifter',  false)
+  ('orbit-sniper',   'Orbit Sniper',   false)
 ON CONFLICT (id) DO UPDATE SET
   name            = EXCLUDED.name,
   is_lower_better = EXCLUDED.is_lower_better;
