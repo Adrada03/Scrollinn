@@ -86,4 +86,5 @@ export const GAME_IDS = {
   VectorLeapGame: 'vector-leap',
   RPSDuelGame: 'rps-duel',
   OrbitSniperGame: 'orbit-sniper',
+  ShapeShifterGame: 'shape-shifter',
 };

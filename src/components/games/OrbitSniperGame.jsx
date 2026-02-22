@@ -30,17 +30,18 @@ const PHASE = {
   ENDED: 4,
 };
 
-/* ─────────── Constantes ─────────── */
-const PLAYER_R_RATIO   = 0.026;     // radio jugador como % de shortSide
-const BASE_ORBIT_RATIO = 0.24;      // radio órbita base como % de shortSide
-const TARGET_R_RATIO   = 0.16;      // radio objetivo inicial como % de shortSide
-const TARGET_R_MIN_RATIO = 0.085;   // radio mínimo objetivo como % de shortSide
-const ORBIT_SPEED_INIT = 0.014;     // rad/frame — arranque lento
-const ORBIT_SPEED_MAX  = 0.048;     // tope
-const SPEED_INCREMENT  = 0.0008;    // incremento por acierto (suave)
-const SHOOT_SPEED_RATIO = 0.018;    // velocidad disparo como % de shortSide
-const TRAIL_LENGTH     = 14;        // puntos de estela
-const TRAVEL_FRAMES    = 18;        // frames de asentamiento en nueva órbita
+/* ─────────── Constantes (TIME-BASED) ─────────── */
+const PLAYER_R_RATIO       = 0.026;   // radio jugador como % de shortSide
+const BASE_ORBIT_RATIO     = 0.24;    // radio órbita base como % de shortSide
+const TARGET_R_RATIO       = 0.16;    // radio objetivo inicial como % de shortSide
+const TARGET_R_MIN_RATIO   = 0.085;   // radio mínimo objetivo como % de shortSide
+const ORBIT_SPEED_INIT_PS  = 3.2;     // rad/s — ~2s por revolución
+const ORBIT_SPEED_MAX_PS   = 10.0;    // rad/s — tope
+const SPEED_INCREMENT_PS   = 0.12;    // rad/s incremento por acierto
+const SHOOT_SPEED_RATIO_PS = 1.08;    // velocidad disparo (shortSide-units/s)
+const TRAIL_LENGTH         = 14;      // puntos de estela
+const TRAVEL_DURATION      = 0.3;     // s — duración animación de asentamiento
+const MAX_DELTA            = 0.05;    // s — cap para evitar saltos enormes
 
 /* ─────────── Paleta de planetas ─────────── */
 const PLANET_PALETTES = [
@@ -113,7 +114,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
     targetY: 0,
     targetR: 0,
     // Dificultad
-    orbitSpeed: ORBIT_SPEED_INIT,
+    orbitSpeed: ORBIT_SPEED_INIT_PS,
     // Estela
     trail: [],
     // Estrellas de fondo
@@ -123,11 +124,12 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
     targetPlanet: PLANET_PALETTES[3],
     // Viaje entre planetas
     travelStartAngle: 0,
-    travelFrame: 0,
+    travelTime: 0,
   }).current;
 
   /* ── Refs de animación ── */
   const rafRef = useRef(null);
+  const lastTimeRef = useRef(0);
   const phaseRef = useRef(PHASE.IDLE);
 
   /* ── Estado de ranking ── */
@@ -222,10 +224,10 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
     g.baseY = dims.h * 0.50;
     g.baseR = ss * BASE_ORBIT_RATIO;
     g.playerR = Math.max(6, ss * PLAYER_R_RATIO);
-    g.shootSpeed = Math.max(5, ss * SHOOT_SPEED_RATIO);
+    g.shootSpeed = Math.max(300, ss * SHOOT_SPEED_RATIO_PS); // px/s
     g.basePlanet = pickPlanetColor("");
     g.angle = -Math.PI / 2; // empezar arriba
-    g.orbitSpeed = ORBIT_SPEED_INIT;
+    g.orbitSpeed = ORBIT_SPEED_INIT_PS;
     g.trail = [];
     g.vx = 0;
     g.vy = 0;
@@ -242,6 +244,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
     generateTarget(0);
 
+    lastTimeRef.current = performance.now();
     forceRender();
     phaseRef.current = PHASE.ORBITING;
     setPhase(PHASE.ORBITING);
@@ -257,12 +260,17 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (phase !== PHASE.ORBITING && phase !== PHASE.SHOOTING && phase !== PHASE.TRAVELING) return;
     if (!isActive) return;
 
-    const tick = () => {
+    const tick = (currentTime) => {
+      // ── Delta time (en segundos) con cap de seguridad ──
+      const rawDelta = (currentTime - lastTimeRef.current) / 1000;
+      lastTimeRef.current = currentTime;
+      const dt = Math.min(rawDelta, MAX_DELTA);
+
       const p = phaseRef.current;
 
       /* ─── ORBITING ─── */
       if (p === PHASE.ORBITING) {
-        g.angle += g.orbitSpeed;
+        g.angle += g.orbitSpeed * dt;
         g.playerX = g.baseX + g.baseR * Math.cos(g.angle);
         g.playerY = g.baseY + g.baseR * Math.sin(g.angle);
         g.trail = []; // sin estela mientras orbita
@@ -270,8 +278,8 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       /* ─── SHOOTING ─── */
       if (p === PHASE.SHOOTING) {
-        g.playerX += g.vx;
-        g.playerY += g.vy;
+        g.playerX += g.vx * dt;
+        g.playerY += g.vy * dt;
 
         // Estela
         g.trail.push({ x: g.playerX, y: g.playerY });
@@ -299,12 +307,12 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
           g.playerX = g.baseX + g.baseR * Math.cos(g.angle);
           g.playerY = g.baseY + g.baseR * Math.sin(g.angle);
           g.travelStartAngle = g.angle;
-          g.travelFrame = 0;
+          g.travelTime = 0;
 
           // Incrementar dificultad (suave)
           g.orbitSpeed = Math.min(
-            ORBIT_SPEED_MAX,
-            ORBIT_SPEED_INIT + newScore * SPEED_INCREMENT,
+            ORBIT_SPEED_MAX_PS,
+            ORBIT_SPEED_INIT_PS + newScore * SPEED_INCREMENT_PS,
           );
 
           // Generar nuevo objetivo
@@ -331,8 +339,8 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       /* ─── TRAVELING (asentándose en nueva órbita) ─── */
       if (p === PHASE.TRAVELING) {
-        g.travelFrame++;
-        const progress = Math.min(g.travelFrame / TRAVEL_FRAMES, 1);
+        g.travelTime += dt;
+        const progress = Math.min(g.travelTime / TRAVEL_DURATION, 1);
         const ease = 1 - Math.pow(1 - progress, 3); // easeOutCubic
 
         // Recorre ~120° alrededor de la nueva órbita con desaceleración
@@ -355,6 +363,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
       rafRef.current = requestAnimationFrame(tick);
     };
 
+    lastTimeRef.current = performance.now();
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -372,8 +381,8 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const handleTap = useCallback(() => {
     if (phaseRef.current !== PHASE.ORBITING) return;
 
-    // Vector tangente (perpendicular al radio, en sentido del giro)
-    const spd = g.shootSpeed || 8;
+    // Vector tangente (perpendicular al radio, en sentido del giro) — px/s
+    const spd = g.shootSpeed || 300;
     g.vx = -Math.sin(g.angle) * spd;
     g.vy = Math.cos(g.angle) * spd;
 

@@ -98,6 +98,7 @@ const translations = {
     "desc.vector-leap":    "Ajusta ángulo y fuerza para aterrizar en la plataforma",
     "desc.rps-duel":       "¡Gana, pierde o empata según la orden antes de que se acabe el tiempo!",
     "desc.orbit-sniper":   "Dispara el satélite en el momento justo para cambiar de planeta",
+    "desc.shape-shifter":  "Cambia de forma para coincidir con el enemigo que cae",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -255,6 +256,10 @@ const translations = {
     "orbitsniper.tap_to_shoot": "Dispara el satélite en el momento justo para cambiar de planeta",
     "orbitsniper.subtitle":    "objetivos alcanzados",
 
+    // ── Shape Shifter ────────────────────────────
+    "shapeshifter.instruction": "Toca para cambiar de forma",
+    "shapeshifter.subtitle":    "formas acertadas",
+
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Ronda",
     "overheat.score":     "Puntuación",
@@ -348,6 +353,7 @@ const translations = {
     "desc.vector-leap":    "Set angle and power to land on the platform",
     "desc.rps-duel":       "Win, lose or draw on command before time runs out!",
     "desc.orbit-sniper":   "Shoot the satellite at the right moment to switch planets",
+    "desc.shape-shifter":  "Change shape to match the falling enemy",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
@@ -501,6 +507,10 @@ const translations = {
     "orbitsniper.instruction": "Shoot the satellite at the right moment to switch planets",
     "orbitsniper.tap_to_shoot": "Shoot the satellite at the right moment to switch planets",
     "orbitsniper.subtitle":    "targets hit",
+
+    // ── Shape Shifter ────────────────────────────
+    "shapeshifter.instruction": "Tap to change shape",
+    "shapeshifter.subtitle":    "shapes matched",
 
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Round",

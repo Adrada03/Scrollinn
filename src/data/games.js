@@ -228,6 +228,15 @@ const GAMES = [
     logo: "/logo-orbitsniper.png",
     gameComponent: "OrbitSniper",
   },
+  {
+    id: "shape-shifter",
+    title: "Shape Shifter",
+    description: "Cambia de forma para coincidir con el enemigo que cae",
+    color: "bg-zinc-900",
+    emoji: "🔷",
+    logo: "/logo-shapeshifter.png",
+    gameComponent: "ShapeShifter",
+  },
 ];
 
 export default GAMES;
