@@ -184,13 +184,13 @@ const GAMES = [
     gameComponent: "Overheat",
   },
   {
-    id: "memory-loop",
-    title: "Memory Loop",
-    description: "Memoriza la secuencia y repítela sin fallar",
-    color: "bg-violet-900",
-    emoji: "🧠",
-    logo: "/logo-memoryloop.png",
-    gameComponent: "MemoryLoop",
+    id: "higher-lower",
+    title: "Higher or Lower",
+    description: "Adivina si la próxima carta será mayor o menor",
+    color: "bg-emerald-900",
+    emoji: "🃏",
+    logo: "/logo-higherlower.png",
+    gameComponent: "HigherLower",
   },
 ];
 

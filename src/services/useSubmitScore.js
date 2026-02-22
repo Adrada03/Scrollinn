@@ -81,5 +81,5 @@ export const GAME_IDS = {
   HextrisGame: 'hextris',
   OddOneOutGame: 'odd-one-out',
   OverheatGame: 'overheat',
-  MemoryLoopGame: 'memory-loop',
+  HigherLowerGame: 'higher-lower',
 };

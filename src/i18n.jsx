@@ -92,7 +92,7 @@ const translations = {
     "desc.stick-bridge":   "Mantén para hacer crecer el puente y cruza al otro lado",
     "desc.drop-the-box":   "Suelta la caja en el momento justo para apilar la torre",
     "desc.overheat":       "Haz el número exacto de taps sin sobrecalentar el motor",
-    "desc.memory-loop":    "Memoriza la secuencia y repítela sin fallar",
+    "desc.higher-lower":   "Adivina si la próxima carta será mayor o menor",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -224,10 +224,6 @@ const translations = {
     "traffic.penalty":        "penalización",
     "traffic.reaction":       "de reacción",
 
-    // ── Memory Loop ─────────────────────────────
-    "memoryloop.instruction": "Memoriza y repite la secuencia",
-    "memoryloop.subtitle":    "rondas completadas",
-
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Ronda",
     "overheat.score":     "Puntuación",
@@ -315,7 +311,7 @@ const translations = {
     "desc.stick-bridge":   "Hold to grow the bridge and cross to the other side",
     "desc.drop-the-box":   "Drop the box at the right moment to stack the tower",
     "desc.overheat":       "Tap the exact number without overheating the engine",
-    "desc.memory-loop":    "Memorize the sequence and repeat it without mistakes",
+    "desc.higher-lower":   "Guess if the next card will be higher or lower",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
@@ -443,10 +439,6 @@ const translations = {
     "traffic.title_amazing":  "Incredible!",
     "traffic.penalty":        "penalty",
     "traffic.reaction":       "reaction time",
-
-    // ── Memory Loop ─────────────────────────────
-    "memoryloop.instruction": "Memorize and repeat the sequence",
-    "memoryloop.subtitle":    "rounds completed",
 
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Round",
