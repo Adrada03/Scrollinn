@@ -97,6 +97,7 @@ const translations = {
     "desc.higher-lower":   "¿El siguiente número será mayor o menor?",
     "desc.vector-leap":    "Ajusta ángulo y fuerza para aterrizar en la plataforma",
     "desc.rps-duel":       "¡Gana, pierde o empata según la orden antes de que se acabe el tiempo!",
+    "desc.orbit-sniper":   "Dispara el satélite en el momento justo para cambiar de planeta",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -249,6 +250,11 @@ const translations = {
     "vectorleap.tap_power":   "Toca para fijar la fuerza",
     "vectorleap.subtitle":    "saltos exitosos",
 
+    // ── Orbit Sniper ────────────────────────────
+    "orbitsniper.instruction": "Dispara el satélite en el momento justo para cambiar de planeta",
+    "orbitsniper.tap_to_shoot": "Dispara el satélite en el momento justo para cambiar de planeta",
+    "orbitsniper.subtitle":    "objetivos alcanzados",
+
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Ronda",
     "overheat.score":     "Puntuación",
@@ -341,6 +347,7 @@ const translations = {
     "desc.higher-lower":   "Will the next number be higher or lower?",
     "desc.vector-leap":    "Set angle and power to land on the platform",
     "desc.rps-duel":       "Win, lose or draw on command before time runs out!",
+    "desc.orbit-sniper":   "Shoot the satellite at the right moment to switch planets",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
@@ -489,6 +496,11 @@ const translations = {
     "vectorleap.tap_angle":   "Tap to lock the angle",
     "vectorleap.tap_power":   "Tap to lock the power",
     "vectorleap.subtitle":    "successful jumps",
+
+    // ── Orbit Sniper ────────────────────────────
+    "orbitsniper.instruction": "Shoot the satellite at the right moment to switch planets",
+    "orbitsniper.tap_to_shoot": "Shoot the satellite at the right moment to switch planets",
+    "orbitsniper.subtitle":    "targets hit",
 
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Round",

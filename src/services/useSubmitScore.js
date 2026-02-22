@@ -85,4 +85,5 @@ export const GAME_IDS = {
   HigherLowerGame: 'higher-lower',
   VectorLeapGame: 'vector-leap',
   RPSDuelGame: 'rps-duel',
+  OrbitSniperGame: 'orbit-sniper',
 };

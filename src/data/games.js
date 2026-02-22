@@ -219,6 +219,15 @@ const GAMES = [
     logo: "/logo-rpsduel.png",
     gameComponent: "RPSDuel",
   },
+  {
+    id: "orbit-sniper",
+    title: "Orbit Sniper",
+    description: "Dispara el satélite en el momento justo para cambiar de planeta",
+    color: "bg-slate-950",
+    emoji: "🎯",
+    logo: "/logo-orbitsniper.png",
+    gameComponent: "OrbitSniper",
+  },
 ];
 
 export default GAMES;

@@ -22,16 +22,17 @@ import { useLanguage } from "../../i18n";
 /* ─────────── Estados ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", DROPPING: "dropping", ENDED: "ended" };
 
-/* ─────────── Constantes ─────────── */
-const BOX_W         = 100;       // ancho de cada caja (px)
-const BOX_H         = 44;        // alto de cada caja (px)
-const BASE_W        = 120;       // ancho de la base
-const DROP_SPEED    = 20;        // px por frame de caída
-const CRANE_Y       = 60;        // posición Y de la grúa (fija)
-const BASE_SPEED    = 3.2;       // velocidad inicial de la grúa (px/frame)
-const SPEED_BUMP    = 0.18;      // incremento de velocidad por cada caja apilada
-const CRANE_RATIO   = 0.55;      // fracción del ancho usada por la grúa
-const LANDING_RATIO = 0.52;      // posición vertical del punto de aterrizaje (desde arriba)
+/* ─────────── Constantes (valores de referencia a REF_W px de ancho) ─────────── */
+const REF_W          = 400;       // ancho de referencia para escalar
+const BOX_W_REF      = 100;       // ancho de cada caja a REF_W
+const BOX_H_REF      = 44;        // alto de cada caja a REF_W
+const BASE_W_REF     = 120;       // ancho de la base a REF_W
+const DROP_SPEED_REF = 20;        // px por frame de caída a REF_W
+const CRANE_Y        = 60;        // posición Y de la grúa (fija)
+const BASE_SPEED_REF = 3.2;       // velocidad inicial de la grúa a REF_W
+const SPEED_BUMP_REF = 0.18;      // incremento por caja apilada a REF_W
+const CRANE_RATIO    = 0.55;      // fracción del ancho usada por la grúa
+const LANDING_RATIO  = 0.52;      // posición vertical del punto de aterrizaje (desde arriba)
 
 /* ─────────── Colores neón para las cajas ─────────── */
 const BOX_COLORS = [
@@ -66,6 +67,16 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
   /* ── Dimensiones del contenedor ── */
   const [dims, setDims] = useState({ w: 400, h: 700 });
 
+  /* ── Valores escalados según ancho del contenedor ── */
+  const scale      = dims.w / REF_W;
+  const boxW       = Math.round(BOX_W_REF * scale);
+  const boxH       = Math.round(BOX_H_REF * scale);
+  const baseW      = Math.round(BASE_W_REF * scale);
+  const dropSpeed  = DROP_SPEED_REF * scale;
+  const baseSpeed  = BASE_SPEED_REF * scale;
+  const speedBump  = SPEED_BUMP_REF * scale;
+  const overlapMin = Math.max(2, Math.round(4 * scale));
+
   /* ── Tick forzado para re-render desde rAF ── */
   const [, setTick] = useState(0);
   const forceRender = useCallback(() => setTick((t) => t + 1), []);
@@ -73,7 +84,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
   /* ── Datos mutables (refs) ── */
   const craneX     = useRef(0);            // posición X actual de la grúa
   const craneDir   = useRef(1);            // 1 = derecha, -1 = izquierda
-  const craneSpeed = useRef(BASE_SPEED);
+  const craneSpeed = useRef(BASE_SPEED_REF);
   const dropX      = useRef(-1);           // X de la caja que cae (-1 = sin caja)
   const dropY      = useRef(0);            // Y de la caja que cae
   const tower      = useRef([]);           // [{ x, y, w, color }] — cajas apiladas
@@ -102,18 +113,18 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   const getTopY = useCallback(() => {
     if (tower.current.length === 0) {
-      return landingY - BOX_H;
+      return landingY - boxH;
     }
     const top = tower.current[tower.current.length - 1];
-    return top.y - BOX_H;
-  }, [landingY]);
+    return top.y - boxH;
+  }, [landingY, boxH]);
 
   /* ─────────── Iniciar partida ─────────── */
   const startGame = useCallback(() => {
     const craneMinX = (dims.w - dims.w * CRANE_RATIO) / 2;
     craneX.current     = craneMinX;
     craneDir.current   = 1;
-    craneSpeed.current = BASE_SPEED;
+    craneSpeed.current = baseSpeed;
     dropX.current      = -1;
     dropY.current      = 0;
     cameraOff.current  = 0;
@@ -125,14 +136,14 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
     // Torre: solo la base
     tower.current = [{
-      x: dims.w / 2 - BASE_W / 2,
+      x: dims.w / 2 - baseW / 2,
       y: landingY,
-      w: BASE_W,
+      w: baseW,
       color: "#6b7280", // gray-500
     }];
     forceRender();
     setGameState(STATES.PLAYING);
-  }, [dims.w, landingY, forceRender]);
+  }, [dims.w, landingY, forceRender, baseW, baseSpeed]);
 
   /* ── Auto-start ── */
   useEffect(() => {
@@ -149,7 +160,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
       /* ── Mover grúa (rango reducido al centro) ── */
       const craneZone = W * CRANE_RATIO;
       const craneMinX = (W - craneZone) / 2;
-      const craneMaxX = craneMinX + craneZone - BOX_W;
+      const craneMaxX = craneMinX + craneZone - boxW;
 
       if (gameState === STATES.PLAYING || dropX.current === -1) {
         craneX.current += craneSpeed.current * craneDir.current;
@@ -164,15 +175,15 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       /* ── Animar caja cayendo ── */
       if (dropX.current >= 0) {
-        dropY.current += DROP_SPEED;
+        dropY.current += dropSpeed;
 
         const topBox = tower.current[tower.current.length - 1];
-        const landingY = topBox.y - BOX_H + cameraOff.current;
+        const landingY = topBox.y - boxH + cameraOff.current;
 
         if (dropY.current >= landingY) {
           // Llegó a la altura de la torre — comprobar solapamiento X
           const dxLeft  = dropX.current;
-          const dxRight = dropX.current + BOX_W;
+          const dxRight = dropX.current + boxW;
           const txLeft  = topBox.x;
           const txRight = topBox.x + topBox.w;
 
@@ -180,7 +191,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
           const overlapRight = Math.min(dxRight, txRight);
           const overlap      = overlapRight - overlapLeft;
 
-          if (overlap > 4) {
+          if (overlap > overlapMin) {
             // ✅ ACIERTO — apilar la caja entera (sin recortar)
             const newScore = scoreRef.current + 1;
             scoreRef.current = newScore;
@@ -188,16 +199,16 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
             tower.current.push({
               x: dropX.current,
-              y: topBox.y - BOX_H,
-              w: BOX_W,
+              y: topBox.y - boxH,
+              w: boxW,
               color: getBoxColor(newScore),
             });
 
             // Subir cámara para hacer hueco
-            cameraOff.current += BOX_H;
+            cameraOff.current += boxH;
 
             // Aumentar velocidad incrementalmente cada caja
-            craneSpeed.current += SPEED_BUMP;
+            craneSpeed.current += speedBump;
 
             dropX.current = -1;
             setGameState(STATES.PLAYING);
@@ -229,7 +240,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [gameState, dims.w, dims.h, forceRender]);
+  }, [gameState, dims.w, dims.h, forceRender, boxW, boxH, dropSpeed, speedBump, overlapMin, baseSpeed]);
 
   /* ─────────── Drop (tap) ─────────── */
   const handleTap = useCallback(() => {
@@ -320,7 +331,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
             <div
               className="absolute bg-white/20"
               style={{
-                left: craneX.current + BOX_W / 2 - 1,
+                left: craneX.current + boxW / 2 - 1,
                 top: 0,
                 width: 2,
                 height: CRANE_Y + 30,
@@ -332,8 +343,8 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
               style={{
                 left: craneX.current,
                 top: CRANE_Y + 30,
-                width: BOX_W,
-                height: BOX_H,
+                width: boxW,
+                height: boxH,
                 background: getBoxColor(scoreRef.current + 1),
                 boxShadow: `0 0 12px ${getBoxColor(scoreRef.current + 1)}40, inset 0 1px 0 rgba(255,255,255,0.25)`,
               }}
@@ -342,7 +353,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
             <div
               className="absolute bg-gray-500 rounded-sm"
               style={{
-                left: craneX.current + BOX_W / 2 - 14,
+                left: craneX.current + boxW / 2 - 14,
                 top: CRANE_Y - 4,
                 width: 28,
                 height: 8,
@@ -358,8 +369,8 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
             style={{
               left: dropX.current,
               top: dropY.current,
-              width: BOX_W,
-              height: BOX_H,
+              width: boxW,
+              height: boxH,
               background: getBoxColor(scoreRef.current + 1),
               boxShadow: `0 0 12px ${getBoxColor(scoreRef.current + 1)}40, inset 0 1px 0 rgba(255,255,255,0.25)`,
             }}
@@ -375,7 +386,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
               left: box.x,
               top: box.y + cam,
               width: box.w,
-              height: BOX_H,
+              height: boxH,
               background: box.color,
               boxShadow: i === 0
                 ? "none"
@@ -393,7 +404,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
         {/* ── Línea de suelo ── */}
         <div
           className="absolute left-0 right-0 h-px bg-white/10"
-          style={{ top: landingY + cam + BOX_H }}
+          style={{ top: landingY + cam + boxH }}
         />
       </div>
 
@@ -416,7 +427,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       {/* ── Hint PLAYING ── */}
       {gameState === STATES.PLAYING && score === 0 && dropX.current < 0 && (
-        <div className="absolute inset-x-0 flex justify-center pointer-events-none z-3" style={{ top: CRANE_Y + BOX_H + 60 }}>
+        <div className="absolute inset-x-0 flex justify-center pointer-events-none z-3" style={{ top: CRANE_Y + boxH + 60 }}>
           <span className="text-sm font-medium text-white/20 tracking-wider uppercase animate-pulse">
             {t("dropthebox.tap_drop")}
           </span>
@@ -427,7 +438,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {isPlaying && score >= 5 && (
         <div className="absolute bottom-28 left-0 right-0 flex justify-center pointer-events-none z-3">
           <span className="text-xs text-white/15 font-medium">
-            {t("dropthebox.speed")} ×{(craneSpeed.current / BASE_SPEED).toFixed(1)}
+            {t("dropthebox.speed")} ×{(craneSpeed.current / baseSpeed).toFixed(1)}
           </span>
         </div>
       )}
