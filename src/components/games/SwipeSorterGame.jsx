@@ -242,7 +242,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
     <div
       className="relative h-full w-full flex items-center justify-center bg-zinc-950 overflow-hidden select-none"
       style={{
-        touchAction: "none",
+        touchAction: isPlaying ? "none" : "auto",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",

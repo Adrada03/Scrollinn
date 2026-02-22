@@ -279,7 +279,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
     <div
       ref={containerRef}
       className="relative w-full h-full bg-zinc-900 overflow-hidden select-none"
-      style={{ touchAction: "none" }}
+      style={{ touchAction: isPlaying ? "none" : "auto" }}
       onPointerDown={handleTap}
     >
       {/* ── Gradient overlays para UI del feed ── */}

@@ -702,7 +702,7 @@ const HextrisGame = ({ isActive, onNextGame, onReplay, userId }) => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
-        style={{ touchAction: "none" }}
+        style={{ touchAction: uiState === STATES.PLAYING ? "none" : "auto" }}
       />
       {uiState === STATES.ENDED && (
         <GameOverPanel

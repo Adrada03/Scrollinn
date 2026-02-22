@@ -370,7 +370,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId }) => {
         <canvas
           ref={canvasRef}
           className="w-full h-full"
-          style={{ touchAction: "none" }}
+          style={{ touchAction: isPlaying ? "none" : "auto" }}
         />
       </div>
 

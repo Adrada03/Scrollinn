@@ -307,7 +307,7 @@ const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId }) => {
     <div
       ref={containerRef}
       className="relative w-full h-full bg-zinc-900 overflow-hidden select-none"
-      style={{ touchAction: "none" }}
+      style={{ touchAction: isEnded || phase === PHASE.IDLE ? "auto" : "none" }}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >

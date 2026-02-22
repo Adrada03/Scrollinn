@@ -304,7 +304,7 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId }) => {
       className="relative h-full w-full flex flex-col items-center justify-center overflow-hidden select-none"
       style={{
         backgroundColor: `rgb(${bgR}, ${bgG}, ${bgB})`,
-        touchAction: "none",
+        touchAction: gameState === STATES.PLAYING ? "none" : "auto",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
