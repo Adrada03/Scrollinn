@@ -201,6 +201,15 @@ const GAMES = [
     logo: "/logo-higherlower.png",
     gameComponent: "HigherLower",
   },
+  {
+    id: "vector-leap",
+    title: "Vector Leap",
+    description: "Ajusta ángulo y fuerza para aterrizar en la plataforma",
+    color: "bg-slate-900",
+    emoji: "🚀",
+    logo: "/logo-vectorleap.png",
+    gameComponent: "VectorLeap",
+  },
 ];
 
 export default GAMES;

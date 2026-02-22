@@ -83,4 +83,5 @@ export const GAME_IDS = {
   OverheatGame: 'overheat',
   MemoryLoopGame: 'memory-loop',
   HigherLowerGame: 'higher-lower',
+  VectorLeapGame: 'vector-leap',
 };

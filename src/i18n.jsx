@@ -95,6 +95,7 @@ const translations = {
     "desc.overheat":       "Haz el número exacto de taps sin sobrecalentar el motor",
     "desc.memory-loop":    "Memoriza la secuencia y repítela sin fallar",
     "desc.higher-lower":   "¿El siguiente número será mayor o menor?",
+    "desc.vector-leap":    "Ajusta ángulo y fuerza para aterrizar en la plataforma",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -234,6 +235,12 @@ const translations = {
     "higherlower.instruction": "¿Mayor o menor?",
     "higherlower.subtitle":    "aciertos seguidos",
 
+    // ── Vector Leap ─────────────────────────────
+    "vectorleap.instruction": "Toca para fijar ángulo y fuerza",
+    "vectorleap.tap_angle":   "Toca para fijar el ángulo",
+    "vectorleap.tap_power":   "Toca para fijar la fuerza",
+    "vectorleap.subtitle":    "saltos exitosos",
+
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Ronda",
     "overheat.score":     "Puntuación",
@@ -324,6 +331,7 @@ const translations = {
     "desc.overheat":       "Tap the exact number without overheating the engine",
     "desc.memory-loop":    "Memorize the sequence and repeat it without mistakes",
     "desc.higher-lower":   "Will the next number be higher or lower?",
+    "desc.vector-leap":    "Set angle and power to land on the platform",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
@@ -459,6 +467,12 @@ const translations = {
     // ── Higher Lower ────────────────────────────
     "higherlower.instruction": "Higher or lower?",
     "higherlower.subtitle":    "correct in a row",
+
+    // ── Vector Leap ─────────────────────────────
+    "vectorleap.instruction": "Tap to set angle and power",
+    "vectorleap.tap_angle":   "Tap to lock the angle",
+    "vectorleap.tap_power":   "Tap to lock the power",
+    "vectorleap.subtitle":    "successful jumps",
 
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Round",

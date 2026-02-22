@@ -20,7 +20,8 @@ INSERT INTO games (id, name, is_lower_better) VALUES
   ('swipe-sorter',  'Swipe Sorter',   false),
   ('math-rush',     'Math Rush',      false),
   ('stick-bridge',  'Stick Bridge',   false),
-  ('drop-the-box',  'Drop the Box',   false)
+  ('drop-the-box',  'Drop the Box',   false),
+  ('vector-leap',   'Vector Leap',    false)
 ON CONFLICT (id) DO UPDATE SET
   name            = EXCLUDED.name,
   is_lower_better = EXCLUDED.is_lower_better;
