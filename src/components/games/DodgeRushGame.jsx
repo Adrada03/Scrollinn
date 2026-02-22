@@ -447,6 +447,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
               title="Game Over"
               score={`${score}s`}
               subtitle={t("dodgerush.subtitle")}
+              onReplay={onReplay}
               onNext={onNextGame}
               ranking={ranking}
               scoreMessage={scoreMessage}
