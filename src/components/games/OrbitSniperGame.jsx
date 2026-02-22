@@ -31,16 +31,16 @@ const PHASE = {
 };
 
 /* ─────────── Constantes ─────────── */
-const PLAYER_R_RATIO   = 0.022;     // radio jugador como % de shortSide
-const BASE_ORBIT_RATIO = 0.19;      // radio órbita base como % de shortSide
-const TARGET_R_RATIO   = 0.13;      // radio objetivo inicial como % de shortSide
-const TARGET_R_MIN_RATIO = 0.065;   // radio mínimo objetivo como % de shortSide
+const PLAYER_R_RATIO   = 0.026;     // radio jugador como % de shortSide
+const BASE_ORBIT_RATIO = 0.24;      // radio órbita base como % de shortSide
+const TARGET_R_RATIO   = 0.16;      // radio objetivo inicial como % de shortSide
+const TARGET_R_MIN_RATIO = 0.085;   // radio mínimo objetivo como % de shortSide
 const ORBIT_SPEED_INIT = 0.014;     // rad/frame — arranque lento
 const ORBIT_SPEED_MAX  = 0.048;     // tope
 const SPEED_INCREMENT  = 0.0008;    // incremento por acierto (suave)
-const SHOOT_SPEED_RATIO = 0.012;    // velocidad disparo como % de shortSide
+const SHOOT_SPEED_RATIO = 0.018;    // velocidad disparo como % de shortSide
 const TRAIL_LENGTH     = 14;        // puntos de estela
-const TRAVEL_FRAMES    = 25;        // frames de asentamiento en nueva órbita
+const TRAVEL_FRAMES    = 18;        // frames de asentamiento en nueva órbita
 
 /* ─────────── Paleta de planetas ─────────── */
 const PLANET_PALETTES = [
