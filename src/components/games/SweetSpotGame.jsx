@@ -38,7 +38,7 @@ function randomZoneLeft(zonePct) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
+const SweetSpotGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
@@ -350,6 +350,7 @@ const SweetSpotGame = ({ isActive, onNextGame, userId }) => {
             title="Game Over"
             score={score}
             subtitle={t("sweetspot.subtitle")}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

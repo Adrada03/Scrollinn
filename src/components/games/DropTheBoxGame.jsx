@@ -54,7 +54,7 @@ function getBoxColor(index) {
 /* ═══════════════════════════════════════════════════════
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
-const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
+const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const containerRef = useRef(null);
 
@@ -452,6 +452,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, userId }) => {
           title="Game Over"
           score={score}
           subtitle={t("dropthebox.boxes_stacked")}
+          onReplay={onReplay}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

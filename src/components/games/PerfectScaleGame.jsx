@@ -29,7 +29,7 @@ const MAX_GROW   = 210; // px/s velocidad máxima de crecimiento
 const START_SIZE = 12;  // px diámetro inicial del globo (puntito)
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
+const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [targetSize, setTargetSize] = useState(220);
@@ -301,6 +301,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, userId }) => {
               title="Game Over"
               score={`${score}px`}
               subtitle={t("perfectscale.subtitle")}
+              onReplay={onReplay}
               onNext={onNextGame}
               ranking={ranking}
               scoreMessage={scoreMessage}

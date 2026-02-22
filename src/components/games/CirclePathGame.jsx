@@ -105,7 +105,7 @@ function addTarget(s) {
 
 /* ─────────── Componente React ─────────── */
 
-const CirclePathGame = ({ isActive, onNextGame, userId }) => {
+const CirclePathGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const canvasRef = useRef(null);
   const [ranking, setRanking] = useState([]);
@@ -455,6 +455,7 @@ const CirclePathGame = ({ isActive, onNextGame, userId }) => {
           title="Game Over"
           score={score}
           subtitle={t("circlepath.reached", { score, unit: score === 1 ? t("circlepath.point") : t("circlepath.points") })}
+          onReplay={onReplay}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

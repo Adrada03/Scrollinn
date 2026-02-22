@@ -58,7 +58,7 @@ function rand(a, b) { return a + Math.random() * (b - a); }
 /* ═══════════════════════════════════════════════════════
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
-const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
+const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const containerRef = useRef(null);
 
@@ -535,6 +535,7 @@ const StickBridgeGame = ({ isActive, onNextGame, userId }) => {
           title="Game Over"
           score={score}
           subtitle={t("stickbridge.subtitle")}
+          onReplay={onReplay}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

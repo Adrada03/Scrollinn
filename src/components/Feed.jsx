@@ -35,6 +35,7 @@ import MathRushGame from "./games/MathRushGame";
 import StickBridgeGame from "./games/StickBridgeGame";
 import DropTheBoxGame from "./games/DropTheBoxGame";
 import OverheatGame from "./games/OverheatGame";
+import MemoryLoopGame from "./games/MemoryLoopGame";
 import HigherLowerGame from "./games/HigherLowerGame";
 
 /** Registro de componentes reales de juego */
@@ -58,6 +59,7 @@ const GAME_COMPONENTS = {
   StickBridge: StickBridgeGame,
   DropTheBox: DropTheBoxGame,
   Overheat: OverheatGame,
+  MemoryLoop: MemoryLoopGame,
   HigherLower: HigherLowerGame,
 };
 
@@ -73,6 +75,7 @@ const GameFeed = ({
   onOpenGallery,
   onOpenAuth,
   currentUser,
+  gameEpoch = 0,
 }) => {
   const { t } = useLanguage();
   const touchStartY = useRef(null);
@@ -81,6 +84,7 @@ const GameFeed = ({
   const history = useRef([0]);
   const [direction, setDirection] = useState(1);
   const [isCountingDown, setIsCountingDown] = useState(true);
+  const [replayCount, setReplayCount] = useState(0);
   const [showScrollHint, setShowScrollHint] = useState(true); // visible al abrir
   const idleTimer = useRef(null);
 
@@ -125,6 +129,13 @@ const GameFeed = ({
   const handleScrollLock = useCallback((locked) => {
     scrollLocked.current = locked;
   }, []);
+
+  /** Reinicia el juego actual (remonta el componente) */
+  const handleReplay = useCallback(() => {
+    setReplayCount((c) => c + 1);
+    const shouldSkip = !!(currentGame?.gameComponent && GAME_COMPONENTS[currentGame.gameComponent] && currentGame.skipCountdown);
+    setIsCountingDown(!shouldSkip);
+  }, [currentGame]);
 
   const navigate = useCallback(
     (dir) => {
@@ -222,7 +233,7 @@ const GameFeed = ({
     }),
   };
 
-  const gameKey = currentGame.id + "-" + history.current.length;
+  const gameKey = currentGame.id + "-" + history.current.length + "-" + gameEpoch + "-" + replayCount;
 
   return (
     <div className="w-screen h-screen overflow-hidden relative bg-black">
@@ -245,7 +256,7 @@ const GameFeed = ({
           {currentGame.gameComponent && GAME_COMPONENTS[currentGame.gameComponent] ? (
             (() => {
               const GameComp = GAME_COMPONENTS[currentGame.gameComponent];
-              return <GameComp isActive={!isCountingDown} onNextGame={() => navigate("next")} userId={currentUser?.id} onScrollLock={handleScrollLock} />;
+              return <GameComp isActive={!isCountingDown} onNextGame={() => navigate("next")} onReplay={handleReplay} userId={currentUser?.id} onScrollLock={handleScrollLock} />;
             })()
           ) : (
             <PlaceholderGame

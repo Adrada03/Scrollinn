@@ -52,7 +52,7 @@ function createCircle(w, h, type, score) {
 
 /* ─────────── Componente React ─────────── */
 
-const CircleNinjaGame = ({ isActive, onNextGame, userId }) => {
+const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const canvasRef = useRef(null);
   const stateRef = useRef({
@@ -420,6 +420,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, userId }) => {
           title="Game Over"
           score={score}
           subtitle={lives <= 0 ? t("circleninja.too_many_escaped") : t("circleninja.cut_red")}
+          onReplay={onReplay}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

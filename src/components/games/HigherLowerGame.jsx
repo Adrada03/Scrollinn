@@ -169,7 +169,7 @@ const FlipCard = ({ card, isFlipped, result = null }) => (
 );
 
 /* ═══════════════════ MAIN COMPONENT ═══════════════════ */
-const HigherLowerGame = ({ isActive, onNextGame, userId, onScrollLock }) => {
+const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock }) => {
   const { t } = useLanguage();
 
   const [gameState, setGameState]     = useState(STATES.IDLE);
@@ -475,6 +475,7 @@ const HigherLowerGame = ({ isActive, onNextGame, userId, onScrollLock }) => {
             title="Game Over"
             score={score}
             subtitle={score === 1 ? "acierto" : "aciertos"}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

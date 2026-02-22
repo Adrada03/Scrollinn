@@ -49,7 +49,7 @@ function getAccentColor(ms) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
+const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
   useLanguage(); // subscribe to lang changes for re-render
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [reactionMs, setReactionMs] = useState(null);
@@ -233,6 +233,7 @@ const TrafficLightGame = ({ isActive, onNextGame, userId }) => {
             title={falseStart ? t("traffic.title_early") : reactionMs <= 220 ? t("traffic.title_amazing") : "Game Over"}
             score={`${reactionMs} ms`}
             subtitle={falseStart ? t("traffic.penalty") : t("traffic.reaction")}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

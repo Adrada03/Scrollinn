@@ -32,7 +32,7 @@ const COLORS = [
 const pickColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
+const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
@@ -420,6 +420,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, userId }) => {
             title="Game Over"
             score={score}
             subtitle={t("swipesorter.subtitle")}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

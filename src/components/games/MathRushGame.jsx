@@ -61,7 +61,7 @@ function generateQuestion() {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const MathRushGame = ({ isActive, onNextGame, userId }) => {
+const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
@@ -327,6 +327,7 @@ const MathRushGame = ({ isActive, onNextGame, userId }) => {
             title="Game Over"
             score={score}
             subtitle={t("mathrush.subtitle")}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

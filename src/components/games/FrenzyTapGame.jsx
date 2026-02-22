@@ -21,7 +21,7 @@ const GAME_DURATION = 10; // segundos
 const TICK_MS = 50;       // intervalo del timer (50ms → resolución 0.05s)
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const FrenzyTapGame = ({ isActive, onNextGame, userId, onScrollLock }) => {
+const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
@@ -252,6 +252,7 @@ const FrenzyTapGame = ({ isActive, onNextGame, userId, onScrollLock }) => {
             title="Game Over"
             score={score}
             subtitle="taps"
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

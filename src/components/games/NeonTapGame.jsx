@@ -48,7 +48,7 @@ function pickNeon(prevIdx) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const NeonTapGame = ({ isActive, onNextGame, userId }) => {
+const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
@@ -322,6 +322,7 @@ const NeonTapGame = ({ isActive, onNextGame, userId }) => {
             title="Game Over"
             score={score}
             subtitle={t("neontap.subtitle")}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

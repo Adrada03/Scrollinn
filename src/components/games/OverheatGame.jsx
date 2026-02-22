@@ -62,7 +62,7 @@ function generateRound(score) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const OverheatGame = ({ isActive, onNextGame, userId }) => {
+const OverheatGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
 
   const [gameState, setGameState] = useState(STATES.IDLE);
@@ -532,6 +532,7 @@ const OverheatGame = ({ isActive, onNextGame, userId }) => {
             title="Game Over"
             score={score}
             subtitle={t("overheat.rounds")}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

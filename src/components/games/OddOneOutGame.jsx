@@ -62,7 +62,7 @@ function generateGrid(level) {
 
 /* ─────────── Componente React ─────────── */
 
-const OddOneOutGame = ({ isActive, onNextGame, userId }) => {
+const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
@@ -310,6 +310,7 @@ const OddOneOutGame = ({ isActive, onNextGame, userId }) => {
             title="Game Over"
             score={score}
             subtitle={t("oddoneout.reached", { level })}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

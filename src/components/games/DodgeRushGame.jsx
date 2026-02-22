@@ -122,7 +122,7 @@ const drawShape = (ctx, shape, x, y, r, rot, color) => {
 };
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const DodgeRushGame = ({ isActive, onNextGame, userId }) => {
+const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);

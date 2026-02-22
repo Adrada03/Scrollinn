@@ -559,7 +559,7 @@ function drawComboTimer(ctx, g, cx, cy, outerR) {
 /* ═══════════════════ REACT COMPONENT ═══════════════════ */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
 
-const HextrisGame = ({ isActive, onNextGame, userId }) => {
+const HextrisGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const canvasRef   = useRef(null);
   const stateRef    = useRef(STATES.IDLE);
@@ -709,6 +709,7 @@ const HextrisGame = ({ isActive, onNextGame, userId }) => {
           title="Game Over"
           score={String(finalScore)}
           subtitle={t("hextris.subtitle")}
+          onReplay={onReplay}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

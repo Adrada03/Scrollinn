@@ -50,7 +50,7 @@ function randomCell() {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const MemoryLoopGame = ({ isActive, onNextGame, userId }) => {
+const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
 
   /* ── Estado principal ── */
@@ -418,6 +418,7 @@ const MemoryLoopGame = ({ isActive, onNextGame, userId }) => {
             title="Game Over"
             score={score}
             subtitle={t("memoryloop.subtitle")}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

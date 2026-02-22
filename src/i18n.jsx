@@ -54,6 +54,7 @@ const translations = {
     "gameover.user":       "Usuario",
     "gameover.points":     "Puntos",
     "gameover.loading":    "Cargando ranking...",
+    "gameover.replay":     "Jugar de nuevo",
     "gameover.next":       "Siguiente juego",
 
     // ── Services ────────────────────────────────
@@ -92,7 +93,8 @@ const translations = {
     "desc.stick-bridge":   "Mantén para hacer crecer el puente y cruza al otro lado",
     "desc.drop-the-box":   "Suelta la caja en el momento justo para apilar la torre",
     "desc.overheat":       "Haz el número exacto de taps sin sobrecalentar el motor",
-    "desc.higher-lower":   "Adivina si la próxima carta será mayor o menor",
+    "desc.memory-loop":    "Memoriza la secuencia y repítela sin fallar",
+    "desc.higher-lower":   "¿El siguiente número será mayor o menor?",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -224,6 +226,14 @@ const translations = {
     "traffic.penalty":        "penalización",
     "traffic.reaction":       "de reacción",
 
+    // ── Memory Loop ─────────────────────────────
+    "memoryloop.instruction": "Memoriza y repite la secuencia",
+    "memoryloop.subtitle":    "rondas completadas",
+
+    // ── Higher Lower ────────────────────────────
+    "higherlower.instruction": "¿Mayor o menor?",
+    "higherlower.subtitle":    "aciertos seguidos",
+
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Ronda",
     "overheat.score":     "Puntuación",
@@ -273,6 +283,7 @@ const translations = {
     "gameover.user":       "User",
     "gameover.points":     "Points",
     "gameover.loading":    "Loading ranking...",
+    "gameover.replay":     "Play again",
     "gameover.next":       "Next game",
 
     // ── Services ────────────────────────────────
@@ -311,7 +322,8 @@ const translations = {
     "desc.stick-bridge":   "Hold to grow the bridge and cross to the other side",
     "desc.drop-the-box":   "Drop the box at the right moment to stack the tower",
     "desc.overheat":       "Tap the exact number without overheating the engine",
-    "desc.higher-lower":   "Guess if the next card will be higher or lower",
+    "desc.memory-loop":    "Memorize the sequence and repeat it without mistakes",
+    "desc.higher-lower":   "Will the next number be higher or lower?",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
@@ -439,6 +451,14 @@ const translations = {
     "traffic.title_amazing":  "Incredible!",
     "traffic.penalty":        "penalty",
     "traffic.reaction":       "reaction time",
+
+    // ── Memory Loop ─────────────────────────────
+    "memoryloop.instruction": "Memorize and repeat the sequence",
+    "memoryloop.subtitle":    "rounds completed",
+
+    // ── Higher Lower ────────────────────────────
+    "higherlower.instruction": "Higher or lower?",
+    "higherlower.subtitle":    "correct in a row",
 
     // ── Overheat ────────────────────────────────
     "overheat.round":     "Round",

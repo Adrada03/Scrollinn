@@ -53,7 +53,7 @@ function getAccentColor(diff) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const TimerGame = ({ isActive, onNextGame, userId }) => {
+const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
   useLanguage(); // subscribe to lang changes for re-render
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [displayMs, setDisplayMs] = useState(0);       // ms que se muestran
@@ -284,6 +284,7 @@ const TimerGame = ({ isActive, onNextGame, userId }) => {
             title={score !== null && score <= 50 ? t("timer.title_amazing") : "Game Over"}
             score={`${score} ms`}
             subtitle={t("timer.subtitle")}
+            onReplay={onReplay}
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}

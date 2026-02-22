@@ -474,7 +474,7 @@ class TowerBlocksEngine {
 
 /* ─────────── Componente React ─────────── */
 
-const TowerBlocksGame = ({ isActive, onNextGame, userId }) => {
+const TowerBlocksGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const mountRef = useRef(null);
   const engineRef = useRef(null);
@@ -615,6 +615,7 @@ const TowerBlocksGame = ({ isActive, onNextGame, userId }) => {
           title="Game Over"
           score={score}
           subtitle={t("tower.score", { score })}
+          onReplay={onReplay}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

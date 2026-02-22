@@ -134,7 +134,7 @@ function isBoardSolved(board) {
    Componente principal
    ═══════════════════════════════════════════ */
 
-const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
+const ColorMatchGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(GAME_STATES.IDLE);
   const [board, setBoard] = useState([]);
@@ -359,6 +359,7 @@ const ColorMatchGame = ({ isActive, onNextGame, userId }) => {
           title={won ? t("colormatch.victory") : "Game Over"}
           score={won ? `${moves} mov.` : `${progress}%`}
           subtitle={won ? t("colormatch.completed", { moves }) : t("colormatch.reached", { progress })}
+          onReplay={onReplay}
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}

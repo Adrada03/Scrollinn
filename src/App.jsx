@@ -41,6 +41,7 @@ function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [likesMap, setLikesMap] = useState(emptyLikesMap);
+  const [gameEpoch, setGameEpoch] = useState(0);
   const likesLoaded = useRef(false);
 
   /**
@@ -133,6 +134,7 @@ function App() {
    */
   const handleSelectGame = useCallback((index) => {
     setCurrentIndex(index);
+    setGameEpoch((e) => e + 1);
     setIsGalleryOpen(false);
   }, []);
 
@@ -149,6 +151,7 @@ function App() {
         onOpenGallery={() => setIsGalleryOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
         currentUser={currentUser}
+        gameEpoch={gameEpoch}
       />
 
       {/* Modal de galería (sobre todo) */}
