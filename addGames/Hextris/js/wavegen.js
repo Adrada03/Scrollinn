@@ -17,12 +17,12 @@ function blockDestroyed() {
 function waveGen(hex) {
 	this.lastGen = 0;
 	this.last = 0;
-	this.nextGen = 2700;
+	this.nextGen = 1200;
 	this.start = 0;
 	this.colors = colors;
 	this.ct = 0;
 	this.hex = hex;
-	this.difficulty = 1;
+	this.difficulty = 3; // Más alto para que la velocidad inicial sea mayor
 	this.dt = 0;
 	this.update = function() {
 		this.currentFunction();
@@ -192,10 +192,8 @@ function waveGen(hex) {
 			}
 		}
 
-		return 0;
 	};
 
 	// rest of generation functions
-
 	this.currentFunction = this.randomGeneration;
 }
