@@ -342,7 +342,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
       )}
 
       {/* ── La Carta ── */}
-      {(isPlaying || gameState === STATES.IDLE) && (
+      {isPlaying && (
         <div
           className="z-3 cursor-grab active:cursor-grabbing"
           style={{

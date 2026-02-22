@@ -11,6 +11,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Analytics } from "@vercel/analytics/react";
 
 // Componentes
+import TopNav from "./components/TopNav";
 import GameFeed from "./components/Feed";
 import GalleryModal from "./components/GalleryModal";
 import AuthModal from "./components/AuthModal";
@@ -34,9 +35,7 @@ const emptyLikesMap = () => {
 };
 
 function App() {
-  const [currentIndex, setCurrentIndex] = useState(
-    () => Math.floor(Math.random() * GAMES.length)
-  );
+  const [selectedGameId, setSelectedGameId] = useState(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -133,25 +132,29 @@ function App() {
    * Navega a un juego específico desde la galería.
    */
   const handleSelectGame = useCallback((index) => {
-    setCurrentIndex(index);
+    setSelectedGameId(GAMES[index].id);
     setGameEpoch((e) => e + 1);
     setIsGalleryOpen(false);
   }, []);
 
   return (
     <>
+      {/* Barra de navegación superior fija */}
+      <TopNav
+        onOpenAuth={() => setIsAuthOpen(true)}
+        currentUser={currentUser}
+      />
+
       {/* Feed principal a pantalla completa */}
       <GameFeed
         games={GAMES}
-        currentIndex={currentIndex}
-        onChangeIndex={setCurrentIndex}
+        selectedGameId={selectedGameId}
+        gameEpoch={gameEpoch}
         disabled={isGalleryOpen || isAuthOpen}
         likesMap={likesMap}
         onToggleLike={handleToggleLike}
         onOpenGallery={() => setIsGalleryOpen(true)}
-        onOpenAuth={() => setIsAuthOpen(true)}
         currentUser={currentUser}
-        gameEpoch={gameEpoch}
       />
 
       {/* Modal de galería (sobre todo) */}

@@ -23,6 +23,15 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* Ocultar scrollbar manteniendo funcionalidad de scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;   /* IE / Edge */
+  scrollbar-width: none;      /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;              /* Chrome / Safari / Opera */
+}
+
 /* Tipografía para la cuenta atrás */
 @keyframes countdown-pulse {
   0% { transform: scale(0.5); opacity: 0; }

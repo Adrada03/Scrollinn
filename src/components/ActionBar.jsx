@@ -17,7 +17,7 @@ const btnBase =
   "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-colors " +
   "bg-black/40 backdrop-blur-sm border border-white/15 hover:bg-black/60";
 
-const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenAuth, currentUser }) => {
+const ActionBar = ({ likes, isLiked, onLike, onOpenGallery }) => {
   const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center gap-5 md:gap-6">
@@ -47,28 +47,6 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenAuth, currentU
         </motion.div>
         <span className={`text-xs md:text-sm font-semibold drop-shadow ${isLiked ? "text-red-400" : "text-white/80"}`}>
           {likes}
-        </span>
-      </button>
-
-      {/* === Registrarse / Perfil === */}
-      <button
-        onClick={onOpenAuth}
-        className="flex flex-col items-center gap-1 group cursor-pointer"
-        aria-label={currentUser ? t("ui.my_account") : t("ui.register_aria")}
-      >
-        <div className={`${btnBase} ${currentUser ? "!bg-emerald-500/50 !border-emerald-400/60 ring-1 ring-emerald-400/30" : ""}`}>
-          {currentUser ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 md:w-7 md:h-7 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
-            </svg>
-          )}
-        </div>
-        <span className={`text-xs md:text-sm font-semibold ${currentUser ? "text-emerald-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]" : "text-white/80 drop-shadow"}`}>
-          {currentUser ? currentUser.username : t("ui.register_label")}
         </span>
       </button>
 
