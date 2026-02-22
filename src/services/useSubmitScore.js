@@ -84,4 +84,5 @@ export const GAME_IDS = {
   MemoryLoopGame: 'memory-loop',
   HigherLowerGame: 'higher-lower',
   VectorLeapGame: 'vector-leap',
+  RPSDuelGame: 'rps-duel',
 };

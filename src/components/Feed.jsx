@@ -41,6 +41,7 @@ import OverheatGame from "./games/OverheatGame";
 import MemoryLoopGame from "./games/MemoryLoopGame";
 import HigherLowerGame from "./games/HigherLowerGame";
 import VectorLeapGame from "./games/VectorLeapGame";
+import RPSDuelGame from "./games/RPSDuelGame";
 
 /** Registro de componentes reales de juego */
 const GAME_COMPONENTS = {
@@ -66,6 +67,7 @@ const GAME_COMPONENTS = {
   MemoryLoop: MemoryLoopGame,
   HigherLower: HigherLowerGame,
   VectorLeap: VectorLeapGame,
+  RPSDuel: RPSDuelGame,
 };
 
 /* ================================================================

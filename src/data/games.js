@@ -210,6 +210,15 @@ const GAMES = [
     logo: "/logo-vectorleap.png",
     gameComponent: "VectorLeap",
   },
+  {
+    id: "rps-duel",
+    title: "RPS Duel",
+    description: "Cumple la orden de la CPU antes de que se acabe el tiempo",
+    color: "bg-rose-900",
+    emoji: "✊",
+    logo: "/logo-rpsduel.png",
+    gameComponent: "RPSDuel",
+  },
 ];
 
 export default GAMES;

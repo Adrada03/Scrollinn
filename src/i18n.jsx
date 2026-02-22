@@ -96,6 +96,7 @@ const translations = {
     "desc.memory-loop":    "Memoriza la secuencia y repítela sin fallar",
     "desc.higher-lower":   "¿El siguiente número será mayor o menor?",
     "desc.vector-leap":    "Ajusta ángulo y fuerza para aterrizar en la plataforma",
+    "desc.rps-duel":       "Cumple la orden de la CPU antes de que se acabe el tiempo",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -235,6 +236,13 @@ const translations = {
     "higherlower.instruction": "¿Mayor o menor?",
     "higherlower.subtitle":    "aciertos seguidos",
 
+    // ── RPS Duel ────────────────────────────────
+    "rpsduel.win":         "¡GANAR!",
+    "rpsduel.lose":        "¡PERDER!",
+    "rpsduel.draw":        "¡EMPATAR!",
+    "rpsduel.youmust":     "TIENES QUE",
+    "rpsduel.subtitle":    "rondas superadas",
+
     // ── Vector Leap ─────────────────────────────
     "vectorleap.instruction": "Toca para fijar ángulo y fuerza",
     "vectorleap.tap_angle":   "Toca para fijar el ángulo",
@@ -332,6 +340,7 @@ const translations = {
     "desc.memory-loop":    "Memorize the sequence and repeat it without mistakes",
     "desc.higher-lower":   "Will the next number be higher or lower?",
     "desc.vector-leap":    "Set angle and power to land on the platform",
+    "desc.rps-duel":       "Fulfill the CPU's order before time runs out",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
@@ -467,6 +476,13 @@ const translations = {
     // ── Higher Lower ────────────────────────────
     "higherlower.instruction": "Higher or lower?",
     "higherlower.subtitle":    "correct in a row",
+
+    // ── RPS Duel ────────────────────────────────
+    "rpsduel.win":         "WIN!",
+    "rpsduel.lose":        "LOSE!",
+    "rpsduel.draw":        "DRAW!",
+    "rpsduel.youmust":     "YOU MUST",
+    "rpsduel.subtitle":    "rounds cleared",
 
     // ── Vector Leap ─────────────────────────────
     "vectorleap.instruction": "Tap to set angle and power",
