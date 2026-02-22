@@ -6,12 +6,15 @@
  * Si la caja se solapa con la parte superior de la torre, se apila.
  * Si no, cae al vacío → Game Over.
  *
- * Cada 5 puntos la grúa se mueve más rápido.
+ * ✅ Todo proporcional al ancho del contenedor (containerWidth).
+ * ✅ Movimiento basado en deltaTime (requestAnimationFrame).
+ * ✅ Cooldown entre lanzamientos con feedback visual.
  *
  * Props:
- *   isActive    – cuando pasa a true, arranca el juego
- *   onNextGame  – callback para ir al siguiente juego
- *   currentUser – usuario logueado (para enviar puntuación)
+ *   isActive   – cuando pasa a true, arranca el juego
+ *   onNextGame – callback para ir al siguiente juego
+ *   onReplay   – callback para reiniciar
+ *   userId     – usuario logueado (para enviar puntuación)
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -22,17 +25,30 @@ import { useLanguage } from "../../i18n";
 /* ─────────── Estados ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", DROPPING: "dropping", ENDED: "ended" };
 
-/* ─────────── Constantes (valores de referencia a REF_W px de ancho) ─────────── */
-const REF_W          = 400;       // ancho de referencia para escalar
-const BOX_W_REF      = 100;       // ancho de cada caja a REF_W
-const BOX_H_REF      = 44;        // alto de cada caja a REF_W
-const BASE_W_REF     = 120;       // ancho de la base a REF_W
-const DROP_SPEED_REF = 20;        // px por frame de caída a REF_W
-const CRANE_Y        = 60;        // posición Y de la grúa (fija)
-const BASE_SPEED_REF = 3.2;       // velocidad inicial de la grúa a REF_W
-const SPEED_BUMP_REF = 0.18;      // incremento por caja apilada a REF_W
-const CRANE_RATIO    = 0.55;      // fracción del ancho usada por la grúa
-const LANDING_RATIO  = 0.52;      // posición vertical del punto de aterrizaje (desde arriba)
+/* ═════════════════════════════════════════════════════════════════
+   PROPORCIONES — todo relativo a containerWidth (cw)
+   ═════════════════════════════════════════════════════════════════ */
+const BOX_W_FRAC       = 0.18;      // ancho de la caja  (≈ 18 % de gameW)
+const BOX_H_FRAC       = 0.085;     // alto de la caja   (≈ 8.5 % de gameW)
+const BASE_W_FRAC      = 0.22;      // ancho de la base  (≈ 22 % de gameW)
+const CRANE_Y_FRAC     = 0.15;      // posición Y del gancho (fracción de cw)
+const CABLE_EXT_FRAC   = 0.075;     // extensión del cable bajo el indicador
+const CRANE_RATIO      = 0.70;      // zona horizontal de movimiento de la grúa
+const LANDING_RATIO    = 0.52;      // línea de aterrizaje (fracción de ch)
+
+/* ── Velocidades (fracciones de cw por segundo) ── */
+const CRANE_SPEED_FRAC = 0.32;      // vel. base de la grúa  → ~3 s lado a lado
+const SPEED_BUMP_FRAC  = 0.014;     // incremento por caja apilada
+const DROP_SPEED_FRAC  = 3.0;       // velocidad de caída de la caja
+
+/* ── Colisión ── */
+const OVERLAP_MIN_FRAC = 0.05;      // solapamiento mínimo (fracción de boxW)
+
+/* ── Cooldown ── */
+const COOLDOWN_MS      = 800;       // ms entre lanzamientos
+
+/* ── Área de juego restringida (PC) ── */
+const MAX_GAME_WIDTH   = 450;       // ancho máximo del área jugable
 
 /* ─────────── Colores neón para las cajas ─────────── */
 const BOX_COLORS = [
@@ -67,37 +83,47 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
   /* ── Dimensiones del contenedor ── */
   const [dims, setDims] = useState({ w: 400, h: 700 });
 
-  /* ── Valores escalados según ancho del contenedor ── */
-  const scale      = dims.w / REF_W;
-  const boxW       = Math.round(BOX_W_REF * scale);
-  const boxH       = Math.round(BOX_H_REF * scale);
-  const baseW      = Math.round(BASE_W_REF * scale);
-  const dropSpeed  = DROP_SPEED_REF * scale;
-  const baseSpeed  = BASE_SPEED_REF * scale;
-  const speedBump  = SPEED_BUMP_REF * scale;
-  const overlapMin = Math.max(2, Math.round(4 * scale));
+  /* ── Valores proporcionales (recalculados en cada render) ── */
+  const cw      = dims.w;
+  const ch      = dims.h;
+  const gameW   = Math.min(cw, MAX_GAME_WIDTH);   // área jugable limitada
+  const offsetX = (cw - gameW) / 2;               // margen para centrar
+
+  const boxW       = Math.round(gameW * BOX_W_FRAC);
+  const boxH       = Math.round(gameW * BOX_H_FRAC);
+  const baseW      = Math.round(gameW * BASE_W_FRAC);
+  const craneY     = Math.round(gameW * CRANE_Y_FRAC);
+  const cableExt   = Math.round(gameW * CABLE_EXT_FRAC);
+  const overlapMin = Math.max(2, Math.round(boxW * OVERLAP_MIN_FRAC));
+
+  /* ── Velocidades en px / s (basadas en gameW para timing consistente) ── */
+  const baseCraneSpeed = gameW * CRANE_SPEED_FRAC;
+  const speedBumpPxS   = gameW * SPEED_BUMP_FRAC;
+  const dropSpeedPxS   = gameW * DROP_SPEED_FRAC;
 
   /* ── Tick forzado para re-render desde rAF ── */
   const [, setTick] = useState(0);
-  const forceRender = useCallback(() => setTick((t) => t + 1), []);
+  const forceRender = useCallback(() => setTick((n) => n + 1), []);
 
   /* ── Datos mutables (refs) ── */
-  const craneX     = useRef(0);            // posición X actual de la grúa
-  const craneDir   = useRef(1);            // 1 = derecha, -1 = izquierda
-  const craneSpeed = useRef(BASE_SPEED_REF);
-  const dropX      = useRef(-1);           // X de la caja que cae (-1 = sin caja)
-  const dropY      = useRef(0);            // Y de la caja que cae
-  const tower      = useRef([]);           // [{ x, y, w, color }] — cajas apiladas
-  const cameraOff  = useRef(0);            // desplazamiento vertical de cámara
-  const rafRef     = useRef(null);
+  const craneXRef       = useRef(0);
+  const craneDirRef     = useRef(1);
+  const craneSpeedRef   = useRef(baseCraneSpeed);   // px/s acumulada
+  const dropXRef        = useRef(-1);
+  const dropYRef        = useRef(0);
+  const towerRef        = useRef([]);
+  const cameraOffRef    = useRef(0);
+  const rafRef          = useRef(null);
+  const lastTimeRef     = useRef(0);                 // timestamp anterior (rAF)
+  const lastDropTimeRef = useRef(0);                 // cooldown
 
   /* ── Estado de ranking ── */
-  const [ranking, setRanking]             = useState([]);
-  const [scoreMessage, setScoreMessage]   = useState("");
+  const [ranking, setRanking]                 = useState([]);
+  const [scoreMessage, setScoreMessage]       = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
-  const scoreSubmitted                    = useRef(false);
+  const scoreSubmitted                        = useRef(false);
 
-  /* ─────────── Medir contenedor ─────────── */
+  /* ─────────── Medir contenedor (ResizeObserver) ─────────── */
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -108,82 +134,89 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return () => ro.disconnect();
   }, []);
 
-  /* ─────────── Posición Y del tope de la torre ─────────── */
-  const landingY = Math.round(dims.h * LANDING_RATIO);
-
-  const getTopY = useCallback(() => {
-    if (tower.current.length === 0) {
-      return landingY - boxH;
-    }
-    const top = tower.current[tower.current.length - 1];
-    return top.y - boxH;
-  }, [landingY, boxH]);
+  /* ─────────── Posición Y del punto de aterrizaje ─────────── */
+  const landingY = Math.round(ch * LANDING_RATIO);
 
   /* ─────────── Iniciar partida ─────────── */
   const startGame = useCallback(() => {
-    const craneMinX = (dims.w - dims.w * CRANE_RATIO) / 2;
-    craneX.current     = craneMinX;
-    craneDir.current   = 1;
-    craneSpeed.current = baseSpeed;
-    dropX.current      = -1;
-    dropY.current      = 0;
-    cameraOff.current  = 0;
-    scoreRef.current   = 0;
+    const craneMinX = offsetX + (gameW - gameW * CRANE_RATIO) / 2;
+    craneXRef.current       = craneMinX;
+    craneDirRef.current     = 1;
+    craneSpeedRef.current   = baseCraneSpeed;
+    dropXRef.current        = -1;
+    dropYRef.current        = 0;
+    cameraOffRef.current    = 0;
+    lastTimeRef.current     = 0;
+    lastDropTimeRef.current = 0;
+    scoreRef.current        = 0;
     setScore(0);
     scoreSubmitted.current = false;
     setRanking([]);
     setScoreMessage("");
 
     // Torre: solo la base
-    tower.current = [{
-      x: dims.w / 2 - baseW / 2,
+    towerRef.current = [{
+      x: cw / 2 - baseW / 2,
       y: landingY,
       w: baseW,
       color: "#6b7280", // gray-500
     }];
     forceRender();
     setGameState(STATES.PLAYING);
-  }, [dims.w, landingY, forceRender, baseW, baseSpeed]);
+  }, [cw, gameW, offsetX, landingY, forceRender, baseW, baseCraneSpeed]);
 
   /* ── Auto-start ── */
   useEffect(() => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, gameState, startGame]);
 
-  /* ─────────── Game loop (rAF) ─────────── */
+  /* ═══════════════════════════════════════════════════════
+     GAME LOOP — requestAnimationFrame + deltaTime
+     ═══════════════════════════════════════════════════════ */
   useEffect(() => {
     if (gameState !== STATES.PLAYING && gameState !== STATES.DROPPING) return;
 
-    const tick = () => {
-      const W = dims.w;
+    lastTimeRef.current = 0; // resetear para evitar salto de dt al re-entrar
 
-      /* ── Mover grúa (rango reducido al centro) ── */
-      const craneZone = W * CRANE_RATIO;
-      const craneMinX = (W - craneZone) / 2;
+    const tick = (timestamp) => {
+      /* Primer frame: calibrar y salir */
+      if (!lastTimeRef.current) {
+        lastTimeRef.current = timestamp;
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      /* deltaTime en segundos (cap 50 ms para evitar saltos tras alt-tab) */
+      const dt = Math.min((timestamp - lastTimeRef.current) / 1000, 0.05);
+      lastTimeRef.current = timestamp;
+
+      /* ── Mover grúa (rango reducido al centro, dentro de gameW) ── */
+      const craneZone = gameW * CRANE_RATIO;
+      const craneMinX = offsetX + (gameW - craneZone) / 2;
       const craneMaxX = craneMinX + craneZone - boxW;
 
-      if (gameState === STATES.PLAYING || dropX.current === -1) {
-        craneX.current += craneSpeed.current * craneDir.current;
-        if (craneX.current >= craneMaxX) {
-          craneX.current = craneMaxX;
-          craneDir.current = -1;
-        } else if (craneX.current <= craneMinX) {
-          craneX.current = craneMinX;
-          craneDir.current = 1;
+      if (gameState === STATES.PLAYING || dropXRef.current === -1) {
+        craneXRef.current += craneSpeedRef.current * craneDirRef.current * dt;
+        if (craneXRef.current >= craneMaxX) {
+          craneXRef.current = craneMaxX;
+          craneDirRef.current = -1;
+        } else if (craneXRef.current <= craneMinX) {
+          craneXRef.current = craneMinX;
+          craneDirRef.current = 1;
         }
       }
 
       /* ── Animar caja cayendo ── */
-      if (dropX.current >= 0) {
-        dropY.current += dropSpeed;
+      if (dropXRef.current >= 0) {
+        dropYRef.current += dropSpeedPxS * dt;
 
-        const topBox = tower.current[tower.current.length - 1];
-        const landingY = topBox.y - boxH + cameraOff.current;
+        const topBox  = towerRef.current[towerRef.current.length - 1];
+        const targetY = topBox.y - boxH + cameraOffRef.current;
 
-        if (dropY.current >= landingY) {
+        if (dropYRef.current >= targetY) {
           // Llegó a la altura de la torre — comprobar solapamiento X
-          const dxLeft  = dropX.current;
-          const dxRight = dropX.current + boxW;
+          const dxLeft  = dropXRef.current;
+          const dxRight = dropXRef.current + boxW;
           const txLeft  = topBox.x;
           const txRight = topBox.x + topBox.w;
 
@@ -197,34 +230,34 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
             scoreRef.current = newScore;
             setScore(newScore);
 
-            tower.current.push({
-              x: dropX.current,
+            towerRef.current.push({
+              x: dropXRef.current,
               y: topBox.y - boxH,
               w: boxW,
               color: getBoxColor(newScore),
             });
 
             // Subir cámara para hacer hueco
-            cameraOff.current += boxH;
+            cameraOffRef.current += boxH;
 
             // Aumentar velocidad incrementalmente cada caja
-            craneSpeed.current += speedBump;
+            craneSpeedRef.current += speedBumpPxS;
 
-            dropX.current = -1;
+            dropXRef.current = -1;
             setGameState(STATES.PLAYING);
           } else {
             // ❌ FALLO — dejar que siga cayendo un poco y luego game over
-            if (dropY.current > dims.h + 50) {
-              dropX.current = -1;
+            if (dropYRef.current > ch + 50) {
+              dropXRef.current = -1;
               setGameState(STATES.ENDED);
               forceRender();
               rafRef.current = null;
               return;
             }
           }
-        } else if (dropY.current > dims.h + 50) {
+        } else if (dropYRef.current > ch + 50) {
           // Caja pasó de largo por debajo (sin torre debajo — fallo)
-          dropX.current = -1;
+          dropXRef.current = -1;
           setGameState(STATES.ENDED);
           forceRender();
           rafRef.current = null;
@@ -240,20 +273,23 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [gameState, dims.w, dims.h, forceRender, boxW, boxH, dropSpeed, speedBump, overlapMin, baseSpeed]);
+  }, [gameState, cw, ch, gameW, offsetX, forceRender, boxW, boxH, dropSpeedPxS, speedBumpPxS, overlapMin]);
 
-  /* ─────────── Drop (tap) ─────────── */
+  /* ─────────── Drop (tap) con Cooldown ─────────── */
   const handleTap = useCallback(() => {
     if (gameState !== STATES.PLAYING) return;
-    if (dropX.current >= 0) return; // ya hay una caja cayendo
+    if (dropXRef.current >= 0) return;                              // ya hay caja cayendo
+    if (Date.now() - lastDropTimeRef.current < COOLDOWN_MS) return; // en cooldown
 
-    dropX.current = craneX.current;
-    dropY.current = CRANE_Y + 30; // empieza justo debajo de la grúa
+    dropXRef.current        = craneXRef.current;
+    dropYRef.current        = craneY + cableExt;
+    lastDropTimeRef.current = Date.now();
     setGameState(STATES.DROPPING);
-  }, [gameState]);
+  }, [gameState, craneY, cableExt]);
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.DropTheBoxGame);
   /* ─────────── Enviar puntuación al terminar ─────────── */
+  const { submit } = useSubmitScore(userId, GAME_IDS.DropTheBoxGame);
+
   useEffect(() => {
     if (gameState === STATES.ENDED && !scoreSubmitted.current) {
       scoreSubmitted.current = true;
@@ -280,11 +316,30 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
     };
   }, []);
 
-  /* ─────────── Render ─────────── */
+  /* ═══════════════════════════════════════════════════════
+     RENDER
+     ═══════════════════════════════════════════════════════ */
   const isPlaying  = gameState === STATES.PLAYING || gameState === STATES.DROPPING;
   const isEnded    = gameState === STATES.ENDED;
-  const towerBoxes = tower.current;
-  const cam        = cameraOff.current;
+  const towerBoxes = towerRef.current;
+  const cam        = cameraOffRef.current;
+
+  /* ── Cooldown: feedback visual ── */
+  const now              = Date.now();
+  const inCooldown       = isPlaying
+                           && dropXRef.current < 0
+                           && lastDropTimeRef.current > 0
+                           && (now - lastDropTimeRef.current < COOLDOWN_MS);
+  const cooldownProgress = inCooldown
+    ? Math.min(1, (now - lastDropTimeRef.current) / COOLDOWN_MS)
+    : 1;
+  const craneOpacity     = inCooldown ? 0.35 + 0.65 * cooldownProgress : 1;
+
+  /* ── Dimensiones proporcionales de piezas de la grúa ── */
+  const indicW   = Math.max(16, Math.round(gameW * 0.07));
+  const indicH   = Math.max(4, Math.round(gameW * 0.02));
+  const cableW   = Math.max(1, Math.round(gameW * 0.005));
+  const coolBarH = Math.max(3, Math.round(gameW * 0.008));
 
   return (
     <div
@@ -324,25 +379,27 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {/* ════════════════ ESCENA ════════════════ */}
       <div className="absolute inset-0">
 
-        {/* ── Grúa: brazo + cable + caja pendiente ── */}
-        {isPlaying && dropX.current < 0 && (
-          <>
+        {/* ── Grúa: cable + caja pendiente + indicador (con cooldown visual) ── */}
+        {isPlaying && dropXRef.current < 0 && (
+          <div style={{ opacity: craneOpacity, transition: "opacity 0.15s ease" }}>
             {/* Cable */}
             <div
-              className="absolute bg-white/20"
+              className="absolute"
               style={{
-                left: craneX.current + boxW / 2 - 1,
+                left: craneXRef.current + boxW / 2 - cableW / 2,
                 top: 0,
-                width: 2,
-                height: CRANE_Y + 30,
+                width: cableW,
+                height: craneY + cableExt,
+                background: inCooldown ? "#f87171" : "rgba(255,255,255,0.2)",
+                transition: "background 0.2s ease",
               }}
             />
             {/* Caja en la grúa */}
             <div
               className="absolute rounded-sm"
               style={{
-                left: craneX.current,
-                top: CRANE_Y + 30,
+                left: craneXRef.current,
+                top: craneY + cableExt,
                 width: boxW,
                 height: boxH,
                 background: getBoxColor(scoreRef.current + 1),
@@ -353,22 +410,44 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
             <div
               className="absolute bg-gray-500 rounded-sm"
               style={{
-                left: craneX.current + boxW / 2 - 14,
-                top: CRANE_Y - 4,
-                width: 28,
-                height: 8,
+                left: craneXRef.current + boxW / 2 - indicW / 2,
+                top: craneY - Math.round(gameW * 0.01),
+                width: indicW,
+                height: indicH,
               }}
             />
-          </>
+            {/* Barra de cooldown bajo la caja pendiente */}
+            {inCooldown && (
+              <div
+                className="absolute rounded-full overflow-hidden"
+                style={{
+                  left: craneXRef.current,
+                  top: craneY + cableExt + boxH + Math.round(gameW * 0.012),
+                  width: boxW,
+                  height: coolBarH,
+                  background: "rgba(255,255,255,0.08)",
+                }}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${cooldownProgress * 100}%`,
+                    background: "linear-gradient(90deg, #f87171, #22d3ee)",
+                    transition: "width 0.05s linear",
+                  }}
+                />
+              </div>
+            )}
+          </div>
         )}
 
         {/* ── Caja cayendo ── */}
-        {dropX.current >= 0 && (
+        {dropXRef.current >= 0 && (
           <div
             className="absolute rounded-sm"
             style={{
-              left: dropX.current,
-              top: dropY.current,
+              left: dropXRef.current,
+              top: dropYRef.current,
               width: boxW,
               height: boxH,
               background: getBoxColor(scoreRef.current + 1),
@@ -426,8 +505,11 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
       )}
 
       {/* ── Hint PLAYING ── */}
-      {gameState === STATES.PLAYING && score === 0 && dropX.current < 0 && (
-        <div className="absolute inset-x-0 flex justify-center pointer-events-none z-3" style={{ top: CRANE_Y + boxH + 60 }}>
+      {gameState === STATES.PLAYING && score === 0 && dropXRef.current < 0 && (
+        <div
+          className="absolute inset-x-0 flex justify-center pointer-events-none z-3"
+          style={{ top: craneY + boxH + cableExt + Math.round(gameW * 0.12) }}
+        >
           <span className="text-sm font-medium text-white/20 tracking-wider uppercase animate-pulse">
             {t("dropthebox.tap_drop")}
           </span>
@@ -438,7 +520,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {isPlaying && score >= 5 && (
         <div className="absolute bottom-28 left-0 right-0 flex justify-center pointer-events-none z-3">
           <span className="text-xs text-white/15 font-medium">
-            {t("dropthebox.speed")} ×{(craneSpeed.current / baseSpeed).toFixed(1)}
+            {t("dropthebox.speed")} ×{(craneSpeedRef.current / baseCraneSpeed).toFixed(1)}
           </span>
         </div>
       )}
