@@ -20,9 +20,9 @@ import { useLanguage } from "../../i18n";
 /* ─────────── Constantes ─────────── */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
 
-const INITIAL_TIME = 2.0;   // segundos primera ronda
+const INITIAL_TIME = 3.5;   // segundos primera ronda (generoso para entrar en calor)
 const MIN_TIME     = 0.6;   // mínimo absoluto
-const TIME_DECAY   = 0.04;  // reducción por ronda
+const TIME_DECAY   = 0.06;  // reducción por ronda (baja más rápido para compensar)
 const TICK_MS      = 16;    // resolución del timer (~60fps)
 
 const CHOICES = ["rock", "paper", "scissors"];
@@ -270,10 +270,10 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {/* ════════════ PLAYING STATE ════════════ */}
       {isPlaying && (
         <div className="absolute inset-x-0 top-24 bottom-56 sm:bottom-64 z-2 flex flex-col items-center justify-center px-4">
-          {/* CPU choice — icono gigante */}
+          {/* Rival choice — icono gigante */}
           <div className="flex flex-col items-center shrink-0">
             <span className="text-xs uppercase tracking-widest text-white/30 font-bold mb-1">
-              CPU
+              🎲 RIVAL
             </span>
             <span
               className="text-7xl sm:text-8xl leading-none"

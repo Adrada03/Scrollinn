@@ -96,7 +96,7 @@ const translations = {
     "desc.memory-loop":    "Memoriza la secuencia y repítela sin fallar",
     "desc.higher-lower":   "¿El siguiente número será mayor o menor?",
     "desc.vector-leap":    "Ajusta ángulo y fuerza para aterrizar en la plataforma",
-    "desc.rps-duel":       "Cumple la orden de la CPU antes de que se acabe el tiempo",
+    "desc.rps-duel":       "¡Gana, pierde o empata según la orden antes de que se acabe el tiempo!",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -340,7 +340,7 @@ const translations = {
     "desc.memory-loop":    "Memorize the sequence and repeat it without mistakes",
     "desc.higher-lower":   "Will the next number be higher or lower?",
     "desc.vector-leap":    "Set angle and power to land on the platform",
-    "desc.rps-duel":       "Fulfill the CPU's order before time runs out",
+    "desc.rps-duel":       "Win, lose or draw on command before time runs out!",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
