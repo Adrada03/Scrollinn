@@ -535,7 +535,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
           subtitle={errorMsg || t("perfectcircle.subtitle")}
           onReplay={handleReplay}
           onNext={onNextGame}
-          ranking={ranking}
+          ranking={ranking.map(r => ({ ...r, score: `${(Number(r.score) / 10).toFixed(1)}%` }))}
           scoreMessage={scoreMessage}
           isLoading={isSubmittingScore}
         />
