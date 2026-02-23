@@ -291,6 +291,7 @@ const translations = {
 
     // ── Gravity Draw ─────────────────────────────
     "gravitydraw.instruction": "Dibuja una línea para dirigir la bola",
+    "gravitydraw.drawHere":     "Dibuja aquí",
     "gravitydraw.subtitle":    "rondas superadas",
     "gravitydraw.success":     "¡Goool!",
 
@@ -575,6 +576,7 @@ const translations = {
 
     // ── Gravity Draw ─────────────────────────────
     "gravitydraw.instruction": "Draw a line to guide the ball",
+    "gravitydraw.drawHere":     "Draw here",
     "gravitydraw.subtitle":    "rounds cleared",
     "gravitydraw.success":     "Goaal!",
 

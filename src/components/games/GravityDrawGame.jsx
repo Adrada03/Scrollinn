@@ -25,7 +25,7 @@ import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 import { useLanguage } from "../../i18n";
 
 /* ═══════════════════ CONSTANTES ═══════════════════ */
-const PHASE = { IDLE: 0, DRAW: 1, SIM: 2, SETTLING: 5, SCORED: 3, ENDED: 4 };
+const PHASE = { IDLE: 0, DRAW: 1, PRE_SIM: 6, SIM: 2, SETTLING: 5, SCORED: 3, ENDED: 4 };
 
 // Fase SCORED: delay antes de siguiente ronda
 const SCORED_DELAY_MS = 900;
@@ -54,6 +54,8 @@ const MAX_VEL       = 18;       // clamp de velocidad
 const DRAW_TIME_BASE = 1550;    // ms para dibujar (ronda 0)
 const DRAW_TIME_MIN  = 1000;    // mínimo ms
 const DRAW_TIME_SHRINK = 45;    // ms menos por ronda
+const SIM_TIMEOUT_MS = 5000;    // 5 s máximo en fase SIM
+const PRE_SIM_DELAY  = 500;     // ms de pausa antes de soltar la bola (ajustable)
 
 // Colores
 const BG_COLOR      = "#0d1117";
@@ -162,6 +164,10 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
     // Fase SCORED
     scoredTime: 0,       // timestamp de cuando anotó
     scoredAlpha: 1,      // alpha del texto de éxito
+    // Fase SIM timeout
+    simStartTime: 0,
+    // PRE_SIM
+    preSimTime: 0,
     // Área de juego confinada (se recalcula)
     gameW: 450, offsetX: 0, ballR: BASE_BALL_R, goalS: BASE_GOAL_S,
   }).current;
@@ -252,7 +258,7 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
 
   /* ─────────── MAIN GAME LOOP ─────────── */
   useEffect(() => {
-    if (phase !== PHASE.DRAW && phase !== PHASE.SIM && phase !== PHASE.SCORED) return;
+    if (phase !== PHASE.DRAW && phase !== PHASE.PRE_SIM && phase !== PHASE.SIM && phase !== PHASE.SETTLING && phase !== PHASE.SCORED) return;
     if (!isActive) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -273,8 +279,25 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
     function loop(now) {
       if (phaseRef.current === PHASE.ENDED || phaseRef.current === PHASE.IDLE) return;
 
+      /* ── FASE PRE_SIM: pausa antes de soltar bola ── */
+      if (g.phase === PHASE.PRE_SIM) {
+        if (now - g.preSimTime >= PRE_SIM_DELAY) {
+          g.phase = PHASE.SIM;
+          phaseRef.current = PHASE.SIM;
+          g.simStartTime = now;
+          setPhase(PHASE.SIM);
+        }
+      }
+
       /* ── FASE SETTLING: bola cae dentro de la canasta con física real ── */
       if (g.phase === PHASE.SETTLING) {
+        // Timeout compartido con SIM
+        if (now - g.simStartTime > SIM_TIMEOUT_MS) {
+          g.phase = PHASE.ENDED;
+          phaseRef.current = PHASE.ENDED;
+          setPhase(PHASE.ENDED);
+          return;
+        }
         const sdt = Math.min((now - g.lastTime) / 16.667, 3);
         // Gravedad completa + rozamiento leve (simula aire/red)
         g.ballVy += GRAVITY * sdt;
@@ -337,14 +360,22 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
             }
           }
           g.drawing = false;
-          g.phase = PHASE.SIM;
-          phaseRef.current = PHASE.SIM;
-          setPhase(PHASE.SIM);
+          g.phase = PHASE.PRE_SIM;
+          phaseRef.current = PHASE.PRE_SIM;
+          g.preSimTime = now;
+          setPhase(PHASE.PRE_SIM);
         }
       }
 
       /* ── FASE SIM: físicas ── */
       if (g.phase === PHASE.SIM) {
+        // Timeout 5 s
+        if (now - g.simStartTime > SIM_TIMEOUT_MS) {
+          g.phase = PHASE.ENDED;
+          phaseRef.current = PHASE.ENDED;
+          setPhase(PHASE.ENDED);
+          return;
+        }
         // Gravedad
         g.ballVy += GRAVITY * dt;
         // Clamp velocidad
@@ -431,26 +462,42 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
         ctx.beginPath(); ctx.moveTo(leftW, y); ctx.lineTo(rightW, y); ctx.stroke();
       }
 
-      // ── Zona de dibujo (sutil, solo en DRAW) ──
+      // ── Zona de dibujo (banda entre bola y canasta, solo en DRAW) ──
       if (g.phase === PHASE.DRAW && !g.line) {
-        const drawZoneY = g.ballY + ballR * 3;
-        // Línea divisoria sutil
-        ctx.save();
-        ctx.setLineDash([8, 6]);
-        ctx.strokeStyle = "rgba(0,229,255,0.12)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(leftW, drawZoneY);
-        ctx.lineTo(rightW, drawZoneY);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        // Gradiente muy tenue en la zona válida
-        const zoneGrad = ctx.createLinearGradient(0, drawZoneY, 0, drawZoneY + 60);
-        zoneGrad.addColorStop(0, "rgba(0,229,255,0.04)");
-        zoneGrad.addColorStop(1, "rgba(0,229,255,0)");
-        ctx.fillStyle = zoneGrad;
-        ctx.fillRect(leftW, drawZoneY, gameW, H - drawZoneY);
-        ctx.restore();
+        const zoneTop = g.ballY + ballR * 3.2;
+        const zoneBot = g.goalY - goalS * 0.4;
+        if (zoneBot > zoneTop + 10) {
+          ctx.save();
+          const zoneH = zoneBot - zoneTop;
+          // Líneas divisorias visibles (arriba y abajo de la zona)
+          ctx.setLineDash([10, 6]);
+          ctx.strokeStyle = "rgba(255,170,50,0.35)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(leftW, zoneTop); ctx.lineTo(rightW, zoneTop);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(leftW, zoneBot); ctx.lineTo(rightW, zoneBot);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          // Relleno suave de la zona
+          const zoneGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneBot);
+          zoneGrad.addColorStop(0, "rgba(255,170,50,0)");
+          zoneGrad.addColorStop(0.2, "rgba(255,170,50,0.07)");
+          zoneGrad.addColorStop(0.5, "rgba(255,170,50,0.09)");
+          zoneGrad.addColorStop(0.8, "rgba(255,170,50,0.07)");
+          zoneGrad.addColorStop(1, "rgba(255,170,50,0)");
+          ctx.fillStyle = zoneGrad;
+          ctx.fillRect(leftW, zoneTop, gameW, zoneH);
+          // Texto centrado grande en la zona
+          if (!g.drawing) {
+            ctx.fillStyle = "rgba(255,190,80,0.30)";
+            ctx.font = "700 16px system-ui, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(t("gravitydraw.drawHere"), leftW + gameW / 2, zoneTop + zoneH / 2 + 5);
+          }
+          ctx.restore();
+        }
       }
 
       // ══ GENERADOR DE CONTENCIÓN AVANZADO ══
@@ -898,12 +945,12 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
         ctx.restore();
       }
 
-      // Barra de tiempo (solo en DRAW) — dentro del área de juego
+      // Barra de tiempo (solo en DRAW) — dentro del área de juego, debajo del header
       if (g.phase === PHASE.DRAW) {
         const barW = gameW - 40;
         const barH = 6;
         const barX = leftW + 20;
-        const barY = 18;
+        const barY = 52;
         const pct = g.drawTimeLeft / g.drawTimeCur;
         // Fondo
         ctx.fillStyle = TIMER_BG;
@@ -912,6 +959,27 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
         ctx.fill();
         // Fill
         ctx.fillStyle = TIMER_FILL;
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW * pct, barH, 3);
+        ctx.fill();
+      }
+
+      // Barra de tiempo SIM (cuenta atrás 5 s)
+      if (g.phase === PHASE.SIM || g.phase === PHASE.SETTLING) {
+        const barW = gameW - 40;
+        const barH = 6;
+        const barX = leftW + 20;
+        const barY = 52;
+        const elapsed = now - g.simStartTime;
+        const pct = Math.max(0, 1 - elapsed / SIM_TIMEOUT_MS);
+        // Fondo
+        ctx.fillStyle = TIMER_BG;
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW, barH, 3);
+        ctx.fill();
+        // Fill — cambia de cyan a rojo cuando queda poco
+        const simColor = pct > 0.3 ? "#ff6b00" : "#ff2244";
+        ctx.fillStyle = simColor;
         ctx.beginPath();
         ctx.roundRect(barX, barY, barW * pct, barH, 3);
         ctx.fill();
@@ -928,7 +996,7 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
         ctx.fillStyle = "rgba(255,255,255,0.35)";
         ctx.font = "600 14px system-ui, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(t("gravitydraw.instruction"), leftW + gameW / 2, 50);
+        ctx.fillText(t("gravitydraw.instruction"), leftW + gameW / 2, 76);
       }
 
       rafRef.current = requestAnimationFrame(loop);
@@ -956,8 +1024,10 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
     if (g.phase !== PHASE.DRAW || g.line) return;
     e.preventDefault();
     const pos = getPos(e);
-    // La línea debe empezar bastante por debajo de la bola
-    if (pos.y < g.ballY + g.ballR * 3) return;
+    // La línea debe empezar dentro de la zona de dibujo (entre bola y canasta)
+    const zoneTop = g.ballY + g.ballR * 3.2;
+    const zoneBot = g.goalY - g.goalS * 0.4;
+    if (pos.y < zoneTop || pos.y > zoneBot) return;
     g.drawing = true;
     g.drawStart = pos;
     g.drawEnd = pos;
@@ -979,10 +1049,11 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
       // Mínimo de longitud para aceptar línea
       if (Math.hypot(dx, dy) > 15) {
         g.line = [g.drawStart.x, g.drawStart.y, g.drawEnd.x, g.drawEnd.y];
-        // Transición a simulación
-        g.phase = PHASE.SIM;
-        phaseRef.current = PHASE.SIM;
-        setPhase(PHASE.SIM);
+        // Transición a pre-simulación (delay antes de soltar bola)
+        g.phase = PHASE.PRE_SIM;
+        phaseRef.current = PHASE.PRE_SIM;
+        g.preSimTime = performance.now();
+        setPhase(PHASE.PRE_SIM);
       }
     }
   }, [g]);
@@ -1004,9 +1075,10 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
         const dy = g.drawEnd.y - g.drawStart.y;
         if (Math.hypot(dx, dy) > 15) {
           g.line = [g.drawStart.x, g.drawStart.y, g.drawEnd.x, g.drawEnd.y];
-          g.phase = PHASE.SIM;
-          phaseRef.current = PHASE.SIM;
-          setPhase(PHASE.SIM);
+          g.phase = PHASE.PRE_SIM;
+          phaseRef.current = PHASE.PRE_SIM;
+          g.preSimTime = performance.now();
+          setPhase(PHASE.PRE_SIM);
         }
       }
     };
@@ -1024,7 +1096,7 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
   const scrollLockTORef = useRef(null);
   useEffect(() => {
     const playing =
-      phase === PHASE.DRAW || phase === PHASE.SIM || phase === PHASE.SETTLING || phase === PHASE.SCORED;
+      phase === PHASE.DRAW || phase === PHASE.PRE_SIM || phase === PHASE.SIM || phase === PHASE.SETTLING || phase === PHASE.SCORED;
     if (playing) {
       clearTimeout(scrollLockTORef.current);
       onScrollLock?.(true);
