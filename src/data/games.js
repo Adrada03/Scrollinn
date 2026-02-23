@@ -228,6 +228,43 @@ const GAMES = [
     logo: "/logo-orbitsniper.png",
     gameComponent: "OrbitSniper",
   },
+  {
+    id: "shadow-dash",
+    title: "Shadow Dash",
+    description: "Corre cuando el guardia duerme, escóndete cuando mira",
+    color: "bg-zinc-900",
+    emoji: "🏃",
+    logo: "/logo-shadowdash.png",
+    gameComponent: "ShadowDash",
+  },
+  {
+    id: "gravity-draw",
+    title: "Gravity Draw",
+    description: "Dibuja una línea para guiar la bola hasta la meta",
+    color: "bg-slate-950",
+    emoji: "✏️",
+    logo: "/logo-gravitydraw.png",
+    gameComponent: "GravityDraw",
+  },
+  {
+    id: "crossroad-dart",
+    title: "Crossroad Dart",
+    description: "Cruza la intersección esquivando el tráfico",
+    color: "bg-zinc-900",
+    emoji: "🚗",
+    logo: "/logo-crossroaddart.png",
+    gameComponent: "CrossroadDart",
+  },
+  {
+    id: "perfect-circle",
+    title: "Perfect Circle",
+    description: "Dibuja un círculo perfecto de un solo trazo",
+    color: "bg-slate-950",
+    emoji: "⭕",
+    logo: "/logo-perfectcircle.png",
+    gameComponent: "PerfectCircle",
+    skipCountdown: true,
+  },
 ];
 
 export default GAMES;

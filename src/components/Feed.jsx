@@ -43,6 +43,10 @@ import HigherLowerGame from "./games/HigherLowerGame";
 import VectorLeapGame from "./games/VectorLeapGame";
 import RPSDuelGame from "./games/RPSDuelGame";
 import OrbitSniperGame from "./games/OrbitSniperGame";
+import ShadowDashGame from "./games/ShadowDashGame";
+import GravityDrawGame from "./games/GravityDrawGame";
+import CrossroadDartGame from "./games/CrossroadDartGame";
+import PerfectCircleGame from "./games/PerfectCircleGame";
 
 /** Registro de componentes reales de juego */
 const GAME_COMPONENTS = {
@@ -70,6 +74,10 @@ const GAME_COMPONENTS = {
   VectorLeap: VectorLeapGame,
   RPSDuel: RPSDuelGame,
   OrbitSniper: OrbitSniperGame,
+  ShadowDash: ShadowDashGame,
+  GravityDraw: GravityDrawGame,
+  CrossroadDart: CrossroadDartGame,
+  PerfectCircle: PerfectCircleGame,
 };
 
 /* ================================================================

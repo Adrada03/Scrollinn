@@ -98,6 +98,17 @@ const translations = {
     "desc.vector-leap":    "Ajusta ángulo y fuerza para aterrizar en la plataforma",
     "desc.rps-duel":       "¡Gana, pierde o empata según la orden antes de que se acabe el tiempo!",
     "desc.orbit-sniper":   "Dispara el satélite en el momento justo para cambiar de planeta",
+    "desc.shadow-dash":    "Corre cuando el guardia duerme, escóndete cuando mira",
+    "desc.gravity-draw":   "Dibuja una línea para guiar la bola hasta la meta",
+    "desc.crossroad-dart": "Cruza las intersecciones esquivando el tráfico",
+    "desc.perfect-circle": "Dibuja un círculo perfecto de un solo trazo",
+
+    // ── PerfectCircle ─────────────────────────────
+    "perfectcircle.instruction": "Dibuja un círculo de un solo trazo",
+    "perfectcircle.subtitle":    "¿Qué tan perfecto fue tu círculo?",
+    "perfectcircle.too_short":   "Trazo muy corto",
+    "perfectcircle.too_small":   "Círculo demasiado pequeño",
+    "perfectcircle.incomplete":  "Círculo incompleto",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Desliza para cortar los verdes 🟢",
@@ -262,6 +273,31 @@ const translations = {
     "overheat.remaining": "restantes",
     "overheat.rounds":    "rondas",
     "overheat.hold":      "¡NO TOQUES!",
+
+    // ── Shadow Dash ─────────────────────────────
+    "shadowdash.instruction": "Mantén pulsado para correr, suelta para esconderte",
+    "shadowdash.panic":       "Pánico",
+    "shadowdash.asleep":      "Dormido",
+    "shadowdash.warning":     "¡Cuidado!",
+    "shadowdash.watching":    "¡Mirando!",
+    "shadowdash.running":     "Corriendo",
+    "shadowdash.hidden":      "Escondido",
+    "shadowdash.hold_to_run": "Pulsa para correr · Suelta para esconderte",
+    "shadowdash.bonus_panic": "+{{amount}} Pánico",
+    "shadowdash.subtitle":    "metros",
+    "shadowdash.death_eye":    "¡Te pilló el ojo!",
+    "shadowdash.death_panic":  "Muerto de pánico",
+
+    // ── Gravity Draw ─────────────────────────────
+    "gravitydraw.instruction": "Dibuja una línea para dirigir la bola",
+    "gravitydraw.subtitle":    "rondas superadas",
+    "gravitydraw.success":     "¡Goool!",
+
+    // ── Crossroad Dart ───────────────────────────
+    "crossroaddart.tap":      "¡Toca para cruzar!",
+    "crossroaddart.subtitle": "cruces",
+    "crossroaddart.cross":    "cruce",
+    "crossroaddart.crosses":  "cruces",
   },
 
   en: {
@@ -348,6 +384,17 @@ const translations = {
     "desc.vector-leap":    "Set angle and power to land on the platform",
     "desc.rps-duel":       "Win, lose or draw on command before time runs out!",
     "desc.orbit-sniper":   "Shoot the satellite at the right moment to switch planets",
+    "desc.shadow-dash":    "Run while the guard sleeps, hide when he looks",
+    "desc.gravity-draw":   "Draw a line to guide the ball to the goal",
+    "desc.crossroad-dart": "Cross the intersections dodging the traffic",
+    "desc.perfect-circle": "Draw a perfect circle in a single stroke",
+
+    // ── PerfectCircle ─────────────────────────────
+    "perfectcircle.instruction": "Draw a circle in a single stroke",
+    "perfectcircle.subtitle":    "How perfect was your circle?",
+    "perfectcircle.too_short":   "Stroke too short",
+    "perfectcircle.too_small":   "Circle too small",
+    "perfectcircle.incomplete":  "Incomplete circle",
 
     // ── CircleNinja ─────────────────────────────
     "circleninja.instruction":      "Swipe to cut the green ones 🟢",
@@ -509,6 +556,31 @@ const translations = {
     "overheat.remaining": "left",
     "overheat.rounds":    "rounds",
     "overheat.hold":      "DON'T TOUCH!",
+
+    // ── Shadow Dash ─────────────────────────────
+    "shadowdash.instruction": "Hold to run, release to hide",
+    "shadowdash.panic":       "Panic",
+    "shadowdash.asleep":      "Asleep",
+    "shadowdash.warning":     "Warning!",
+    "shadowdash.watching":    "Watching!",
+    "shadowdash.running":     "Running",
+    "shadowdash.hidden":      "Hidden",
+    "shadowdash.hold_to_run": "Hold to run · Release to hide",
+    "shadowdash.bonus_panic": "+{{amount}} Panic",
+    "shadowdash.subtitle":    "meters",
+    "shadowdash.death_eye":    "The eye caught you!",
+    "shadowdash.death_panic":  "Died of panic",
+
+    // ── Gravity Draw ─────────────────────────────
+    "gravitydraw.instruction": "Draw a line to guide the ball",
+    "gravitydraw.subtitle":    "rounds cleared",
+    "gravitydraw.success":     "Goaal!",
+
+    // ── Crossroad Dart ───────────────────────────
+    "crossroaddart.tap":      "Tap to dash!",
+    "crossroaddart.subtitle": "crosses",
+    "crossroaddart.cross":    "cross",
+    "crossroaddart.crosses":  "crosses",
   },
 };
 
