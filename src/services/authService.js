@@ -22,7 +22,7 @@ const SALT_ROUNDS = 10;
  * @param {string} password
  * @returns {Promise<{ ok: boolean, action?: string, user?: { id, username }, error?: string }>}
  */
-export async function authenticate(username, password) {
+export async function authenticate(username, password, mode = 'auto') {
   // Validaciones
   if (!username || !password) {
     return { ok: false, error: t('svc.username_required') };
@@ -38,13 +38,18 @@ export async function authenticate(username, password) {
     // Buscar si el usuario ya existe
     const { data: existing, error: selectError } = await supabase
       .from('users')
-      .select('id, username, password_hash')
+      .select('id, username, password_hash, xp')
       .eq('username', username)
       .maybeSingle();
 
     if (selectError) throw selectError;
 
     if (existing) {
+      // Modo registro: el nombre ya está cogido
+      if (mode === 'register') {
+        return { ok: false, error: t('svc.username_taken') };
+      }
+
       // === Usuario existe → verificar contraseña ===
       const match = await bcrypt.compare(password, existing.password_hash);
 
@@ -55,8 +60,13 @@ export async function authenticate(username, password) {
       return {
         ok: true,
         action: 'logged_in',
-        user: { id: existing.id, username: existing.username },
+        user: { id: existing.id, username: existing.username, xp: existing.xp ?? 0 },
       };
+    }
+
+    // Modo login: el usuario no existe
+    if (mode === 'login') {
+      return { ok: false, error: t('svc.user_not_found') };
     }
 
     // === Usuario nuevo → crear cuenta ===
@@ -65,7 +75,7 @@ export async function authenticate(username, password) {
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([{ username, password_hash: hash }])
-      .select('id, username')
+      .select('id, username, xp')
       .single();
 
     if (insertError) {
@@ -79,7 +89,7 @@ export async function authenticate(username, password) {
     return {
       ok: true,
       action: 'registered',
-      user: { id: newUser.id, username: newUser.username },
+      user: { id: newUser.id, username: newUser.username, xp: newUser.xp ?? 0 },
     };
   } catch (err) {
     console.error('authService error:', err);

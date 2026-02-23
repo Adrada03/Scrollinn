@@ -14,6 +14,7 @@
  */
 
 import { useLanguage } from "../i18n";
+import { getLevelFromXP, getTierColorStyles, getTierTextColor } from "../utils/leveling";
 
 /* ── Banderas inline (SVG) ── */
 const FlagGB = () => (
@@ -36,6 +37,11 @@ const FlagES = () => (
 const TopNav = ({ onOpenAuth, currentUser }) => {
   const { lang, toggleLang } = useLanguage();
 
+  const xp = currentUser?.xp ?? 0;
+  const level = currentUser ? getLevelFromXP(xp) : null;
+  const tierStyles = level ? getTierColorStyles(level) : '';
+  const tierText = level ? getTierTextColor(level) : '';
+
   return (
     <nav className="fixed top-0 left-0 w-full z-50 pointer-events-none">
       {/* Degradado para legibilidad */}
@@ -49,21 +55,35 @@ const TopNav = ({ onOpenAuth, currentUser }) => {
           className="pointer-events-auto flex items-center gap-2 cursor-pointer group"
           aria-label={currentUser ? "Mi cuenta" : "Registrarse"}
         >
-          <div
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors
-              bg-black/30 backdrop-blur-sm border border-white/15 hover:bg-black/50
-              ${currentUser ? "!bg-emerald-500/40 !border-emerald-400/50 ring-1 ring-emerald-400/25" : ""}`}
-          >
-            {currentUser ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-emerald-300 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
+          <div className="relative">
+            <div
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors
+                bg-black/30 backdrop-blur-sm border border-white/15 hover:bg-black/50
+                ${currentUser ? `!bg-emerald-500/40 !border-transparent ${tierStyles}` : ""}`}
+            >
+              {currentUser ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-emerald-300 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              )}
+            </div>
+
+            {/* Badge de nivel */}
+            {currentUser && level != null && (
+              <div
+                className={`absolute -bottom-1 -right-1 translate-x-1/4 translate-y-1/4
+                  w-5 h-5 rounded-full bg-gray-900 border border-white/20
+                  flex items-center justify-center ${tierText}`}
+              >
+                <span className="text-[10px] font-bold leading-none">{level}</span>
+              </div>
             )}
           </div>
+
           {currentUser && (
             <span className="text-xs font-semibold text-emerald-300 drop-shadow-md hidden sm:inline">
               {currentUser.username}
