@@ -89,5 +89,6 @@ export const GAME_IDS = {
   ShadowDashGame: 'shadow-dash',
   GravityDrawGame: 'gravity-draw',
   CrossroadDartGame: 'crossroad-dart',
+  MentalMathGame: 'mental-math',
   PerfectCircleGame: 'perfect-circle',
 };

@@ -101,6 +101,7 @@ const translations = {
     "desc.shadow-dash":    "Corre cuando el guardia duerme, escóndete cuando mira",
     "desc.gravity-draw":   "Dibuja una línea para guiar la bola hasta la meta",
     "desc.crossroad-dart": "Cruza las intersecciones esquivando el tráfico",
+    "desc.mental-math":    "Resuelve multiplicaciones antes de que se acabe el tiempo",
     "desc.perfect-circle": "Dibuja un círculo perfecto de un solo trazo",
 
     // ── PerfectCircle ─────────────────────────────
@@ -387,6 +388,7 @@ const translations = {
     "desc.shadow-dash":    "Run while the guard sleeps, hide when he looks",
     "desc.gravity-draw":   "Draw a line to guide the ball to the goal",
     "desc.crossroad-dart": "Cross the intersections dodging the traffic",
+    "desc.mental-math":    "Solve multiplications before time runs out",
     "desc.perfect-circle": "Draw a perfect circle in a single stroke",
 
     // ── PerfectCircle ─────────────────────────────

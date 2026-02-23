@@ -290,10 +290,10 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
         baseScore -= ((maxRatio - 0.15) * 200); 
     }
 
-    // --- 7. Score final ---
-    const pctScore = Math.round(Math.max(0, Math.min(100, baseScore)) * 10) / 10;
+    // --- 7. Score final (entero 0-1000 para BD, fixed-point ×10) ---
+    const scoreInt = Math.round(Math.max(0, Math.min(100, baseScore)) * 10);
 
-    return { score: pctScore, cx, cy, radius, error: null };
+    return { score: scoreInt, cx, cy, radius, error: null };
   }, [t]);
 
   /* ─────────── Finish drawing → Analyze → Reveal ─────────── */
@@ -346,7 +346,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
     const tick = (now) => {
       const progress = Math.min((now - start) / duration, 1);
       const eased = 1 - (1 - progress) ** 3;
-      setAnimatedScore(Math.round(eased * target * 10) / 10);
+      setAnimatedScore(Math.round(eased * target));
       if (progress < 1) counterRafRef.current = requestAnimationFrame(tick);
     };
     counterRafRef.current = requestAnimationFrame(tick);
@@ -510,7 +510,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
                 textShadow: "0 0 40px rgba(34,211,238,0.5), 0 0 80px rgba(74,222,128,0.3)",
               }}
             >
-              {animatedScore.toFixed(1)}%
+              {(animatedScore / 10).toFixed(1)}%
             </p>
             <p className="text-slate-400 text-sm font-medium tracking-wide mt-1">
               {t("perfectcircle.subtitle")}
@@ -531,7 +531,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {isEnded && (
         <GameOverPanel
           title="Game Over"
-          score={`${displayScore?.toFixed(1) ?? 0}%`}
+          score={`${displayScore != null ? (displayScore / 10).toFixed(1) : '0'}%`}
           subtitle={errorMsg || t("perfectcircle.subtitle")}
           onReplay={handleReplay}
           onNext={onNextGame}

@@ -256,6 +256,15 @@ const GAMES = [
     gameComponent: "CrossroadDart",
   },
   {
+    id: "mental-math",
+    title: "Mental Math",
+    description: "Resuelve multiplicaciones antes de que se acabe el tiempo",
+    color: "bg-indigo-900",
+    emoji: "🧮",
+    logo: "/logo-mentalmath.png",
+    gameComponent: "MentalMath",
+  },
+  {
     id: "perfect-circle",
     title: "Perfect Circle",
     description: "Dibuja un círculo perfecto de un solo trazo",
