@@ -127,13 +127,13 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
             className="fixed inset-0 z-[81] flex items-center justify-center p-4 pointer-events-none"
           >
             <div
-              className="relative w-full max-w-sm pointer-events-auto rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-md pointer-events-auto rounded-3xl shadow-2xl overflow-hidden"
               style={{
                 background: "linear-gradient(180deg, #0c1222 0%, #070d1a 50%, #0a0f1e 100%)",
                 border: "1px solid rgba(148,163,184,0.08)",
               }}
             >
-              {/* ── Hexagonal texture overlay ── */}
+              {/* ── Dot texture overlay ── */}
               <div
                 className="absolute inset-0 opacity-[0.03] pointer-events-none"
                 style={{
@@ -145,9 +145,9 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
               {/* ── Top glow (behind avatar) ── */}
               {tierHex && (
                 <div
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-48 pointer-events-none"
+                  className="absolute top-0 left-0 w-48 h-36 pointer-events-none"
                   style={{
-                    background: `radial-gradient(ellipse at center top, ${tierHex}12 0%, ${tierHex}06 40%, transparent 70%)`,
+                    background: `radial-gradient(ellipse at top left, ${tierHex}12 0%, ${tierHex}06 40%, transparent 70%)`,
                   }}
                 />
               )}
@@ -187,16 +187,16 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                   CONTENIDO PRINCIPAL
                  ═══════════════════════════════════════════════════════════════ */}
               {!loading && user && (
-                <div className="relative px-6 pt-9 pb-6 flex flex-col items-center gap-5">
+                <div className="relative px-6 pt-7 pb-6 flex flex-col gap-4">
 
-                  {/* ── HERO: Avatar + Username + Badge ─────────────────────── */}
-                  <div className="flex flex-col items-center gap-2.5">
+                  {/* ── HERO: Avatar + Username + Badge (horizontal) ── */}
+                  <div className="flex items-center gap-4">
 
-                    {/* Avatar con doble anillo de neón y drop-shadow flotante */}
-                    <div className="relative">
+                    {/* Avatar con doble anillo de neón */}
+                    <div className="relative shrink-0">
                       {/* Outer glow ring */}
                       <div
-                        className="absolute inset-[-6px] rounded-full pointer-events-none"
+                        className="absolute inset-[-5px] rounded-full pointer-events-none"
                         style={{
                           background: `conic-gradient(from 180deg, ${tierHex}30, ${tierHex}08, ${tierHex}30, ${tierHex}08, ${tierHex}30)`,
                           filter: `blur(2px)`,
@@ -207,7 +207,7 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                         className="relative rounded-full p-[3px]"
                         style={{
                           background: `linear-gradient(135deg, ${tierHex}50, ${tierHex}18, ${tierHex}50)`,
-                          boxShadow: `0 0 30px ${tierHex}25, 0 8px 32px rgba(0,0,0,0.5)`,
+                          boxShadow: `0 0 24px ${tierHex}25, 0 6px 24px rgba(0,0,0,0.5)`,
                         }}
                       >
                         <div className="rounded-full overflow-hidden bg-slate-950">
@@ -223,22 +223,17 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                       {level != null && (
                         <div
                           className="absolute -bottom-1 -right-1 translate-x-1/4 translate-y-1/4"
-                          style={{
-                            filter: `drop-shadow(0 0 6px ${tierHex}60)`,
-                          }}
+                          style={{ filter: `drop-shadow(0 0 6px ${tierHex}60)` }}
                         >
                           <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                            className="w-7 h-7 rounded-full flex items-center justify-center"
                             style={{
                               background: `linear-gradient(145deg, ${tierHex}30, #0a0f1e 60%, ${tierHex}20)`,
                               border: `2px solid ${tierHex}80`,
                               boxShadow: `inset 0 1px 2px ${tierHex}30, 0 2px 8px rgba(0,0,0,0.6)`,
                             }}
                           >
-                            <span
-                              className="text-sm font-black leading-none"
-                              style={{ color: tierHex }}
-                            >
+                            <span className="text-xs font-black leading-none" style={{ color: tierHex }}>
                               {level}
                             </span>
                           </div>
@@ -246,195 +241,173 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                       )}
                     </div>
 
-                    {/* Username */}
-                    <h2
-                      className="text-xl font-black tracking-tight mt-1"
-                      style={{
-                        color: "#fff",
-                        textShadow: `0 0 20px ${tierHex ?? "#fff"}20`,
-                      }}
-                    >
-                      {user.username}
-                    </h2>
-
-                    {/* Insignia de rango metálica */}
-                    <div
-                      className="px-4 py-1 rounded-full relative overflow-hidden"
-                      style={{
-                        background: `linear-gradient(135deg, ${tierHex}15, ${tierHex}05)`,
-                        border: `1px solid ${tierHex}30`,
-                        boxShadow: `inset 0 1px 0 ${tierHex}15, 0 0 12px ${tierHex}10`,
-                      }}
-                    >
-                      {/* Gloss effect */}
-                      <div
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 50%)",
-                        }}
-                      />
-                      <span
-                        className="relative text-[10px] font-black uppercase tracking-[0.25em]"
-                        style={{ color: tierHex }}
+                    {/* Info column */}
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                      {/* Username */}
+                      <h2
+                        className="text-xl font-black tracking-tight truncate"
+                        style={{ color: "#fff", textShadow: `0 0 20px ${tierHex ?? "#fff"}20` }}
                       >
-                        {tierName}
-                      </span>
-                    </div>
+                        {user.username}
+                      </h2>
 
-                    {/* Barra de progreso de nivel */}
-                    <div className="flex flex-col items-center gap-1 w-full max-w-[180px]">
-                      <div
-                        className="w-full h-1 rounded-full overflow-hidden"
-                        style={{ background: `${tierHex}10` }}
-                      >
+                      {/* Insignia de rango metálica */}
+                      <div className="flex items-center gap-2">
                         <div
-                          className="h-full rounded-full transition-all duration-700"
+                          className="px-3 py-0.5 rounded-full relative overflow-hidden"
                           style={{
-                            width: `${progress}%`,
-                            background: `linear-gradient(90deg, ${tierHex}90, ${tierHex})`,
-                            boxShadow: `0 0 10px ${tierHex}80, 0 0 4px ${tierHex}40`,
+                            background: `linear-gradient(135deg, ${tierHex}15, ${tierHex}05)`,
+                            border: `1px solid ${tierHex}30`,
+                            boxShadow: `inset 0 1px 0 ${tierHex}15, 0 0 12px ${tierHex}10`,
                           }}
-                        />
+                        >
+                          <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 50%)" }}
+                          />
+                          <span className="relative text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: tierHex }}>
+                            {tierName}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Barra de progreso de nivel */}
+                      <div className="w-full max-w-[160px]">
+                        <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: `${tierHex}10` }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: `${progress}%`,
+                              background: `linear-gradient(90deg, ${tierHex}90, ${tierHex})`,
+                              boxShadow: `0 0 10px ${tierHex}80, 0 0 4px ${tierHex}40`,
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* ── CAREER HIGHLIGHTS ─────────────────────────────────── */}
-                  <div className="w-full">
-                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 mb-2.5 text-center">
-                      {t("profile.career")}
-                    </h3>
+                  {/* ── Separator ── */}
+                  <div
+                    className="w-full h-px"
+                    style={{ background: `linear-gradient(90deg, transparent, ${tierHex ?? "#fff"}15, transparent)` }}
+                  />
 
-                    <div className="grid grid-cols-2 gap-2.5">
-                      {/* Total Top 1 */}
+                  {/* ── CAREER + FEATURED GAMES (side by side) ── */}
+                  <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0 w-full">
+
+                    {/* Left column: Career highlights */}
+                    <div className="flex flex-col gap-2">
+                      <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/20 mb-0.5">
+                        {t("profile.career")}
+                      </h3>
+                      {/* Top 1 */}
                       <div
-                        className="relative overflow-hidden flex flex-col items-center gap-1 py-3 rounded-2xl"
+                        className="relative overflow-hidden flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
                         style={{
                           background: "linear-gradient(145deg, rgba(251,191,36,0.06) 0%, rgba(251,191,36,0.01) 100%)",
                           border: "1px solid rgba(251,191,36,0.12)",
                         }}
                       >
-                        {/* Subtle inner glow */}
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-8 bg-amber-400/5 blur-xl pointer-events-none" />
-                        <span className="text-lg leading-none relative">🏆</span>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/25 relative">
-                          {t("profile.total_top1")}
-                        </span>
-                        <span
-                          className="text-2xl font-black leading-none relative tabular-nums"
-                          style={{
-                            color: careerStats.totalTop1 > 0 ? "#fbbf24" : "rgba(255,255,255,0.15)",
-                            fontFeatureSettings: "'tnum'",
-                            textShadow: careerStats.totalTop1 > 0 ? "0 0 12px rgba(251,191,36,0.4)" : "none",
-                          }}
-                        >
-                          {careerStats.totalTop1}
-                        </span>
+                        <span className="text-lg leading-none">🏆</span>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/25">
+                            {t("profile.total_top1")}
+                          </span>
+                          <span
+                            className="text-xl font-black leading-tight tabular-nums"
+                            style={{
+                              color: careerStats.totalTop1 > 0 ? "#fbbf24" : "rgba(255,255,255,0.15)",
+                              fontFeatureSettings: "'tnum'",
+                              textShadow: careerStats.totalTop1 > 0 ? "0 0 10px rgba(251,191,36,0.4)" : "none",
+                            }}
+                          >
+                            {careerStats.totalTop1}
+                          </span>
+                        </div>
                       </div>
-
-                      {/* Total Top 5 */}
+                      {/* Top 5 */}
                       <div
-                        className="relative overflow-hidden flex flex-col items-center gap-1 py-3 rounded-2xl"
+                        className="relative overflow-hidden flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
                         style={{
                           background: "linear-gradient(145deg, rgba(34,211,238,0.05) 0%, rgba(34,211,238,0.01) 100%)",
                           border: "1px solid rgba(34,211,238,0.10)",
                         }}
                       >
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-8 bg-cyan-400/5 blur-xl pointer-events-none" />
-                        <span className="text-lg leading-none relative">🏅</span>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/25 relative">
-                          {t("profile.total_top5")}
-                        </span>
-                        <span
-                          className="text-2xl font-black leading-none relative tabular-nums"
-                          style={{
-                            color: careerStats.totalTop5 > 0 ? "#22d3ee" : "rgba(255,255,255,0.15)",
-                            fontFeatureSettings: "'tnum'",
-                            textShadow: careerStats.totalTop5 > 0 ? "0 0 12px rgba(34,211,238,0.35)" : "none",
-                          }}
-                        >
-                          {careerStats.totalTop5}
-                        </span>
+                        <span className="text-lg leading-none">🏅</span>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/25">
+                            {t("profile.total_top5")}
+                          </span>
+                          <span
+                            className="text-xl font-black leading-tight tabular-nums"
+                            style={{
+                              color: careerStats.totalTop5 > 0 ? "#22d3ee" : "rgba(255,255,255,0.15)",
+                              fontFeatureSettings: "'tnum'",
+                              textShadow: careerStats.totalTop5 > 0 ? "0 0 10px rgba(34,211,238,0.35)" : "none",
+                            }}
+                          >
+                            {careerStats.totalTop5}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* ── Separador sutil ── */}
-                  <div
-                    className="w-full h-px"
-                    style={{
-                      background: `linear-gradient(90deg, transparent, ${tierHex ?? "#fff"}15, transparent)`,
-                    }}
-                  />
+                    {/* Right column: Featured games */}
+                    <div className="flex flex-col gap-2">
+                      <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/20 mb-0.5">
+                        {t("profile.featured_games")}
+                      </h3>
 
-                  {/* ── FEATURED GAMES ────────────────────────────────────── */}
-                  <div className="w-full">
-                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 mb-2.5 text-center">
-                      {t("profile.featured_games")}
-                    </h3>
-
-                    {topGames.length === 0 ? (
-                      <p className="text-center text-white/15 text-xs py-4 italic">
-                        {t("profile.no_data")}
-                      </p>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {topGames.map((g) => {
-                          const cardStyle = getRankCardStyle(g.rank);
-                          return (
-                            <div
-                              key={g.gameId}
-                              className="relative overflow-hidden flex items-center justify-between px-4 py-3 rounded-xl"
-                              style={{
-                                background: cardStyle.background,
-                                border: `1px solid ${cardStyle.borderColor}`,
-                              }}
-                            >
-                              {/* Gloss top edge */}
+                      {topGames.length === 0 ? (
+                        <p className="text-white/15 text-xs py-3 italic">
+                          {t("profile.no_data")}
+                        </p>
+                      ) : (
+                        <div className="flex flex-col gap-1.5">
+                          {topGames.map((g) => {
+                            const cardStyle = getRankCardStyle(g.rank);
+                            return (
                               <div
-                                className="absolute inset-x-0 top-0 h-px pointer-events-none"
+                                key={g.gameId}
+                                className="relative overflow-hidden flex items-center justify-between px-3 py-2.5 rounded-lg"
                                 style={{
-                                  background: `linear-gradient(90deg, transparent 10%, ${cardStyle.borderColor} 50%, transparent 90%)`,
+                                  background: cardStyle.background,
+                                  border: `1px solid ${cardStyle.borderColor}`,
                                 }}
-                              />
-
-                              {/* Izquierda: Posición + nombre */}
-                              <div className="flex flex-col min-w-0">
-                                <span className="text-sm font-bold text-white/75 truncate">
-                                  <span className={`font-black ${getRankAccent(g.rank)}`}>
-                                    Top {g.rank}
+                              >
+                                <div className="flex flex-col min-w-0">
+                                  <span className="text-[13px] font-bold text-white/75 truncate">
+                                    <span className={`font-black ${getRankAccent(g.rank)}`}>Top {g.rank}</span>
+                                    {" "}
+                                    <span className="text-white/30">{t("profile.in_game")}</span>
+                                    {" "}
+                                    {g.gameName}
                                   </span>
-                                  {" "}
-                                  <span className="text-white/30">{t("profile.in_game")}</span>
-                                  {" "}
-                                  {g.gameName}
+                                </div>
+                                <span
+                                  className="text-[13px] font-bold text-white/40 ml-2 shrink-0 tabular-nums"
+                                  style={{ fontFeatureSettings: "'tnum'" }}
+                                >
+                                  {g.score.toLocaleString()}
                                 </span>
                               </div>
+                            );
+                          })}
 
-                              {/* Derecha: Puntuación */}
-                              <span
-                                className="text-sm font-bold text-white/40 ml-3 shrink-0 tabular-nums"
-                                style={{ fontFeatureSettings: "'tnum'" }}
+                          {topGames.length < 3 &&
+                            Array.from({ length: 3 - topGames.length }).map((_, i) => (
+                              <div
+                                key={`empty-${i}`}
+                                className="flex items-center justify-center px-3 py-2.5 rounded-lg border border-dashed"
+                                style={{ borderColor: "rgba(255,255,255,0.04)" }}
                               >
-                                {g.score.toLocaleString()} pts
-                              </span>
-                            </div>
-                          );
-                        })}
-
-                        {/* Slots vacíos elegantes */}
-                        {topGames.length < 3 &&
-                          Array.from({ length: 3 - topGames.length }).map((_, i) => (
-                            <div
-                              key={`empty-${i}`}
-                              className="flex items-center justify-center px-4 py-3 rounded-xl border border-dashed"
-                              style={{ borderColor: "rgba(255,255,255,0.04)" }}
-                            >
-                              <span className="text-xs text-white/8">—</span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
+                                <span className="text-[10px] text-white/8">—</span>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
