@@ -109,10 +109,10 @@ export async function getTop5(gameId) {
     if (gameError) throw gameError;
     if (!game) return { success: false, data: null, message: t('svc.game_not_found') };
 
-    // Traer las mejores puntuaciones ordenadas
+    // Traer las mejores puntuaciones ordenadas (+ avatar del usuario)
     let query = supabase
       .from('scores')
-      .select('id, user_id, score, achieved_at, users(username)')
+      .select('id, user_id, score, achieved_at, users(username, equipped_avatar_id)')
       .eq('game_id', gameId);
 
     query = game.is_lower_better
@@ -149,7 +149,9 @@ function formatRanking(rawScores) {
   if (!rawScores || rawScores.length === 0) return [];
   return rawScores.map((s, i) => ({
     pos: i + 1,
+    userId: s.user_id ?? null,
     user: s.users?.username ?? '—',
+    equippedAvatarId: s.users?.equipped_avatar_id ?? 'none',
     score: s.score,
   }));
 }

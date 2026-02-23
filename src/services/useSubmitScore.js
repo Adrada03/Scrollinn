@@ -9,7 +9,9 @@ function formatRanking(rawScores) {
   if (!rawScores || rawScores.length === 0) return [];
   return rawScores.map((s, i) => ({
     pos: i + 1,
+    userId: s.user_id ?? null,
     user: s.users?.username ?? '—',
+    equippedAvatarId: s.users?.equipped_avatar_id ?? 'none',
     score: s.score,
   }));
 }

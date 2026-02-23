@@ -17,8 +17,9 @@ import {
   getTierName,
   getTierHexColor,
 } from "../utils/leveling";
+import Avatar from "./Avatar";
 
-const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
+const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser, onOpenAvatarModal }) => {
   const { t } = useLanguage();
   const [view, setView] = useState("login");
   const [username, setUsername] = useState("");
@@ -189,12 +190,26 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser }) => {
                                     boxShadow: `0 0 24px ${tierHex}30, 0 0 48px ${tierHex}10`,
                                   }}
                                 >
-                                  <div className="w-full h-full rounded-full bg-[#0a0f1e] flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" style={{ color: `${tierHex}90` }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                    </svg>
+                                  <div className="w-full h-full rounded-full bg-[#0a0f1e] flex items-center justify-center overflow-hidden">
+                                    <Avatar
+                                      equippedAvatarId={currentUser.equipped_avatar_id}
+                                      size="lg"
+                                      className="!border-0 !shadow-none w-full h-full"
+                                    />
                                   </div>
                                 </div>
+
+                                {/* Botón de editar avatar */}
+                                <button
+                                  onClick={() => onOpenAvatarModal && onOpenAvatarModal()}
+                                  className="absolute -bottom-0.5 -right-0.5 w-7 h-7 bg-gray-900 border border-white/20 rounded-full flex items-center justify-center hover:bg-gray-800 hover:border-cyan-400/40 transition-all cursor-pointer group"
+                                  aria-label={t("avatar.edit")}
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-white/50 group-hover:text-cyan-400 transition-colors" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                  </svg>
+                                </button>
+
                                 {/* Soft reflection below */}
                                 <div
                                   className="w-14 h-1 rounded-full mx-auto mt-1.5 blur-md opacity-40"

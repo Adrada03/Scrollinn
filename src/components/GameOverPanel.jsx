@@ -18,7 +18,10 @@
  *   isLoading   (bool)    — si está cargando el ranking
  */
 
+import { useState } from "react";
 import { useLanguage } from "../i18n";
+import Avatar from "./Avatar";
+import PublicProfileModal from "./PublicProfileModal";
 
 const FALLBACK_RANKING = [
   { pos: 1, user: "—", score: "—" },
@@ -39,10 +42,17 @@ const GameOverPanel = ({
   isLoading = false,
 }) => {
   const { t } = useLanguage();
+  const [profileUserId, setProfileUserId] = useState(null);
   const displayRanking = ranking.length > 0 ? ranking : FALLBACK_RANKING;
   return (
+    <>
+    <PublicProfileModal
+      isOpen={!!profileUserId}
+      onClose={() => setProfileUserId(null)}
+      userId={profileUserId}
+    />
     <div className="absolute inset-0 flex flex-col items-center justify-center z-[6]">
-      <div className="bg-black/50 backdrop-blur-xl rounded-3xl px-8 py-7 flex flex-col items-center gap-3 shadow-2xl w-[85vw] max-w-sm">
+      <div className="bg-black/50 backdrop-blur-xl rounded-3xl px-6 py-5 flex flex-col items-center gap-2 shadow-2xl w-[90vw] max-w-md">
         {/* Título */}
         <h2 className="text-2xl font-black text-white tracking-tight">
           {title}
@@ -68,10 +78,11 @@ const GameOverPanel = ({
         )}
 
         {/* Ranking */}
-        <div className="w-full mt-2 rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+        <div className="w-full mt-1 rounded-xl bg-white/5 border border-white/10 overflow-hidden">
           {/* Header */}
-          <div className="grid grid-cols-[2.5rem_1fr_4rem] px-3 py-1.5 text-[10px] font-bold text-white/30 uppercase tracking-wider border-b border-white/5">
+          <div className="grid grid-cols-[1.5rem_1.75rem_1fr_3.5rem] gap-x-2 items-center px-3 py-1.5 text-[10px] font-bold text-white/30 uppercase tracking-wider border-b border-white/5">
             <span>#</span>
+            <span></span>
             <span>{t("gameover.user")}</span>
             <span className="text-right">{t("gameover.points")}</span>
           </div>
@@ -82,13 +93,17 @@ const GameOverPanel = ({
             </div>
           ) : (
             /* Rows */
-            <div className="max-h-48 overflow-y-auto">
+            <div>
               {displayRanking.map((r) => (
                 <div
                   key={r.pos}
-                  className="grid grid-cols-[2.5rem_1fr_4rem] px-3 py-1.5 text-sm border-b border-white/5 last:border-0"
+                  onClick={() => r.userId && setProfileUserId(r.userId)}
+                  className={`grid grid-cols-[1.5rem_1.75rem_1fr_3.5rem] gap-x-2 items-center px-3 py-1.5 text-sm border-b border-white/5 last:border-0 transition-colors${
+                    r.userId ? " cursor-pointer hover:bg-white/5 active:bg-white/10" : ""
+                  }`}
                 >
                   <span className="text-white/50 font-bold tabular-nums">{r.pos}</span>
+                  <Avatar equippedAvatarId={r.equippedAvatarId} size="sm" className="!w-6 !h-6" />
                   <span className="text-white/70 font-medium truncate">{r.user}</span>
                   <span className="text-white/60 font-bold text-right tabular-nums">{r.score}</span>
                 </div>
@@ -101,9 +116,9 @@ const GameOverPanel = ({
         {onReplay && (
           <button
             onClick={onReplay}
-            className="mt-2 w-full px-6 py-3 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold rounded-2xl text-base transition-all pointer-events-auto border border-white/10 flex items-center justify-center gap-2"
+            className="mt-1 w-full px-5 py-2.5 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold rounded-2xl text-sm transition-all pointer-events-auto border border-white/10 flex items-center justify-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
             </svg>
             {t("gameover.replay")}
@@ -113,7 +128,7 @@ const GameOverPanel = ({
         {/* Siguiente juego */}
         <button
           onClick={onNext}
-          className="mt-2 w-full px-6 py-3 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold rounded-2xl text-base transition-all pointer-events-auto border border-white/10 flex items-center justify-center gap-2"
+          className="mt-1 w-full px-5 py-2.5 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold rounded-2xl text-sm transition-all pointer-events-auto border border-white/10 flex items-center justify-center gap-2"
         >
           {t("gameover.next")}
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -122,6 +137,7 @@ const GameOverPanel = ({
         </button>
       </div>
     </div>
+    </>
   );
 };
 

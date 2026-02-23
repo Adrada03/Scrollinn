@@ -15,12 +15,16 @@ import TopNav from "./components/TopNav";
 import GameFeed from "./components/Feed";
 import GalleryModal from "./components/GalleryModal";
 import AuthModal from "./components/AuthModal";
+import AvatarSelectionModal from "./components/AvatarSelectionModal";
 
 // Datos
 import GAMES from "./data/games";
 
 // Servicios Supabase
 import { getLikesMap, toggleLike } from "./services/gameService";
+
+// Contexto de autenticación
+import { useAuth } from "./context/AuthContext";
 
 /**
  * Estado inicial vacío — se rellena al cargar desde la BD.
@@ -35,10 +39,11 @@ const emptyLikesMap = () => {
 };
 
 function App() {
+  const { currentUser, login, logout, updateUser } = useAuth();
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [likesMap, setLikesMap] = useState(emptyLikesMap);
   const [gameEpoch, setGameEpoch] = useState(0);
   const likesLoaded = useRef(false);
@@ -85,8 +90,11 @@ function App() {
       if (e.key === "Escape" && isAuthOpen) {
         setIsAuthOpen(false);
       }
+      if (e.key === "Escape" && isAvatarModalOpen) {
+        setIsAvatarModalOpen(false);
+      }
     },
-    [isGalleryOpen, isAuthOpen]
+    [isGalleryOpen, isAuthOpen, isAvatarModalOpen]
   );
 
   useEffect(() => {
@@ -137,6 +145,14 @@ function App() {
     setIsGalleryOpen(false);
   }, []);
 
+  /**
+   * Optimistic update del avatar equipado.
+   * Se llama desde AvatarSelectionModal al guardar.
+   */
+  const handleAvatarChange = useCallback((newAvatarId) => {
+    updateUser({ equipped_avatar_id: newAvatarId });
+  }, [updateUser]);
+
   return (
     <>
       {/* Barra de navegación superior fija */}
@@ -169,8 +185,17 @@ function App() {
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
-        onAuthSuccess={setCurrentUser}
+        onAuthSuccess={(user) => (user ? login(user) : logout())}
         currentUser={currentUser}
+        onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
+      />
+
+      {/* Modal de selección de avatar */}
+      <AvatarSelectionModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        currentUser={currentUser}
+        onAvatarChange={handleAvatarChange}
       />
 
       {/* Vercel Analytics */}

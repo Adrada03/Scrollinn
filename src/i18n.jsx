@@ -68,6 +68,17 @@ const translations = {
     "gameover.replay":     "Jugar de nuevo",
     "gameover.next":       "Siguiente juego",
 
+    // ── Public Profile Modal ────────────────────
+    "profile.close":           "Cerrar",
+    "profile.loading":         "Cargando perfil...",
+    "profile.not_found":       "Jugador no encontrado",
+    "profile.featured_games":  "Juegos destacados",
+    "profile.no_data":         "Aún no hay suficientes datos",
+    "profile.in_game":         "en",
+    "profile.career":          "Resumen de carrera",
+    "profile.total_top1":      "Total Top 1",
+    "profile.total_top5":      "Total Top 5",
+
     // ── Services ────────────────────────────────
     "svc.username_required":  "Nombre de usuario y contraseña son obligatorios.",
     "svc.username_too_long":  "El nombre de usuario no puede tener más de 30 caracteres.",
@@ -312,6 +323,23 @@ const translations = {
     "crossroaddart.subtitle": "cruces",
     "crossroaddart.cross":    "cruce",
     "crossroaddart.crosses":  "cruces",
+
+    // ── Avatar System ────────────────────────────
+    "avatar.select_title":    "Seleccionar Avatar",
+    "avatar.default":         "Por defecto",
+    "avatar.save":            "Guardar",
+    "avatar.saving":          "Guardando...",
+    "avatar.edit":            "Cambiar avatar",
+    "avatar.no_avatars":      "Aún no tienes avatares. \u00a1Sigue jugando para desbloquearlos!",
+    "avatar.details":         "Detalles",
+    "avatar.back":            "Volver",
+    "avatar.lore":            "Historia",
+    "avatar.how_to_get":      "Cómo se consigue",
+    "avatar.unlock_level":    "Se desbloquea en el Nivel {{level}}",
+    "avatar.unlock_shop":     "Precio: {{price}} Monedas",
+    "avatar.unlock_starter":  "Regalo de bienvenida",
+    "avatar.unlock_unknown":  "Desbloqueo especial",
+    "avatar.tier_label":      "Rango",
   },
 
   en: {
@@ -367,6 +395,17 @@ const translations = {
     "gameover.loading":    "Loading ranking...",
     "gameover.replay":     "Play again",
     "gameover.next":       "Next game",
+
+    // ── Public Profile Modal ────────────────────
+    "profile.close":           "Close",
+    "profile.loading":         "Loading profile...",
+    "profile.not_found":       "Player not found",
+    "profile.featured_games":  "Featured games",
+    "profile.no_data":         "Not enough data yet",
+    "profile.in_game":         "in",
+    "profile.career":          "Career highlights",
+    "profile.total_top1":      "Total Top 1",
+    "profile.total_top5":      "Total Top 5",
 
     // ── Services ────────────────────────────────
     "svc.username_required":  "Username and password are required.",
@@ -609,6 +648,23 @@ const translations = {
     "crossroaddart.subtitle": "crosses",
     "crossroaddart.cross":    "cross",
     "crossroaddart.crosses":  "crosses",
+
+    // ── Avatar System ────────────────────────────
+    "avatar.select_title":    "Select Avatar",
+    "avatar.default":         "Default",
+    "avatar.save":            "Save",
+    "avatar.saving":          "Saving...",
+    "avatar.edit":            "Change avatar",
+    "avatar.no_avatars":      "You don't have any avatars yet. Keep playing to unlock them!",
+    "avatar.details":         "Details",
+    "avatar.back":            "Back",
+    "avatar.lore":            "Lore",
+    "avatar.how_to_get":      "How to unlock",
+    "avatar.unlock_level":    "Unlocks at Level {{level}}",
+    "avatar.unlock_shop":     "Price: {{price}} Coins",
+    "avatar.unlock_starter":  "Welcome gift",
+    "avatar.unlock_unknown":  "Special unlock",
+    "avatar.tier_label":      "Rank",
   },
 };
 

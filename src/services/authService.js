@@ -38,7 +38,7 @@ export async function authenticate(username, password, mode = 'auto') {
     // Buscar si el usuario ya existe
     const { data: existing, error: selectError } = await supabase
       .from('users')
-      .select('id, username, password_hash, xp')
+      .select('id, username, password_hash, xp, equipped_avatar_id')
       .eq('username', username)
       .maybeSingle();
 
@@ -60,7 +60,12 @@ export async function authenticate(username, password, mode = 'auto') {
       return {
         ok: true,
         action: 'logged_in',
-        user: { id: existing.id, username: existing.username, xp: existing.xp ?? 0 },
+        user: {
+          id: existing.id,
+          username: existing.username,
+          xp: existing.xp ?? 0,
+          equipped_avatar_id: existing.equipped_avatar_id ?? 'none',
+        },
       };
     }
 
@@ -75,7 +80,7 @@ export async function authenticate(username, password, mode = 'auto') {
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([{ username, password_hash: hash }])
-      .select('id, username, xp')
+      .select('id, username, xp, equipped_avatar_id')
       .single();
 
     if (insertError) {
@@ -89,7 +94,12 @@ export async function authenticate(username, password, mode = 'auto') {
     return {
       ok: true,
       action: 'registered',
-      user: { id: newUser.id, username: newUser.username, xp: newUser.xp ?? 0 },
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        xp: newUser.xp ?? 0,
+        equipped_avatar_id: newUser.equipped_avatar_id ?? 'none',
+      },
     };
   } catch (err) {
     console.error('authService error:', err);
