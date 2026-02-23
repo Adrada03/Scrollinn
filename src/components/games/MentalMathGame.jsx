@@ -150,6 +150,36 @@ function generateQuestion(score = 0) {
     }
   }
 
+  // ── Hard mode (score > 5): ensure at least one distractor shares the last digit ──
+  // This prevents the shortcut of only computing the units digit mentally.
+  if (score > 10) {
+    const lastDigit = correct % 10;
+    const hasSameEnding = distractors.some((d) => d % 10 === lastDigit);
+    if (!hasSameEnding) {
+      // Generate a tricky distractor: same last digit, different value
+      let tricky = 0;
+      let tries = 0;
+      while (tries++ < 30) {
+        // Offset by ±10, ±20, ±30 keeps same last digit but different tens
+        const offset = (randInt(1, 4)) * 10 * (Math.random() > 0.5 ? 1 : -1);
+        const candidate = correct + offset;
+        if (candidate > 0 && candidate !== correct && !distractors.includes(candidate)) {
+          tricky = candidate;
+          break;
+        }
+      }
+      if (tricky > 0) {
+        // Replace the distractor that is furthest from correct (least suspicious)
+        let maxDist = 0, replaceIdx = 0;
+        for (let i = 0; i < distractors.length; i++) {
+          const dist = Math.abs(distractors[i] - correct);
+          if (dist > maxDist) { maxDist = dist; replaceIdx = i; }
+        }
+        distractors[replaceIdx] = tricky;
+      }
+    }
+  }
+
   return { a, b, correct, options: shuffle([correct, ...distractors]) };
 }
 
