@@ -135,7 +135,7 @@ const EpicTimer = ({ t }) => {
   return (
     <div className="flex flex-col items-center justify-center">
       {/* Label */}
-      <span className="text-slate-400 text-[10px] font-extrabold tracking-[0.25em] uppercase mb-1">
+      <span className="text-slate-400 text-[10px] font-extrabold tracking-[0.25em] uppercase mb-2">
         {t("shop.rotation")}
       </span>
 
@@ -175,7 +175,7 @@ const EpicTimer = ({ t }) => {
       </div>
 
       {/* Accent line */}
-      <div className="w-28 h-px mt-2 bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
+      <div className="w-32 h-px mt-4 bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
     </div>
   );
 };
@@ -621,7 +621,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                   <div className="flex flex-col flex-1 pl-5 justify-center gap-2">
                     {/* Nombre */}
                     <span
-                      className="text-lg font-black text-white text-left line-clamp-1 leading-tight uppercase"
+                      className="text-sm font-black text-white text-left line-clamp-1 leading-tight"
                       style={{ textShadow: "0 0 16px rgba(250,204,21,0.3)" }}
                     >
                       {heroName}
@@ -731,8 +731,8 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                         <div
                           className="relative rounded-full p-0.5 overflow-hidden"
                           style={{
-                            width: "min(24vw, 12dvh)",
-                            height: "min(24vw, 12dvh)",
+                            width: "min(22vw, 10dvh)",
+                            height: "min(22vw, 10dvh)",
                             background: `conic-gradient(from 180deg, ${tierHex}, ${tierHex}30 40%, ${tierHex} 60%, ${tierHex}30)`,
                             boxShadow: `0 0 16px ${tierHex}20`,
                           }}

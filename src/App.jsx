@@ -26,6 +26,9 @@ import GAMES from "./data/games";
 // Servicios Supabase
 import { getLikesMap, toggleLike, getUserLikesCount } from "./services/gameService";
 
+// i18n
+import { useLanguage } from "./i18n";
+
 // Contexto de autenticación
 import { useAuth } from "./context/AuthContext";
 
@@ -53,8 +56,27 @@ const slideVariants = {
   exit: (dir) => ({ x: dir > 0 ? "-40%" : "40%", opacity: 0 }),
 };
 
+/* ── Lock Screen Overlay ── */
+const LockScreen = ({ icon, title, description }) => (
+  <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-md">
+    <div className="flex flex-col items-center gap-5 max-w-xs text-center px-6">
+      {/* Candado / icono */}
+      <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+        {icon || (
+          <svg className="w-12 h-12 text-white/40" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+          </svg>
+        )}
+      </div>
+      <h2 className="text-white text-xl font-bold leading-tight">{title}</h2>
+      <p className="text-white/60 text-sm leading-relaxed">{description}</p>
+    </div>
+  </div>
+);
+
 function App() {
   const { currentUser, login, logout, updateUser } = useAuth();
+  const { t } = useLanguage();
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -252,18 +274,31 @@ function App() {
             transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
             className="h-dvh w-full"
           >
-            {/* Feed principal (visible en pestañas "Todos" y "Favoritos") */}
-            <GameFeed
-              key={`feed-${activeTab}`}
-              games={activeTab === "favorites" ? favoriteGames : GAMES}
-              selectedGameId={selectedGameId}
-              gameEpoch={gameEpoch}
-              disabled={isGalleryOpen || isAuthOpen}
-              likesMap={likesMap}
-              onToggleLike={handleToggleLike}
-              onOpenGallery={() => setIsGalleryOpen(true)}
-              currentUser={currentUser}
-            />
+            {/* Lock screen para Favoritos */}
+            {activeTab === "favorites" && !currentUser ? (
+              <LockScreen
+                title={t("lock.login_title")}
+                description={t("lock.login_desc")}
+              />
+            ) : activeTab === "favorites" && currentUser && (userLikesCount ?? 0) < 5 ? (
+              <LockScreen
+                title={t("lock.fav_title")}
+                description={t("lock.fav_desc", { count: userLikesCount ?? 0 })}
+              />
+            ) : (
+              /* Feed principal (visible en pestañas "Todos" y "Favoritos") */
+              <GameFeed
+                key={`feed-${activeTab}`}
+                games={activeTab === "favorites" ? favoriteGames : GAMES}
+                selectedGameId={selectedGameId}
+                gameEpoch={gameEpoch}
+                disabled={isGalleryOpen || isAuthOpen}
+                likesMap={likesMap}
+                onToggleLike={handleToggleLike}
+                onOpenGallery={() => setIsGalleryOpen(true)}
+                currentUser={currentUser}
+              />
+            )}
           </motion.div>
         ) : (
           <motion.div
@@ -276,6 +311,14 @@ function App() {
             transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
             className="h-dvh w-full"
           >
+            {/* Lock screen para Tienda sin login */}
+            {!currentUser && (
+              <LockScreen
+                title={t("lock.shop_title")}
+                description={t("lock.shop_desc")}
+              />
+            )}
+
             {/* Pantalla de la Tienda */}
             <Shop
               coins={currentUser?.coins ?? 0}

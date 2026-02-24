@@ -347,6 +347,12 @@ const translations = {
     "tab.shop":             "Tienda",
     "tab.fav_locked":       "¡Dale like a 5 juegos para desbloquear tu lista de favoritos! (Llevas {{count}}/5)",
     "tab.login_required":   "Inicia sesión para acceder",
+    "lock.login_title":     "Regístrate para acceder",
+    "lock.login_desc":      "Inicia sesión o crea una cuenta para desbloquear esta sección.",
+    "lock.fav_title":       "Favoritos bloqueados",
+    "lock.fav_desc":        "Necesitas tener 5 juegos en favoritos para acceder a este modo. (Llevas {{count}}/5)",
+    "lock.shop_title":      "Tienda bloqueada",
+    "lock.shop_desc":       "Regístrate o inicia sesión para poder usar la tienda.",
 
     // ── Shop ─────────────────────────────────────
     "shop.title":           "Tienda",
@@ -697,6 +703,12 @@ const translations = {
     "tab.shop":             "Shop",
     "tab.fav_locked":       "Like 5 games to unlock your favorites list! ({{count}}/5 so far)",
     "tab.login_required":   "Log in to access",
+    "lock.login_title":     "Sign up to access",
+    "lock.login_desc":      "Log in or create an account to unlock this section.",
+    "lock.fav_title":       "Favorites locked",
+    "lock.fav_desc":        "You need to have 5 games in your favorites to access this mode. ({{count}}/5 so far)",
+    "lock.shop_title":      "Shop locked",
+    "lock.shop_desc":       "Sign up or log in to use the shop.",
 
     // ── Shop ─────────────────────────────────────
     "shop.title":           "Shop",

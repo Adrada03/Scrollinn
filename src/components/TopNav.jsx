@@ -57,20 +57,6 @@ const TopNav = ({
    * "Favoritos" requiere login + ≥5 likes.
    */
   const handleTabClick = (tabKey) => {
-    if (tabKey === "favorites") {
-      if (!currentUser) {
-        onTabChange("__toast__", t("tab.login_required"));
-        return;
-      }
-      if ((userLikesCount ?? 0) < 5) {
-        onTabChange("__toast__", t("tab.fav_locked", { count: userLikesCount ?? 0 }));
-        return;
-      }
-    }
-    if (tabKey === "shop" && !currentUser) {
-      onTabChange("__toast__", t("tab.login_required"));
-      return;
-    }
     onTabChange(tabKey);
   };
 
@@ -118,7 +104,9 @@ const TopNav = ({
         <div className="absolute left-1/2 -translate-x-1/2 pointer-events-auto flex items-center gap-6">
           {TABS.map(({ key, i18nKey }) => {
             const isActive = activeTab === key;
-            const isLocked = key === "favorites" && (!currentUser || (userLikesCount ?? 0) < 5);
+            const isLocked =
+              (key === "favorites" && (!currentUser || (userLikesCount ?? 0) < 5)) ||
+              (key === "shop" && !currentUser);
 
             return (
               <button
