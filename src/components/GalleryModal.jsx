@@ -133,7 +133,7 @@ const GalleryModal = ({ isOpen, onClose, games, onSelectGame }) => {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-2">
+                  <div className="grid grid-cols-3 gap-4 p-2">
                     {filteredGames.map((game) => (
                       <motion.button
                         key={game.id}
