@@ -127,8 +127,60 @@ const RotationTimer = ({ t }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════════════
-   HoldToConfirmButton — Botón «mantener para comprar»
+/* ═══════════════════════════════════════════════════════════════════   EpicTimer — Temporizador protagonista (solo móvil)
+   ═════════════════════════════════════════════════════════════════ */
+const EpicTimer = ({ t }) => {
+  const { days, hours, mins, secs } = useCountdown();
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      {/* Label */}
+      <span className="text-slate-400 text-[10px] font-extrabold tracking-[0.25em] uppercase mb-2">
+        {t("shop.rotation")}
+      </span>
+
+      {/* Digits */}
+      <div className="flex items-baseline gap-1 font-mono">
+        {days > 0 && (
+          <>
+            <span
+              className="text-3xl font-black text-white tabular-nums"
+              style={{ textShadow: "0 0 16px rgba(139,92,246,0.5), 0 0 40px rgba(139,92,246,0.2)" }}
+            >
+              {days}
+            </span>
+            <span className="text-violet-400/60 text-xs font-bold mr-2">{t("shop.days")}</span>
+          </>
+        )}
+        <span
+          className="text-3xl font-black text-white tabular-nums"
+          style={{ textShadow: "0 0 16px rgba(139,92,246,0.5), 0 0 40px rgba(139,92,246,0.2)" }}
+        >
+          {hours}
+        </span>
+        <span className="text-violet-400 text-2xl font-bold animate-pulse">:</span>
+        <span
+          className="text-3xl font-black text-white tabular-nums"
+          style={{ textShadow: "0 0 16px rgba(139,92,246,0.5), 0 0 40px rgba(139,92,246,0.2)" }}
+        >
+          {mins}
+        </span>
+        <span className="text-violet-400 text-2xl font-bold animate-pulse">:</span>
+        <span
+          className="text-3xl font-black text-white tabular-nums"
+          style={{ textShadow: "0 0 16px rgba(139,92,246,0.5), 0 0 40px rgba(139,92,246,0.2)" }}
+        >
+          {secs}
+        </span>
+      </div>
+
+      {/* Accent line */}
+      <div className="w-32 h-px mt-4 bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
+    </div>
+  );
+};
+
+/* ═════════════════════════════════════════════════════════════════   HoldToConfirmButton — Botón «mantener para comprar»
    Se rellena de izquierda a derecha mientras el usuario mantiene
    pulsado. Si suelta antes de completar, se resetea.
    ═══════════════════════════════════════════════════════════════════ */
@@ -413,8 +465,8 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
 
   const getTierHex = (tier) => (TIER_COLORS[tier] || TIER_COLORS.rookie).hex;
 
-  const { podiumItems, restItems } = useMemo(() => {
-    if (items.length === 0) return { podiumItems: [], restItems: [] };
+  const { podiumItems, restItems, mobileItems } = useMemo(() => {
+    if (items.length === 0) return { podiumItems: [], restItems: [], mobileItems: [] };
     const sorted = [...items].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
     const top = sorted.slice(0, Math.min(3, sorted.length));
     const rest = sorted.slice(Math.min(3, sorted.length));
@@ -422,7 +474,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
     if (top.length >= 3) podium = [top[1], top[0], top[2]];
     else if (top.length === 2) podium = [top[1], top[0]];
     else podium = [top[0]];
-    return { podiumItems: podium, restItems: rest };
+    return { podiumItems: podium, restItems: rest, mobileItems: sorted };
   }, [items]);
 
   const handlePurchaseSuccess = useCallback((avatarId, newCoins) => {
@@ -436,9 +488,9 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
   }, [onCoinsChange]);
 
   return (
-    <div className="fixed inset-0 z-30 flex flex-col bg-slate-950/95 backdrop-blur-sm">
-      {/* ── HUD de monedas (arriba derecha) ── */}
-      <div className="absolute top-20 right-4 z-40 pointer-events-auto">
+    <div className="fixed inset-0 z-30 flex flex-col bg-slate-950/95 backdrop-blur-sm overflow-hidden">
+      {/* ── HUD de monedas (solo escritorio) ── */}
+      <div className="hidden md:flex relative justify-end md:absolute md:top-20 md:right-4 md:z-40 md:p-0 pointer-events-auto">
         <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-yellow-500/30 rounded-full px-4 py-2 shadow-lg shadow-yellow-500/10">
           <img src="/logo-moneda.png" alt={t("shop.coins")} className="w-8 h-8 drop-shadow-md" draggable={false} />
           <span className="text-yellow-400 font-bold text-lg tabular-nums tracking-wide drop-shadow-md">
@@ -447,15 +499,336 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
         </div>
       </div>
 
-      {/* ── Contenido scrollable ── */}
-      <div className="flex-1 overflow-y-auto pt-24 pb-10 px-4">
-        {/* ── Temporizador de rotación ── */}
-        <div className="mb-5">
+      {/* ═════ MOBILE LAYOUT — Fortnite / Brawl Stars style (natural flow) ═════ */}
+      <div className="md:hidden flex flex-col w-full px-4 pb-8 pt-16 bg-[#0B0E17]">
+
+        {/* ── 1. FILA DE MONEDAS (dedicada, flujo normal) ── */}
+        <div className="w-full flex justify-end mb-6">
+          <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-yellow-500/30 rounded-full px-4 py-2 shadow-lg shadow-yellow-500/10">
+            <img src="/logo-moneda.png" alt={t("shop.coins")} className="w-7 h-7 drop-shadow-md" draggable={false} />
+            <span className="text-yellow-400 font-bold text-base tabular-nums tracking-wide drop-shadow-md">
+              {localCoins.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        {/* ── 2. FILA DEL TEMPORIZADOR ── */}
+        <div className="flex flex-col items-center mb-8">
+          <EpicTimer t={t} />
+        </div>
+
+        {/* ── Separador "AVATARES" ── */}
+        <div className="w-full border-b border-slate-700/50 pb-2 mb-2">
+          <span className="text-slate-500 text-xs font-bold tracking-widest uppercase">
+            {t("shop.avatars_title")}
+          </span>
+        </div>
+
+        {/* ── Tarjetas ── */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-7 h-7 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center text-center gap-3 px-4 py-16">
+            <div className="w-16 h-16 rounded-2xl bg-white/3 border border-white/10 flex items-center justify-center">
+              <svg className="w-8 h-8 text-white/20" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+              </svg>
+            </div>
+            <p className="text-white/30 text-sm">{t("shop.empty")}</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 mt-6">
+
+            {/* ═══ Fila 1 — DESTACADO (Hero card) ═══ */}
+            {mobileItems[0] && (() => {
+              const hero = mobileItems[0];
+              const heroTierHex = getTierHex(hero.tier);
+              const heroName = getAvatarName(hero);
+              const heroPrice = hero.price ?? 0;
+              const heroTierLabel = lang === "es"
+                ? (TIER_COLORS[hero.tier] || TIER_COLORS.rookie).label_es
+                : (TIER_COLORS[hero.tier] || TIER_COLORS.rookie).label_en;
+
+              return (
+                <motion.button
+                  key={hero.id}
+                  onClick={() => setSelectedItem(hero)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                  className="w-full relative flex flex-row items-center rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-4 overflow-hidden"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(55,48,20,0.8), rgba(30,25,10,0.95))",
+                    border: "2px solid rgba(251,191,36,0.7)",
+                    boxShadow: "0 0 30px rgba(251,191,36,0.2), 0 0 60px rgba(251,191,36,0.08), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  }}
+                >
+                  {/* Glow ambiental top */}
+                  <div
+                    className="absolute top-0 left-4 right-4 h-px rounded-full"
+                    style={{ background: "linear-gradient(90deg, transparent, rgba(250,204,21,0.5), transparent)" }}
+                  />
+                  {/* Glow ambiental bottom */}
+                  <div
+                    className="absolute bottom-0 left-4 right-4 h-px rounded-full"
+                    style={{ background: "linear-gradient(90deg, transparent, rgba(250,204,21,0.2), transparent)" }}
+                  />
+
+                  {/* Owned badge */}
+                  {hero.owned && (
+                    <div
+                      className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full flex items-center justify-center"
+                      style={{
+                        background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                        boxShadow: "0 0 12px rgba(34,197,94,0.5), 0 2px 4px rgba(0,0,0,0.3)",
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                    </div>
+                  )}
+
+                  {/* ── Lado Izquierdo: Avatar Grande ── */}
+                  <div className="relative shrink-0">
+                    <div
+                      className="absolute inset-0 rounded-xl blur-2xl opacity-50 scale-150"
+                      style={{ background: `radial-gradient(circle, ${heroTierHex}, transparent 70%)` }}
+                    />
+                    <div
+                      className="relative w-28 h-28 rounded-xl p-0.5 overflow-hidden"
+                      style={{
+                        background: "conic-gradient(from 180deg, #fbbf24, #92400e 40%, #fbbf24 60%, #92400e)",
+                        boxShadow: "0 0 30px rgba(250,204,21,0.4), 0 0 60px rgba(250,204,21,0.12)",
+                      }}
+                    >
+                      <div className="w-full h-full rounded-[10px] overflow-hidden bg-[#0a0f1e]">
+                        <img
+                          src={getAvatarImgSrc(hero)}
+                          alt={heroName}
+                          className="w-full h-full object-cover"
+                          draggable={false}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Lado Derecho: Info + Botón ── */}
+                  <div className="flex flex-col flex-1 pl-5 justify-center gap-2">
+                    {/* Nombre */}
+                    <span
+                      className="text-lg font-black text-white text-left line-clamp-1 leading-tight uppercase"
+                      style={{ textShadow: "0 0 16px rgba(250,204,21,0.3)" }}
+                    >
+                      {heroName}
+                    </span>
+
+                    {/* Tier badge */}
+                    <span
+                      className="text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded w-fit"
+                      style={{
+                        color: "#fbbf24",
+                        background: "rgba(250,204,21,0.12)",
+                        border: "1px solid rgba(250,204,21,0.35)",
+                        textShadow: "0 0 6px rgba(250,204,21,0.3)",
+                      }}
+                    >
+                      {heroTierLabel}
+                    </span>
+
+                    {/* Botón de compra */}
+                    <div
+                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl mt-1"
+                      style={{
+                        background: hero.owned
+                          ? "linear-gradient(135deg, rgba(51,65,85,0.6), rgba(30,41,59,0.8))"
+                          : "linear-gradient(135deg, #f59e0b, #d97706)",
+                        boxShadow: hero.owned
+                          ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 6px rgba(0,0,0,0.2)"
+                          : "0 0 20px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
+                        border: hero.owned ? "1px solid rgba(71,85,105,0.5)" : "none",
+                      }}
+                    >
+                      {hero.owned ? (
+                        <span className="flex items-center gap-1.5">
+                          <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                          </svg>
+                          <span className="text-slate-300 text-xs font-bold uppercase tracking-wider">
+                            {t("shop.owned")}
+                          </span>
+                        </span>
+                      ) : (
+                        <>
+                          <img src="/logo-moneda.png" alt="" className="w-5 h-5" draggable={false} />
+                          <span className="text-black text-sm font-extrabold tabular-nums">
+                            {heroPrice.toLocaleString()}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            })()}
+
+            {/* ═══ Fila 2 — Grid 2 columnas (normales) ═══ */}
+            {mobileItems.length > 1 && (
+              <div className="grid grid-cols-2 gap-4">
+                {mobileItems.slice(1, 3).map((item, idx) => {
+                  const tierHex = getTierHex(item.tier);
+                  const name = getAvatarName(item);
+                  const price = item.price ?? 0;
+                  const tierLabel = lang === "es"
+                    ? (TIER_COLORS[item.tier] || TIER_COLORS.rookie).label_es
+                    : (TIER_COLORS[item.tier] || TIER_COLORS.rookie).label_en;
+
+                  return (
+                    <motion.button
+                      key={item.id}
+                      onClick={() => setSelectedItem(item)}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + idx * 0.08, type: "spring", stiffness: 300, damping: 26 }}
+                      className="relative flex flex-col items-center rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-4 pt-5 overflow-hidden aspect-3/4"
+                      style={{
+                        background: "linear-gradient(175deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95))",
+                        border: `1px solid ${tierHex}40`,
+                        boxShadow: `0 0 18px ${tierHex}10, 0 4px 20px rgba(0,0,0,0.3)`,
+                      }}
+                    >
+                      {/* Top accent */}
+                      <div
+                        className="absolute top-0 left-3 right-3 h-px rounded-full"
+                        style={{ background: `linear-gradient(90deg, transparent, ${tierHex}50, transparent)` }}
+                      />
+
+                      {/* Owned badge */}
+                      {item.owned && (
+                        <div
+                          className="absolute top-2.5 right-2.5 z-10 w-6 h-6 rounded-full flex items-center justify-center"
+                          style={{
+                            background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                            boxShadow: "0 0 10px rgba(34,197,94,0.4), 0 2px 4px rgba(0,0,0,0.3)",
+                          }}
+                        >
+                          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                        </div>
+                      )}
+
+                      {/* Avatar centrado */}
+                      <div className="relative mb-3">
+                        <div
+                          className="absolute inset-0 rounded-full blur-xl opacity-25 scale-130"
+                          style={{ background: `radial-gradient(circle, ${tierHex}, transparent 70%)` }}
+                        />
+                        <div
+                          className="relative w-20 h-20 rounded-full p-0.5 overflow-hidden"
+                          style={{
+                            background: `conic-gradient(from 180deg, ${tierHex}, ${tierHex}30 40%, ${tierHex} 60%, ${tierHex}30)`,
+                            boxShadow: `0 0 16px ${tierHex}20`,
+                          }}
+                        >
+                          <div className="w-full h-full rounded-full overflow-hidden bg-[#0a0f1e]">
+                            <img
+                              src={getAvatarImgSrc(item)}
+                              alt={name}
+                              className="w-full h-full object-cover"
+                              draggable={false}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Nombre */}
+                      <span className="text-sm font-extrabold text-white text-center line-clamp-1 leading-tight mb-1">
+                        {name}
+                      </span>
+
+                      {/* Tier badge */}
+                      <span
+                        className="text-[9px] font-black uppercase tracking-[0.15em] px-2 py-0.5 rounded-full mb-auto"
+                        style={{
+                          color: tierHex,
+                          background: `${tierHex}12`,
+                          border: `1px solid ${tierHex}30`,
+                        }}
+                      >
+                        {tierLabel}
+                      </span>
+
+                      {/* Botón de compra (pegado abajo) */}
+                      <div
+                        className="flex items-center justify-center gap-2 w-full py-2 rounded-xl mt-3"
+                        style={{
+                          background: item.owned
+                            ? "linear-gradient(135deg, rgba(51,65,85,0.6), rgba(30,41,59,0.8))"
+                            : "linear-gradient(135deg, #10b981, #059669)",
+                          boxShadow: item.owned
+                            ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 6px rgba(0,0,0,0.2)"
+                            : "0 0 12px rgba(16,185,129,0.25), inset 0 1px 0 rgba(255,255,255,0.15)",
+                          border: item.owned ? "1px solid rgba(71,85,105,0.5)" : "none",
+                        }}
+                      >
+                        {item.owned ? (
+                          <span className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            <span className="text-slate-300 text-[11px] font-bold uppercase tracking-wider">
+                              {t("shop.owned")}
+                            </span>
+                          </span>
+                        ) : (
+                          <>
+                            <img src="/logo-moneda.png" alt="" className="w-4 h-4" draggable={false} />
+                            <span className="text-white text-sm font-extrabold tabular-nums">
+                              {price.toLocaleString()}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* ═══ Footer marca de agua ═══ */}
+        <div className="mt-12 mb-6 flex flex-col items-center justify-center">
+          <div className="w-16 h-[1px] bg-slate-700 mb-4" />
+          <img
+            src="/logo.png"
+            alt="ARCADE"
+            className="h-8 opacity-30 mb-1 grayscale"
+            draggable={false}
+          />
+          <span className="text-slate-600 font-black tracking-[0.3em] uppercase text-sm">
+            ARCADE
+          </span>
+          <span className="text-[10px] text-slate-500 font-medium tracking-wider mt-2">
+            {lang === "es" ? "NUEVOS COSMÉTICOS CADA SEMANA" : "NEW COSMETICS EVERY WEEK"}
+          </span>
+        </div>
+
+      </div>
+
+      {/* ═════ DESKTOP LAYOUT (scrollable) ═════ */}
+      <div className="hidden md:flex md:flex-col flex-1 overflow-y-auto pt-24 pb-10 px-4">
+        {/* Temporizador de rotación */}
+        <div className="mb-5 shrink-0">
           <RotationTimer t={t} />
         </div>
 
         {/* Título de sección */}
-        <div className="flex items-center gap-2.5 mb-5 ml-1">
+        <div className="flex items-center gap-2.5 mb-5 ml-1 shrink-0">
           <h2 className="text-xs font-extrabold tracking-[0.18em] uppercase text-white/50">
             {t("shop.avatars_title")}
           </h2>
@@ -476,8 +849,8 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
             <p className="text-white/30 text-sm">{t("shop.empty")}</p>
           </div>
         ) : (
-          /* ── Podio + grid ── */
           <div className="flex flex-col gap-6">
+
             {/* ─ Podio top 3 ─ */}
             <div
               className="flex items-end justify-center gap-3"
