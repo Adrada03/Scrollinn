@@ -60,6 +60,8 @@ const translations = {
 
     // ── Gallery Modal ───────────────────────────
     "gallery.choose":      "Elige un juego",
+    "gallery.search":      "Buscar juego...",
+    "gallery.noResults":   "No se encontraron juegos",
 
     // ── Game Over Panel ─────────────────────────
     "gameover.user":       "Usuario",
@@ -371,6 +373,18 @@ const translations = {
     "shop.login_required":  "Inicia sesión para comprar",
     "shop.rotation":        "NUEVA ROTACIÓN EN",
     "shop.days":            "D",
+
+    // ── Daily Challenges ─────────────────────────
+    "challenges.title":          "Desafíos Diarios",
+    "challenges.subtitle":       "Completa retos para ganar monedas",
+    "challenges.no_challenges":  "No hay retos disponibles hoy",
+    "challenges.come_back":      "Vuelve mañana para nuevos desafíos",
+    "challenges.all_complete":   "Todo completado — +50 XP",
+    "challenges.completed":      "Completado",
+    "challenges.claiming":       "Reclamando...",
+    "challenges.claim":          "RECLAMAR +{{coins}}",
+    "challenges.in_progress":    "En progreso",
+    "challenges.daily_bonus":    "¡Bono diario!",
   },
 
   en: {
@@ -419,6 +433,8 @@ const translations = {
 
     // ── Gallery Modal ───────────────────────────
     "gallery.choose":      "Choose a game",
+    "gallery.search":      "Search game...",
+    "gallery.noResults":   "No games found",
 
     // ── Game Over Panel ─────────────────────────
     "gameover.user":       "User",
@@ -727,6 +743,18 @@ const translations = {
     "shop.login_required":  "Log in to purchase",
     "shop.rotation":        "NEW ROTATION IN",
     "shop.days":            "D",
+
+    // ── Daily Challenges ─────────────────────────
+    "challenges.title":          "Daily Challenges",
+    "challenges.subtitle":       "Complete challenges to earn coins",
+    "challenges.no_challenges":  "No challenges available today",
+    "challenges.come_back":      "Come back tomorrow for new challenges",
+    "challenges.all_complete":   "All complete — +50 XP",
+    "challenges.completed":      "Completed",
+    "challenges.claiming":       "Claiming...",
+    "challenges.claim":          "CLAIM +{{coins}}",
+    "challenges.in_progress":    "In progress",
+    "challenges.daily_bonus":    "Daily bonus!",
   },
 };
 

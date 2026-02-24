@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { submitScore, getTop5, incrementPlays } from '../services/gameService';
+import { evaluateAndSaveChallenges } from '../services/challengeService';
 import { t } from '../i18n';
 
 /**
@@ -47,6 +48,10 @@ export function useSubmitScore(userId, gameId) {
             message: t('svc.register_to_save'),
           };
           setLastResult(result);
+        }
+        // Evaluar retos diarios (fire-and-forget, nunca bloquea el Game Over)
+        if (userId && gameId) {
+          evaluateAndSaveChallenges(userId, gameId, score).catch(() => {});
         }
       } catch (err) {
         setError(err.message);

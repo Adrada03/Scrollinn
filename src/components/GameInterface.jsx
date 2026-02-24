@@ -9,10 +9,13 @@
  * Nota: el header (logo, idioma, login) ahora vive en <TopNav />
  */
 
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import Countdown from "./Countdown";
 import ActionBar from "./ActionBar";
+import DailyChallengesModal from "./DailyChallengesModal";
 import { useLanguage } from "../i18n";
+import { useAuth } from "../context/AuthContext";
+import { getTodayChallenges, getChallengeStatus } from "../services/challengeService";
 
 const GameInterface = ({
   game,
@@ -26,7 +29,28 @@ const GameInterface = ({
   hasRealGame,
 }) => {
   const { t } = useLanguage();
+  const { currentUser } = useAuth();
   const description = t(`desc.${game.id}`);
+  const [isChallengesModalOpen, setIsChallengesModalOpen] = useState(false);
+  const [challengeStatus, setChallengeStatus] = useState("pending");
+
+  // Fetch challenge status on mount + refresh after any game over upsert
+  const refreshChallengeStatus = useCallback(() => {
+    if (!currentUser?.id) { setChallengeStatus("none"); return; }
+    getTodayChallenges(currentUser.id).then((data) => {
+      setChallengeStatus(getChallengeStatus(data));
+    });
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    refreshChallengeStatus();
+  }, [refreshChallengeStatus]);
+
+  useEffect(() => {
+    const handler = () => refreshChallengeStatus();
+    window.addEventListener("challenges-updated", handler);
+    return () => window.removeEventListener("challenges-updated", handler);
+  }, [refreshChallengeStatus]);
 
   const handleCountdownDone = useCallback(() => {
     onCountdownComplete();
@@ -34,13 +58,24 @@ const GameInterface = ({
 
   return (
     <div className="absolute inset-0 z-20 pointer-events-none">
-      {/* ========== ACTION BAR ========== */}
-      <div className="absolute right-3 bottom-44 md:bottom-52 pointer-events-auto">
+      {/* ========== ACTION STACK (estilo TikTok/Reels) ========== */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-6 pointer-events-auto">
         <ActionBar
           likes={likes}
           isLiked={isLiked}
           onLike={onLike}
           onOpenGallery={onOpenGallery}
+          onOpenChallenges={() => setIsChallengesModalOpen(true)}
+          challengeStatus={challengeStatus}
+        />
+      </div>
+
+      {/* ========== MODAL RETOS DIARIOS ========== */}
+      <div className="pointer-events-auto">
+        <DailyChallengesModal
+          isOpen={isChallengesModalOpen}
+          onClose={() => setIsChallengesModalOpen(false)}
+          onStateChange={setChallengeStatus}
         />
       </div>
 

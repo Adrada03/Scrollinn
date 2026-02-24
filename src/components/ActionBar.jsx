@@ -17,11 +17,11 @@ const btnBase =
   "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-colors " +
   "bg-black/40 backdrop-blur-sm border border-white/15 hover:bg-black/60";
 
-const ActionBar = ({ likes, isLiked, onLike, onOpenGallery }) => {
+const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenChallenges, challengeStatus = "pending" }) => {
   const { t } = useLanguage();
   return (
-    <div className="flex flex-col items-center gap-5 md:gap-6">
-      {/* === Like === */}
+    <div className="flex flex-col items-center gap-6">
+      {/* === 1. Like === */}
       <button
         onClick={onLike}
         className="flex flex-col items-center gap-1 group cursor-pointer"
@@ -32,7 +32,7 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery }) => {
           animate={isLiked ? { scale: [1, 1.3, 1] } : {}}
           transition={{ duration: 0.3 }}
           className={`${btnBase} ${
-            isLiked ? "!bg-red-500/25 !border-red-500/30" : ""
+            isLiked ? "bg-red-500/25! border-red-500/30!" : ""
           }`}
         >
           {isLiked ? (
@@ -50,7 +50,31 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery }) => {
         </span>
       </button>
 
-      {/* === Galería === */}
+      {/* === 2. Retos Diarios (Daily Challenges) === */}
+      <button
+        onClick={onOpenChallenges}
+        className="flex flex-col items-center gap-1 group cursor-pointer"
+        aria-label="Retos Diarios"
+      >
+        <div className={`${btnBase} relative ${challengeStatus === "allDone" ? "bg-emerald-500/20! border-emerald-500/30!" : ""}`}>
+          {/* Icono de target / diana */}
+          <svg xmlns="http://www.w3.org/2000/svg" className={`w-6 h-6 md:w-7 md:h-7 ${challengeStatus === "allDone" ? "text-emerald-400" : "text-white"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" />
+          </svg>
+          {/* Notification dot — color depends on challenge status */}
+          {challengeStatus === "pending" && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+          )}
+          {challengeStatus === "claimable" && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+          )}
+        </div>
+        <span className={`text-xs md:text-sm font-semibold drop-shadow ${challengeStatus === "allDone" ? "text-emerald-400" : "text-white/80"}`}>Retos</span>
+      </button>
+
+      {/* === 3. Galería === */}
       <button
         onClick={onOpenGallery}
         className="flex flex-col items-center gap-1 group cursor-pointer"

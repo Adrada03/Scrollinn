@@ -328,7 +328,69 @@ app.post("/api/scores", async (req, res) => {
     // Incrementar total_plays siempre que se juega
     await pool.query("UPDATE games SET total_plays = total_plays + 1 WHERE id = $1", [gameId]);
 
-    // 4. Devolver el ranking actualizado de hoy (1 entrada por usuario)
+    // ────────────────────────────────────────────────────────────────────────
+    // 5. PROGRESO DE RETOS DIARIOS
+    //
+    // Tras cada partida, comprobamos si hay retos activos hoy que apliquen a
+    // este juego (o a "cualquier juego" si target_game_id IS NULL).
+    // Solo cuenta como "partida válida" si score >= target_score del reto.
+    // Incrementamos current_progress hasta target_plays (nunca más allá).
+    // No tocamos retos ya reclamados (is_claimed = true).
+    // ────────────────────────────────────────────────────────────────────────
+    try {
+      const todayDate = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+
+      // 5a. Buscar retos activos hoy que apliquen a este juego (o a cualquier juego).
+      //     La condición de score depende de is_lower_better:
+      //       - Normal (higher is better): score >= target_score
+      //       - Invertido (lower is better, ej: Timer): score <= target_score
+      //     Si target_score = 0 (reto tipo "solo juega"), siempre se cumple.
+      const scoreCondition = isLowerBetter
+        ? "$2 <= target_score OR target_score = 0"
+        : "$2 >= target_score";
+
+      const challengesResult = await pool.query(
+        `SELECT id, target_score, target_plays
+         FROM daily_challenges
+         WHERE active_date = $1
+           AND (${scoreCondition})
+           AND (target_game_id = $3 OR target_game_id IS NULL)`,
+        [todayDate, score, gameId]
+      );
+
+      const matchingChallenges = challengesResult.rows;
+
+      if (matchingChallenges.length > 0) {
+        for (const challenge of matchingChallenges) {
+          // 5b. Upsert en user_challenge_progress:
+          //     - INSERT si no existe fila → current_progress = 1
+          //     - UPDATE si existe, aún no reclamado y no ha llegado al objetivo
+          //       → current_progress + 1 (sin superar target_plays)
+          await pool.query(
+            `INSERT INTO user_challenge_progress (user_id, challenge_id, current_progress, is_claimed, updated_at)
+             VALUES ($1, $2, 1, false, NOW())
+             ON CONFLICT (user_id, challenge_id) DO UPDATE
+               SET current_progress = LEAST(
+                     user_challenge_progress.current_progress + 1,
+                     $3
+                   ),
+                   updated_at = NOW()
+             WHERE user_challenge_progress.is_claimed = false
+               AND user_challenge_progress.current_progress < $3`,
+            [userId, challenge.id, challenge.target_plays]
+          );
+        }
+
+        console.log(
+          `[CHALLENGES] Usuario ${userId} — ${matchingChallenges.length} reto(s) evaluado(s) para ${gameId} (score: ${score})`
+        );
+      }
+    } catch (challengeErr) {
+      // No bloquear la respuesta si falla la lógica de retos
+      console.warn("[CHALLENGES] Error al actualizar progreso:", challengeErr.message);
+    }
+
+    // 6. Devolver el ranking actualizado de hoy (1 entrada por usuario)
     const rankingResult = await pool.query(
       `SELECT sub.score, sub.username, sub.achieved_at FROM (
          SELECT DISTINCT ON (s.user_id) s.score, u.username, s.achieved_at

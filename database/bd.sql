@@ -137,3 +137,38 @@ CREATE TABLE user_avatars (
     unlocked_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, avatar_id) -- Previene que un usuario tenga el mismo avatar 2 veces
 );
+
+-- ==========================================
+-- 11. RETOS DIARIOS (SISTEMA UNIVERSAL AND)
+-- ==========================================
+CREATE TABLE daily_challenges (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    active_date DATE NOT NULL,
+    title_es VARCHAR NOT NULL,
+    title_en VARCHAR NOT NULL,
+    description_es TEXT NOT NULL,
+    description_en TEXT NOT NULL,
+    
+    -- LA MAGIA ESTÁ AQUÍ:
+    target_game_id VARCHAR REFERENCES games(id), -- Si es NULL, vale para cualquier juego
+    target_score INT4 NOT NULL DEFAULT 0,        -- Condición 1: Puntuación mínima exigida
+    target_plays INT4 NOT NULL DEFAULT 1,        -- Condición 2: Cuántas veces hay que lograrlo
+    
+    reward_coins INT4 NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_daily_challenges_date ON daily_challenges(active_date);
+
+-- ==========================================
+-- 12. PROGRESO DE LOS USUARIOS EN LOS RETOS
+-- ==========================================
+CREATE TABLE user_challenge_progress (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    challenge_id UUID NOT NULL REFERENCES daily_challenges(id) ON DELETE CASCADE,
+    current_progress INT4 DEFAULT 0, -- Medirá cuántas "plays" válidas lleva
+    is_claimed BOOLEAN DEFAULT false,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, challenge_id)
+);
