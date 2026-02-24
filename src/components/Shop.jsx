@@ -558,7 +558,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 26 }}
-                  className="w-full relative flex flex-row items-center rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-[3vw] overflow-hidden"
+                  className="w-full shrink-0 relative flex flex-row items-center rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-[3vw] overflow-hidden"
                   style={{
                     background: "linear-gradient(135deg, rgba(55,48,20,0.8), rgba(30,25,10,0.95))",
                     border: "2px solid rgba(251,191,36,0.7)",
@@ -598,8 +598,10 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                       style={{ background: `radial-gradient(circle, ${heroTierHex}, transparent 70%)` }}
                     />
                     <div
-                      className="relative w-[22vw] h-[22vw] rounded-xl p-0.5 overflow-hidden"
+                      className="relative rounded-xl p-0.5 overflow-hidden"
                       style={{
+                        width: "min(22vw, 12dvh)",
+                        height: "min(22vw, 12dvh)",
                         background: "conic-gradient(from 180deg, #fbbf24, #92400e 40%, #fbbf24 60%, #92400e)",
                         boxShadow: "0 0 30px rgba(250,204,21,0.4), 0 0 60px rgba(250,204,21,0.12)",
                       }}
@@ -676,7 +678,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
 
             {/* ═══ Fila 2 — Grid 2 columnas (normales) ═══ */}
             {mobileItems.length > 1 && (
-              <div className="flex-1 grid grid-cols-2 gap-[1.5dvh] min-h-0">
+              <div className="flex-1 grid grid-cols-2 gap-[1.5dvh] min-h-0 overflow-hidden">
                 {mobileItems.slice(1, 3).map((item, idx) => {
                   const tierHex = getTierHex(item.tier);
                   const name = getAvatarName(item);
@@ -692,7 +694,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 + idx * 0.08, type: "spring", stiffness: 300, damping: 26 }}
-                      className="relative flex flex-col items-center justify-center gap-[1dvh] rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-[3vw] overflow-hidden"
+                      className="relative flex flex-col items-center justify-center gap-[0.8dvh] rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-[2.5vw] overflow-hidden"
                       style={{
                         background: "linear-gradient(175deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95))",
                         border: `1px solid ${tierHex}40`,
@@ -727,8 +729,10 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                           style={{ background: `radial-gradient(circle, ${tierHex}, transparent 70%)` }}
                         />
                         <div
-                          className="relative w-[24vw] h-[24vw] rounded-full p-0.5 overflow-hidden"
+                          className="relative rounded-full p-0.5 overflow-hidden"
                           style={{
+                            width: "min(24vw, 12dvh)",
+                            height: "min(24vw, 12dvh)",
                             background: `conic-gradient(from 180deg, ${tierHex}, ${tierHex}30 40%, ${tierHex} 60%, ${tierHex}30)`,
                             boxShadow: `0 0 16px ${tierHex}20`,
                           }}
