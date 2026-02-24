@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../i18n";
 import { getTodayChallenges, claimReward, getChallengeStatus } from "../services/challengeService";
+import { getSpanishDateString, getMsUntilSpanishMidnight } from "../utils/dateUtils";
 
 // ─── SVG Icons (inline, zero dependencies) ───────────────────────────────────
 
@@ -340,38 +341,18 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
   const [showXPCelebration, setShowXPCelebration] = useState(false);
   const [xpBonusClaimed, setXpBonusClaimed] = useState(false);
   const [resetCountdown, setResetCountdown] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // ── Reset timer: countdown to 00:00 Europe/Madrid ──
+  // ── Reset timer: countdown to 00:00 Europe/Madrid + auto-refetch ──
   useEffect(() => {
     if (!isOpen) return;
 
+    // Guardamos la fecha española al montar para detectar cambio de día
+    let lastSpanishDate = getSpanishDateString();
+
     const calcTimeLeft = () => {
-      const now = new Date();
-      // Build a formatter that gives us the current date parts in Madrid TZ
-      const madridParts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Europe/Madrid",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).formatToParts(now);
-
-      const get = (type) => madridParts.find((p) => p.type === type)?.value;
-      const madridYear = +get("year");
-      const madridMonth = +get("month");
-      const madridDay = +get("day");
-      const madridH = +get("hour");
-      const madridM = +get("minute");
-      const madridS = +get("second");
-
-      // Seconds since midnight in Madrid
-      const secsSinceMidnight = madridH * 3600 + madridM * 60 + madridS;
-      // Seconds until next midnight
-      let secsLeft = 86400 - secsSinceMidnight;
-      if (secsLeft <= 0) secsLeft = 0;
+      const msLeft = getMsUntilSpanishMidnight();
+      const secsLeft = Math.floor(msLeft / 1000);
 
       const hh = String(Math.floor(secsLeft / 3600)).padStart(2, "0");
       const mm = String(Math.floor((secsLeft % 3600) / 60)).padStart(2, "0");
@@ -380,14 +361,26 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
     };
 
     setResetCountdown(calcTimeLeft());
-    const id = setInterval(() => setResetCountdown(calcTimeLeft()), 1000);
+
+    const id = setInterval(() => {
+      const currentSpanishDate = getSpanishDateString();
+
+      // Si el día cambió → medianoche en Madrid → refetch automático
+      if (currentSpanishDate !== lastSpanishDate) {
+        lastSpanishDate = currentSpanishDate;
+        setRefreshKey((k) => k + 1);
+      }
+
+      setResetCountdown(calcTimeLeft());
+    }, 1000);
+
     return () => clearInterval(id);
   }, [isOpen]);
 
-  // Derived: XP bonus localStorage key
-  const today = new Date().toISOString().slice(0, 10);
+  // Derived: XP bonus localStorage key (siempre Europe/Madrid)
+  const todayMadrid = getSpanishDateString();
   const xpBonusKey = currentUser?.id
-    ? `scrollinn_daily_xp_${currentUser.id}_${today}`
+    ? `scrollinn_daily_xp_${currentUser.id}_${todayMadrid}`
     : null;
 
   // Re-check XP bonus state when modal opens
@@ -398,7 +391,6 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
   }, [isOpen, xpBonusKey]);
 
   // ── Fetch challenges when modal opens or after a game-over upsert ──
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!isOpen) return;

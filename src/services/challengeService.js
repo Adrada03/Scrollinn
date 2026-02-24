@@ -7,6 +7,7 @@
  */
 
 import { supabase } from "../supabaseClient";
+import { getSpanishDateString } from "../utils/dateUtils";
 
 /**
  * Devuelve los retos activos de HOY junto con el progreso del usuario.
@@ -28,8 +29,8 @@ import { supabase } from "../supabaseClient";
  */
 export async function getTodayChallenges(userId = null) {
   try {
-    // Fecha de hoy en formato YYYY-MM-DD (zona local del servidor/Supabase)
-    const today = new Date().toISOString().slice(0, 10);
+    // Fecha de hoy en formato YYYY-MM-DD (siempre Europe/Madrid)
+    const today = getSpanishDateString();
 
     // 1. Traer los retos del día
     const { data: challenges, error: chError } = await supabase
@@ -153,7 +154,7 @@ export async function evaluateAndSaveChallenges(userId, gameId, finalScore) {
     if (!userId) return;
 
     // ── Paso 1: Obtener retos de hoy + progreso actual ──────────────────
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getSpanishDateString();
 
     const { data: challenges, error: chErr } = await supabase
       .from("daily_challenges")
