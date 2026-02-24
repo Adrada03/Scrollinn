@@ -135,7 +135,7 @@ const EpicTimer = ({ t }) => {
   return (
     <div className="flex flex-col items-center justify-center">
       {/* Label */}
-      <span className="text-slate-400 text-[10px] font-extrabold tracking-[0.25em] uppercase mb-2">
+      <span className="text-slate-400 text-[10px] font-extrabold tracking-[0.25em] uppercase mb-1">
         {t("shop.rotation")}
       </span>
 
@@ -175,7 +175,7 @@ const EpicTimer = ({ t }) => {
       </div>
 
       {/* Accent line */}
-      <div className="w-32 h-px mt-4 bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
+      <div className="w-28 h-px mt-2 bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
     </div>
   );
 };
@@ -499,11 +499,11 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
         </div>
       </div>
 
-      {/* ═════ MOBILE LAYOUT — Fortnite / Brawl Stars style (natural flow) ═════ */}
-      <div className="md:hidden flex flex-col w-full px-4 pb-8 pt-16 bg-[#0B0E17]">
+      {/* ═════ MOBILE LAYOUT — Escala al viewport, sin scroll ═════ */}
+      <div className="md:hidden flex flex-col h-dvh w-full px-4 pt-16 pb-[2dvh] bg-[#0B0E17]">
 
-        {/* ── 1. FILA DE MONEDAS (dedicada, flujo normal) ── */}
-        <div className="w-full flex justify-end mb-6">
+        {/* ── 1. FILA DE MONEDAS ── */}
+        <div className="shrink-0 w-full flex justify-end mb-[1.5dvh]">
           <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-yellow-500/30 rounded-full px-4 py-2 shadow-lg shadow-yellow-500/10">
             <img src="/logo-moneda.png" alt={t("shop.coins")} className="w-7 h-7 drop-shadow-md" draggable={false} />
             <span className="text-yellow-400 font-bold text-base tabular-nums tracking-wide drop-shadow-md">
@@ -513,12 +513,12 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
         </div>
 
         {/* ── 2. FILA DEL TEMPORIZADOR ── */}
-        <div className="flex flex-col items-center mb-8">
+        <div className="shrink-0 flex flex-col items-center mb-[1.5dvh]">
           <EpicTimer t={t} />
         </div>
 
         {/* ── Separador "AVATARES" ── */}
-        <div className="w-full border-b border-slate-700/50 pb-2 mb-2">
+        <div className="shrink-0 w-full border-b border-slate-700/50 pb-1.5 mb-[1dvh]">
           <span className="text-slate-500 text-xs font-bold tracking-widest uppercase">
             {t("shop.avatars_title")}
           </span>
@@ -526,11 +526,11 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
 
         {/* ── Tarjetas ── */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex-1 flex items-center justify-center">
             <div className="w-7 h-7 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center text-center gap-3 px-4 py-16">
+          <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 px-4">
             <div className="w-16 h-16 rounded-2xl bg-white/3 border border-white/10 flex items-center justify-center">
               <svg className="w-8 h-8 text-white/20" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
@@ -539,7 +539,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
             <p className="text-white/30 text-sm">{t("shop.empty")}</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4 mt-6">
+          <div className="flex-1 flex flex-col gap-[1.5dvh] mt-[1.5dvh] min-h-0">
 
             {/* ═══ Fila 1 — DESTACADO (Hero card) ═══ */}
             {mobileItems[0] && (() => {
@@ -558,7 +558,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 26 }}
-                  className="w-full relative flex flex-row items-center rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-4 overflow-hidden"
+                  className="w-full relative flex flex-row items-center rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-[3vw] overflow-hidden"
                   style={{
                     background: "linear-gradient(135deg, rgba(55,48,20,0.8), rgba(30,25,10,0.95))",
                     border: "2px solid rgba(251,191,36,0.7)",
@@ -598,7 +598,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                       style={{ background: `radial-gradient(circle, ${heroTierHex}, transparent 70%)` }}
                     />
                     <div
-                      className="relative w-28 h-28 rounded-xl p-0.5 overflow-hidden"
+                      className="relative w-[22vw] h-[22vw] rounded-xl p-0.5 overflow-hidden"
                       style={{
                         background: "conic-gradient(from 180deg, #fbbf24, #92400e 40%, #fbbf24 60%, #92400e)",
                         boxShadow: "0 0 30px rgba(250,204,21,0.4), 0 0 60px rgba(250,204,21,0.12)",
@@ -676,7 +676,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
 
             {/* ═══ Fila 2 — Grid 2 columnas (normales) ═══ */}
             {mobileItems.length > 1 && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex-1 grid grid-cols-2 gap-[1.5dvh] min-h-0">
                 {mobileItems.slice(1, 3).map((item, idx) => {
                   const tierHex = getTierHex(item.tier);
                   const name = getAvatarName(item);
@@ -692,7 +692,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 + idx * 0.08, type: "spring", stiffness: 300, damping: 26 }}
-                      className="relative flex flex-col items-center rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-4 pt-5 overflow-hidden aspect-3/4"
+                      className="relative flex flex-col items-center justify-center gap-[1dvh] rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-150 p-[3vw] overflow-hidden"
                       style={{
                         background: "linear-gradient(175deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95))",
                         border: `1px solid ${tierHex}40`,
@@ -721,13 +721,13 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                       )}
 
                       {/* Avatar centrado */}
-                      <div className="relative mb-3">
+                      <div className="relative">
                         <div
                           className="absolute inset-0 rounded-full blur-xl opacity-25 scale-130"
                           style={{ background: `radial-gradient(circle, ${tierHex}, transparent 70%)` }}
                         />
                         <div
-                          className="relative w-20 h-20 rounded-full p-0.5 overflow-hidden"
+                          className="relative w-[24vw] h-[24vw] rounded-full p-0.5 overflow-hidden"
                           style={{
                             background: `conic-gradient(from 180deg, ${tierHex}, ${tierHex}30 40%, ${tierHex} 60%, ${tierHex}30)`,
                             boxShadow: `0 0 16px ${tierHex}20`,
@@ -745,13 +745,13 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                       </div>
 
                       {/* Nombre */}
-                      <span className="text-sm font-extrabold text-white text-center line-clamp-1 leading-tight mb-1">
+                      <span className="text-sm font-extrabold text-white text-center line-clamp-1 leading-tight">
                         {name}
                       </span>
 
                       {/* Tier badge */}
                       <span
-                        className="text-[9px] font-black uppercase tracking-[0.15em] px-2 py-0.5 rounded-full mb-auto"
+                        className="text-[9px] font-black uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
                         style={{
                           color: tierHex,
                           background: `${tierHex}12`,
@@ -761,9 +761,9 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
                         {tierLabel}
                       </span>
 
-                      {/* Botón de compra (pegado abajo) */}
+                      {/* Botón de compra */}
                       <div
-                        className="flex items-center justify-center gap-2 w-full py-2 rounded-xl mt-3"
+                        className="flex items-center justify-center gap-2 w-full py-[1dvh] rounded-xl"
                         style={{
                           background: item.owned
                             ? "linear-gradient(135deg, rgba(51,65,85,0.6), rgba(30,41,59,0.8))"
@@ -802,18 +802,18 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
         )}
 
         {/* ═══ Footer marca de agua ═══ */}
-        <div className="mt-12 mb-6 flex flex-col items-center justify-center">
-          <div className="w-16 h-[1px] bg-slate-700 mb-4" />
+        <div className="shrink-0 mt-[2dvh] flex flex-col items-center justify-center">
+          <div className="w-12 h-px bg-slate-700 mb-2" />
           <img
             src="/logo.png"
             alt="ARCADE"
-            className="h-8 opacity-30 mb-1 grayscale"
+            className="h-6 opacity-30 mb-0.5 grayscale"
             draggable={false}
           />
           <span className="text-slate-600 font-black tracking-[0.3em] uppercase text-sm">
             ARCADE
           </span>
-          <span className="text-[10px] text-slate-500 font-medium tracking-wider mt-2">
+          <span className="text-[9px] text-slate-500 font-medium tracking-wider mt-1">
             {lang === "es" ? "NUEVOS COSMÉTICOS CADA SEMANA" : "NEW COSMETICS EVERY WEEK"}
           </span>
         </div>
