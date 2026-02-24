@@ -100,7 +100,8 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
   const tierHexDim = level != null ? getTierHexColorDim(level) : null;
   const tierText = level != null ? getTierTextColor(level) : "";
   const tierName = level != null ? getTierName(level) : "";
-  const progress = user ? getLevelProgress(user.xp ?? 0) : 0;
+  const progressData = user ? getLevelProgress(user.xp ?? 0) : { percentage: 0 };
+  const progress = progressData.percentage;
 
   return (
     <AnimatePresence>

@@ -4,29 +4,32 @@
  * El nivel se calcula al vuelo a partir del XP (Single Source of Truth).
  * NO existe columna `level` en la BD; es un valor derivado.
  *
- * Fórmula: level = floor(0.1 * sqrt(xp)) + 1
+ * Progresión triangular x10:
+ *   XP para nivel L = 500 * L * (L - 1)
+ *   Nivel desde XP  = floor((1 + sqrt(1 + 8*xp/1000)) / 2)
  */
 
 /**
  * Calcula el nivel a partir de la experiencia acumulada.
+ * Fórmula inversa ajustada (x10): el divisor pasa de 100 a 1000.
  * @param {number} xp - Experiencia total del usuario (≥ 0).
  * @returns {number} Nivel actual (mínimo 1).
  */
 export function getLevelFromXP(xp = 0) {
-  return Math.floor(0.1 * Math.sqrt(Math.max(0, xp))) + 1;
+  const safeXP = Math.max(0, xp);
+  return Math.floor((1 + Math.sqrt(1 + 8 * safeXP / 1000)) / 2);
 }
 
 /**
  * Devuelve el XP total necesario para alcanzar un nivel dado.
- * Inversa de getLevelFromXP: level = floor(0.1 * sqrt(xp)) + 1
- *   → xp = ((level - 1) / 0.1)² = (10 * (level - 1))²
+ * Progresión triangular x10: 500 * level * (level - 1).
  *
  * @param {number} level - El nivel objetivo.
  * @returns {number} XP total requerido para llegar a ese nivel.
  */
 export function getXPForLevel(level) {
   if (level <= 1) return 0;
-  return Math.pow(10 * (level - 1), 2);
+  return 500 * level * (level - 1);
 }
 
 /**
@@ -45,19 +48,26 @@ export function getXPRequiredForNextLevel(currentLevel) {
  * y el siguiente.
  *
  * @param {number} xp - Experiencia total del usuario.
- * @returns {number} Progreso en porcentaje (0–100).
+ * @returns {{ level: number, currentLevelXP: number, nextLevelXP: number, percentage: number }}
  */
 export function getLevelProgress(xp = 0) {
   const safeXP = Math.max(0, xp);
   const level = getLevelFromXP(safeXP);
-  const currentLevelXP = getXPForLevel(level);
-  const nextLevelXP = getXPForLevel(level + 1);
-  const range = nextLevelXP - currentLevelXP;
+  const xpForCurrentLevel = getXPForLevel(level);
+  const xpForNextLevel = getXPForLevel(level + 1);
 
-  if (range <= 0) return 100;
+  const xpIntoCurrentLevel = safeXP - xpForCurrentLevel;
+  const xpNeededForNextLevel = xpForNextLevel - xpForCurrentLevel;
+  const percentage = xpNeededForNextLevel > 0
+    ? Math.min(100, Math.max(0, (xpIntoCurrentLevel / xpNeededForNextLevel) * 100))
+    : 100;
 
-  const progress = ((safeXP - currentLevelXP) / range) * 100;
-  return Math.min(100, Math.max(0, progress));
+  return {
+    level,
+    currentLevelXP: xpIntoCurrentLevel,
+    nextLevelXP: xpNeededForNextLevel,
+    percentage,
+  };
 }
 
 /**

@@ -45,6 +45,13 @@ const IconClipboard = ({ className = "w-6 h-6" }) => (
   </svg>
 );
 
+const IconClock = ({ className = "w-3.5 h-3.5" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
 
 
 // ─── Coin Burst Animation (SVG coins, no emojis) ────────────────────────────
@@ -155,7 +162,7 @@ const XPCelebration = ({ show, t }) => {
             </div>
           </div>
 
-          {/* Big +50 XP */}
+          {/* Big +500 XP */}
           <motion.div
             initial={{ opacity: 0, scale: 0.2, y: 10 }}
             animate={{ opacity: 1, scale: [0.2, 1.3, 1], y: 0 }}
@@ -163,7 +170,7 @@ const XPCelebration = ({ show, t }) => {
             className="relative flex flex-col items-center gap-1.5"
           >
             <span className="text-5xl sm:text-6xl font-black text-emerald-400 drop-shadow-[0_0_30px_rgba(52,211,153,0.8)] tracking-tight">
-              +50 XP
+              +500 XP
             </span>
             <motion.span
               initial={{ opacity: 0 }}
@@ -332,6 +339,50 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
   const [coinBurstTrigger, setCoinBurstTrigger] = useState(0);
   const [showXPCelebration, setShowXPCelebration] = useState(false);
   const [xpBonusClaimed, setXpBonusClaimed] = useState(false);
+  const [resetCountdown, setResetCountdown] = useState("");
+
+  // ── Reset timer: countdown to 00:00 Europe/Madrid ──
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const calcTimeLeft = () => {
+      const now = new Date();
+      // Build a formatter that gives us the current date parts in Madrid TZ
+      const madridParts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Madrid",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(now);
+
+      const get = (type) => madridParts.find((p) => p.type === type)?.value;
+      const madridYear = +get("year");
+      const madridMonth = +get("month");
+      const madridDay = +get("day");
+      const madridH = +get("hour");
+      const madridM = +get("minute");
+      const madridS = +get("second");
+
+      // Seconds since midnight in Madrid
+      const secsSinceMidnight = madridH * 3600 + madridM * 60 + madridS;
+      // Seconds until next midnight
+      let secsLeft = 86400 - secsSinceMidnight;
+      if (secsLeft <= 0) secsLeft = 0;
+
+      const hh = String(Math.floor(secsLeft / 3600)).padStart(2, "0");
+      const mm = String(Math.floor((secsLeft % 3600) / 60)).padStart(2, "0");
+      const ss = String(secsLeft % 60).padStart(2, "0");
+      return `${hh}:${mm}:${ss}`;
+    };
+
+    setResetCountdown(calcTimeLeft());
+    const id = setInterval(() => setResetCountdown(calcTimeLeft()), 1000);
+    return () => clearInterval(id);
+  }, [isOpen]);
 
   // Derived: XP bonus localStorage key
   const today = new Date().toISOString().slice(0, 10);
@@ -419,7 +470,7 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
           updateUser({ coins: result.newCoins });
         }
 
-        // ── Fase 2 (+600 ms): Gran animación +50 XP ──
+        // ── Fase 2 (+600 ms): Gran animación +500 XP ──
         if (isFullClear && typeof result.newXP === "number") {
           setXpBonusClaimed(true);
           if (xpBonusKey) localStorage.setItem(xpBonusKey, "1");
@@ -496,6 +547,19 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
                   </p>
                 </div>
               </div>
+
+              {/* ── Reset Timer Pill ── */}
+              {resetCountdown && (
+                <div className="bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700/50 flex items-center gap-2 w-fit mx-auto mt-2.5">
+                  <IconClock className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    {t("challenges.new_in")}
+                  </span>
+                  <span className="text-xs text-slate-300 font-bold font-mono tabular-nums tracking-wide">
+                    {resetCountdown}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* ── Separator ── */}

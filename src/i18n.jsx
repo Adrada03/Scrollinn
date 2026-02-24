@@ -379,12 +379,13 @@ const translations = {
     "challenges.subtitle":       "Completa retos para ganar monedas",
     "challenges.no_challenges":  "No hay retos disponibles hoy",
     "challenges.come_back":      "Vuelve mañana para nuevos desafíos",
-    "challenges.all_complete":   "Todo completado — +50 XP",
+    "challenges.all_complete":   "Todo completado — +500 XP",
     "challenges.completed":      "Completado",
     "challenges.claiming":       "Reclamando...",
     "challenges.claim":          "RECLAMAR +{{coins}}",
     "challenges.in_progress":    "En progreso",
     "challenges.daily_bonus":    "¡Bono diario!",
+    "challenges.new_in":          "Nuevos retos en",
   },
 
   en: {
@@ -749,12 +750,13 @@ const translations = {
     "challenges.subtitle":       "Complete challenges to earn coins",
     "challenges.no_challenges":  "No challenges available today",
     "challenges.come_back":      "Come back tomorrow for new challenges",
-    "challenges.all_complete":   "All complete — +50 XP",
+    "challenges.all_complete":   "All complete — +500 XP",
     "challenges.completed":      "Completed",
     "challenges.claiming":       "Claiming...",
     "challenges.claim":          "CLAIM +{{coins}}",
     "challenges.in_progress":    "In progress",
     "challenges.daily_bonus":    "Daily bonus!",
+    "challenges.new_in":          "New challenges in",
   },
 };
 

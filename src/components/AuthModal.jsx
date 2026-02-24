@@ -181,7 +181,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser, onOpenAvatarMo
                 const level = getLevelFromXP(xp);
                 const tierHex = getTierHexColor(level);
                 const tierName = getTierName(level);
-                const progress = getLevelProgress(xp);
+                const progress = getLevelProgress(xp).percentage;
                 const topGames = profileData?.topGames ?? [];
                 const careerStats = profileData?.careerStats ?? { totalTop1: 0, totalTop5: 0 };
 

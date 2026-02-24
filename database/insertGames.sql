@@ -28,7 +28,11 @@ INSERT INTO games (id, name, is_lower_better) VALUES
   ('gravity-draw',   'Gravity Draw',   false),
   ('crossroad-dart', 'Crossroad Dart',  false),
   ('mental-math',    'Mental Math',    false),
-  ('perfect-circle', 'Perfect Circle', false)
+  ('perfect-circle', 'Perfect Circle', false),
+  ('higer-lower', 'Higher or Lower', false),
+  ('memory-loop', 'Memory Loop', false),
+  ('overheat', 'Overheat', false)
+
 ON CONFLICT (id) DO UPDATE SET
   name            = EXCLUDED.name,
   is_lower_better = EXCLUDED.is_lower_better;

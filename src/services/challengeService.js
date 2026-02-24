@@ -114,7 +114,7 @@ export async function claimReward(userId, challengeId, rewardCoins, { isFullClea
     let oldXP, newXP;
     if (isFullClear) {
       oldXP = userData.xp ?? 0;
-      newXP = oldXP + 50;
+      newXP = oldXP + 500;
       updatePayload.xp = newXP;
     }
 
@@ -249,7 +249,7 @@ export function getChallengeStatus(challenges) {
  * @param {number} xpAmount
  * @returns {Promise<{ success: boolean, newXP?: number, error?: string }>}
  */
-export async function claimDailyXPBonus(userId, xpAmount = 50) {
+export async function claimDailyXPBonus(userId, xpAmount = 500) {
   try {
     if (!userId) return { success: false, error: "No user" };
 
