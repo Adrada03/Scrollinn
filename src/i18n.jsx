@@ -340,6 +340,31 @@ const translations = {
     "avatar.unlock_starter":  "Regalo de bienvenida",
     "avatar.unlock_unknown":  "Desbloqueo especial",
     "avatar.tier_label":      "Rango",
+
+    // ── Tabs / Nav ───────────────────────────────
+    "tab.all":              "Todos",
+    "tab.favorites":        "Favoritos",
+    "tab.shop":             "Tienda",
+    "tab.fav_locked":       "¡Dale like a 5 juegos para desbloquear tu lista de favoritos! (Llevas {{count}}/5)",
+    "tab.login_required":   "Inicia sesión para acceder",
+
+    // ── Shop ─────────────────────────────────────
+    "shop.title":           "Tienda",
+    "shop.coming_soon":     "Próximamente",
+    "shop.coming_desc":     "Aquí podrás gastar tus monedas en avatares exclusivos, power-ups y mucho más.",
+    "shop.coins":           "Monedas",
+    "shop.avatars_title":   "Avatares",
+    "shop.owned":           "En Propiedad",
+    "shop.buy":             "Comprar",
+    "shop.hold_to_buy":     "Mantener para comprar",
+    "shop.not_enough":      "Faltan Monedas",
+    "shop.purchase_ok":     "¡Avatar desbloqueado!",
+    "shop.purchase_fail":   "Error al comprar. Inténtalo de nuevo.",
+    "shop.loading":         "Cargando tienda...",
+    "shop.empty":           "No hay artículos disponibles aún.",
+    "shop.login_required":  "Inicia sesión para comprar",
+    "shop.rotation":        "NUEVA ROTACIÓN EN",
+    "shop.days":            "D",
   },
 
   en: {
@@ -665,6 +690,31 @@ const translations = {
     "avatar.unlock_starter":  "Welcome gift",
     "avatar.unlock_unknown":  "Special unlock",
     "avatar.tier_label":      "Rank",
+
+    // ── Tabs / Nav ───────────────────────────────
+    "tab.all":              "All",
+    "tab.favorites":        "Favorites",
+    "tab.shop":             "Shop",
+    "tab.fav_locked":       "Like 5 games to unlock your favorites list! ({{count}}/5 so far)",
+    "tab.login_required":   "Log in to access",
+
+    // ── Shop ─────────────────────────────────────
+    "shop.title":           "Shop",
+    "shop.coming_soon":     "Coming Soon",
+    "shop.coming_desc":     "Here you'll be able to spend your coins on exclusive avatars, power-ups and more.",
+    "shop.coins":           "Coins",
+    "shop.avatars_title":   "Avatars",
+    "shop.owned":           "Owned",
+    "shop.buy":             "Buy",
+    "shop.hold_to_buy":     "Hold to buy",
+    "shop.not_enough":      "Not Enough Coins",
+    "shop.purchase_ok":     "Avatar unlocked!",
+    "shop.purchase_fail":   "Purchase failed. Try again.",
+    "shop.loading":         "Loading shop...",
+    "shop.empty":           "No items available yet.",
+    "shop.login_required":  "Log in to purchase",
+    "shop.rotation":        "NEW ROTATION IN",
+    "shop.days":            "D",
   },
 };
 

@@ -177,6 +177,46 @@ export async function incrementPlays(gameId) {
   }
 }
 
+/**
+ * Cuenta cuántos likes (favoritos) tiene un usuario en user_likes.
+ * @param {string} userId
+ * @returns {Promise<number>}
+ */
+export async function getUserLikesCount(userId) {
+  if (!userId) return 0;
+  try {
+    const { count, error } = await supabase
+      .from('user_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    if (error) throw error;
+    return count ?? 0;
+  } catch (err) {
+    console.warn('getUserLikesCount error:', err.message);
+    return 0;
+  }
+}
+
+/**
+ * Obtiene los IDs de los juegos que el usuario ha likeado.
+ * @param {string} userId
+ * @returns {Promise<string[]>}
+ */
+export async function getUserLikedGameIds(userId) {
+  if (!userId) return [];
+  try {
+    const { data, error } = await supabase
+      .from('user_likes')
+      .select('game_id')
+      .eq('user_id', userId);
+    if (error) throw error;
+    return (data || []).map(r => r.game_id);
+  } catch (err) {
+    console.warn('getUserLikedGameIds error:', err.message);
+    return [];
+  }
+}
+
 export async function submitScore(userId, gameId, score) {
   try {
     // 1. Obtener info del juego

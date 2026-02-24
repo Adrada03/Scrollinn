@@ -21,6 +21,14 @@ const TIER_COLORS = {
   legend:    { hex: "#fbbf24", label_es: "Leyenda",   label_en: "Legend" },
 };
 
+/* Helper: construye src del avatar desde image_url de la BD */
+const getAvatarImgSrc = (avatar) => {
+  if (!avatar.image_url) return `/avatars/${avatar.id}.png`;
+  if (avatar.image_url.startsWith("http") || avatar.image_url.startsWith("/"))
+    return avatar.image_url;
+  return `/avatars/${avatar.image_url}`;
+};
+
 /* ─── Helper: texto de desbloqueo ─── */
 function getUnlockText(avatar, t) {
   switch (avatar.unlock_type) {
@@ -69,14 +77,14 @@ const AvatarDetailView = ({ avatar, lang, t, onBack }) => {
         </h2>
       </div>
 
-      <div className="mx-5 h-px bg-white/[0.06]" />
+      <div className="mx-5 h-px bg-white/6" />
 
       {/* Contenido */}
       <div className="px-5 pt-5 pb-5 flex flex-col items-center gap-4">
         {/* Imagen grande */}
         <div className="relative">
           <div
-            className="w-28 h-28 rounded-full p-[2px]"
+            className="w-28 h-28 rounded-full p-0.5"
             style={{
               background: `conic-gradient(from 180deg, ${tierHex}, ${tierHex}30 40%, ${tierHex} 60%, ${tierHex}30)`,
               boxShadow: `0 0 32px ${tierHex}25, 0 0 64px ${tierHex}10`,
@@ -84,15 +92,10 @@ const AvatarDetailView = ({ avatar, lang, t, onBack }) => {
           >
             <div className="w-full h-full rounded-full overflow-hidden bg-[#0a0f1e]">
               <img
-                src={`/avatars/${avatar.id}.webp`}
+                src={getAvatarImgSrc(avatar)}
                 alt={name}
                 className="w-full h-full object-cover"
                 draggable={false}
-                onError={(e) => {
-                  if (!e.target.src.endsWith(".jpg")) {
-                    e.target.src = `/avatars/${avatar.id}.jpg`;
-                  }
-                }}
               />
             </div>
           </div>
@@ -141,9 +144,9 @@ const AvatarDetailView = ({ avatar, lang, t, onBack }) => {
           <p className="text-[10px] font-extrabold tracking-[0.18em] uppercase text-white/25 mb-1.5">
             {t("avatar.how_to_get")}
           </p>
-          <div className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-white/[0.03] border border-white/[0.06]">
+          <div className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-white/3 border border-white/6">
             <div
-              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+              className="w-1.5 h-1.5 rounded-full shrink-0"
               style={{ background: tierHex, boxShadow: `0 0 6px ${tierHex}` }}
             />
             <span className="text-sm text-white/60 font-medium">
@@ -218,7 +221,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-lg z-[60]"
+            className="fixed inset-0 bg-black/70 backdrop-blur-lg z-60"
             onClick={onClose}
           />
 
@@ -228,7 +231,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
             transition={{ type: "spring", damping: 30, stiffness: 320 }}
-            className="fixed inset-0 z-[61] flex items-center justify-center p-4 pointer-events-none"
+            className="fixed inset-0 z-61 flex items-center justify-center p-4 pointer-events-none"
           >
             <div
               className="w-full max-w-md pointer-events-auto overflow-hidden relative"
@@ -242,7 +245,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
             >
               {/* Top accent line */}
               <div
-                className="absolute top-0 left-[8px] right-[8px] h-px opacity-50"
+                className="absolute top-0 left-2 right-2 h-px opacity-50"
                 style={{
                   background: "linear-gradient(90deg, transparent, #22d3ee, transparent)",
                 }}
@@ -284,7 +287,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
                       </button>
                     </div>
 
-                    <div className="mx-5 h-px bg-white/[0.06]" />
+                    <div className="mx-5 h-px bg-white/6" />
 
                     {/* Grid de avatares */}
                     <div className="px-5 pt-4 pb-2 max-h-[50vh] overflow-y-auto">
@@ -301,7 +304,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
                               ${
                                 selectedAvatar === "none"
                                   ? "border-cyan-400/50 bg-cyan-400/10 shadow-[0_0_12px_rgba(34,211,238,0.15)]"
-                                  : "border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]"
+                                  : "border-white/8 bg-white/2 hover:border-white/15 hover:bg-white/4"
                               }`}
                           >
                             {selectedAvatar === "none" && (
@@ -331,7 +334,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
                                     ${
                                       isSelected
                                         ? "bg-white/10 shadow-lg"
-                                        : "border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]"
+                                        : "border-white/8 bg-white/2 hover:border-white/15 hover:bg-white/4"
                                     }`}
                                   style={
                                     isSelected
@@ -361,15 +364,10 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
                                     }}
                                   >
                                     <img
-                                      src={`/avatars/${avatar.id}.webp`}
+                                      src={getAvatarImgSrc(avatar)}
                                       alt={getAvatarName(avatar)}
                                       className="w-full h-full object-cover"
                                       draggable={false}
-                                      onError={(e) => {
-                                        if (!e.target.src.endsWith(".jpg")) {
-                                          e.target.src = `/avatars/${avatar.id}.jpg`;
-                                        }
-                                      }}
                                     />
                                   </div>
 
@@ -409,7 +407,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
                       )}
                     </div>
 
-                    <div className="mx-5 h-px bg-white/[0.06]" />
+                    <div className="mx-5 h-px bg-white/6" />
 
                     {/* Footer — Botón Guardar */}
                     <div className="px-5 py-4">

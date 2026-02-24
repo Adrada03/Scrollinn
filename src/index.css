@@ -138,3 +138,12 @@ body {
   96%      { opacity: 0.6; }
   97%      { opacity: 1; }
 }
+
+/* Toast fade-in-up animation */
+@keyframes fade-in-up {
+  0%   { opacity: 0; transform: translate(-50%, 12px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out forwards;
+}

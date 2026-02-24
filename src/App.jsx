@@ -5,9 +5,11 @@
  *  1. GameFeed — Feed vertical infinito a pantalla completa
  *  2. GalleryModal — Modal de selección de juegos
  *  3. Estado de likes por juego (sincronizado con la BD)
+ *  4. Pestañas: Todos | Favoritos | Tienda
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 
 // Componentes
@@ -16,12 +18,13 @@ import GameFeed from "./components/Feed";
 import GalleryModal from "./components/GalleryModal";
 import AuthModal from "./components/AuthModal";
 import AvatarSelectionModal from "./components/AvatarSelectionModal";
+import Shop from "./components/Shop";
 
 // Datos
 import GAMES from "./data/games";
 
 // Servicios Supabase
-import { getLikesMap, toggleLike } from "./services/gameService";
+import { getLikesMap, toggleLike, getUserLikesCount } from "./services/gameService";
 
 // Contexto de autenticación
 import { useAuth } from "./context/AuthContext";
@@ -38,6 +41,18 @@ const emptyLikesMap = () => {
   return map;
 };
 
+/**
+ * Variants para la transición horizontal entre pestañas.
+ * `custom` = slideDirection (+1 derecha, -1 izquierda).
+ * Usar variants + custom permite que AnimatePresence pase la dirección
+ * correcta al componente que está saliendo (exit), evitando glitches.
+ */
+const slideVariants = {
+  enter: (dir) => ({ x: dir > 0 ? "40%" : "-40%", opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (dir) => ({ x: dir > 0 ? "-40%" : "40%", opacity: 0 }),
+};
+
 function App() {
   const { currentUser, login, logout, updateUser } = useAuth();
   const [selectedGameId, setSelectedGameId] = useState(null);
@@ -47,6 +62,40 @@ function App() {
   const [likesMap, setLikesMap] = useState(emptyLikesMap);
   const [gameEpoch, setGameEpoch] = useState(0);
   const likesLoaded = useRef(false);
+
+  // ── Tab system ──
+  const [activeTab, setActiveTab] = useState("all");
+  const [userLikesCount, setUserLikesCount] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(0); // -1 izq, +1 der
+  const prevTabRef = useRef("all");
+
+  /** Orden de las pestañas para calcular dirección del slide */
+  const TAB_ORDER = { all: 0, favorites: 1, shop: 2 };
+
+  // ── Toast notification ──
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+
+  const showToast = useCallback((message) => {
+    setToast(message);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  /**
+   * Callback para cambio de pestaña desde TopNav.
+   * Si recibe "__toast__", muestra un toast en vez de cambiar la tab.
+   */
+  const handleTabChange = useCallback((tab, message) => {
+    if (tab === "__toast__") {
+      showToast(message);
+      return;
+    }
+    const dir = TAB_ORDER[tab] > TAB_ORDER[prevTabRef.current] ? 1 : -1;
+    setSlideDirection(dir);
+    prevTabRef.current = tab;
+    setActiveTab(tab);
+  }, [showToast]);
 
   /**
    * Carga likes desde la BD. Si hay usuario, también carga cuáles ha likeado.
@@ -80,6 +129,26 @@ function App() {
       fetchLikes(currentUser?.id);
     }
   }, [currentUser, fetchLikes]);
+
+  // ── Actualizar el conteo de likes del usuario (para desbloqueo de Favoritos) ──
+  useEffect(() => {
+    if (currentUser?.id) {
+      getUserLikesCount(currentUser.id).then(setUserLikesCount);
+    } else {
+      setUserLikesCount(0);
+      // Si el usuario cierra sesión, volver a "Todos"
+      setActiveTab("all");
+    }
+  }, [currentUser, likesMap]); // likesMap como dep para recalcular tras toggle
+
+  /**
+   * Juegos filtrados para la pestaña "Favoritos":
+   * solo aquellos cuyo id tenga liked === true en el likesMap.
+   */
+  const favoriteGames = useMemo(() => {
+    if (activeTab !== "favorites") return GAMES;
+    return GAMES.filter((g) => likesMap[g.id]?.liked);
+  }, [activeTab, likesMap]);
 
   // Escape cierra la galería
   const handleKeyDown = useCallback(
@@ -137,13 +206,19 @@ function App() {
   );
 
   /**
+   * Lista de juegos activa según la pestaña (para la galería).
+   */
+  const activeGames = activeTab === "favorites" ? favoriteGames : GAMES;
+
+  /**
    * Navega a un juego específico desde la galería.
    */
   const handleSelectGame = useCallback((index) => {
-    setSelectedGameId(GAMES[index].id);
+    const list = activeTab === "favorites" ? favoriteGames : GAMES;
+    setSelectedGameId(list[index].id);
     setGameEpoch((e) => e + 1);
     setIsGalleryOpen(false);
-  }, []);
+  }, [activeTab, favoriteGames]);
 
   /**
    * Optimistic update del avatar equipado.
@@ -159,25 +234,63 @@ function App() {
       <TopNav
         onOpenAuth={() => setIsAuthOpen(true)}
         currentUser={currentUser}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        userLikesCount={userLikesCount}
       />
 
-      {/* Feed principal a pantalla completa */}
-      <GameFeed
-        games={GAMES}
-        selectedGameId={selectedGameId}
-        gameEpoch={gameEpoch}
-        disabled={isGalleryOpen || isAuthOpen}
-        likesMap={likesMap}
-        onToggleLike={handleToggleLike}
-        onOpenGallery={() => setIsGalleryOpen(true)}
-        currentUser={currentUser}
-      />
+      {/* ── Contenido principal con transición horizontal ── */}
+      <AnimatePresence mode="wait" initial={false} custom={slideDirection}>
+        {activeTab !== "shop" ? (
+          <motion.div
+            key={activeTab}
+            custom={slideDirection}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
+            className="h-dvh w-full"
+          >
+            {/* Feed principal (visible en pestañas "Todos" y "Favoritos") */}
+            <GameFeed
+              key={`feed-${activeTab}`}
+              games={activeTab === "favorites" ? favoriteGames : GAMES}
+              selectedGameId={selectedGameId}
+              gameEpoch={gameEpoch}
+              disabled={isGalleryOpen || isAuthOpen}
+              likesMap={likesMap}
+              onToggleLike={handleToggleLike}
+              onOpenGallery={() => setIsGalleryOpen(true)}
+              currentUser={currentUser}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="shop"
+            custom={slideDirection}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
+            className="h-dvh w-full"
+          >
+            {/* Pantalla de la Tienda */}
+            <Shop
+              coins={currentUser?.coins ?? 0}
+              currentUser={currentUser}
+              onCoinsChange={(newCoins) => updateUser({ coins: newCoins })}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal de galería (sobre todo) */}
       <GalleryModal
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
-        games={GAMES}
+        games={activeGames}
         onSelectGame={handleSelectGame}
       />
 
@@ -197,6 +310,15 @@ function App() {
         currentUser={currentUser}
         onAvatarChange={handleAvatarChange}
       />
+
+      {/* ── Toast elegante ── */}
+      {toast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-100 animate-fade-in-up pointer-events-none">
+          <div className="bg-black/80 backdrop-blur-md border border-white/15 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl max-w-xs text-center">
+            {toast}
+          </div>
+        </div>
+      )}
 
       {/* Vercel Analytics */}
       <Analytics />

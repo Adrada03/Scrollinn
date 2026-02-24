@@ -1,0 +1,53 @@
+{
+  "id": "/",
+  "name": "Scrollinn Gaming",
+  "short_name": "Scrollinn",
+  "description": "Minijuegos infinitos estilo esports. Juega, compite y sube de nivel.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/web-app-manifest-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.jpeg",
+      "sizes": "1146x2048",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Scrollinn en móvil"
+    },
+    {
+      "src": "/screenshot-desktop.jpeg",
+      "sizes": "1600x718",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Scrollinn en escritorio"
+    }
+  ]
+}

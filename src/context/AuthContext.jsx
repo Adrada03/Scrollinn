@@ -88,7 +88,7 @@ export function AuthProvider({ children }) {
         // Traer datos frescos del usuario desde la BD
         const { data, error } = await supabase
           .from("users")
-          .select("id, username, xp, equipped_avatar_id")
+          .select("id, username, xp, equipped_avatar_id, coins")
           .eq("id", stored.id)
           .maybeSingle();
 
@@ -105,6 +105,7 @@ export function AuthProvider({ children }) {
             username: data.username,
             xp: data.xp ?? 0,
             equipped_avatar_id: data.equipped_avatar_id ?? "none",
+            coins: data.coins ?? 0,
           };
           writeSession(freshUser);
           setCurrentUser(freshUser);

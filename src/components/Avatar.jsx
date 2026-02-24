@@ -8,7 +8,9 @@
  *   className        (string)      — Clases extra opcionales
  */
 
+import { useState, useEffect } from "react";
 import { User } from "lucide-react";
+import { getAvatarImageUrl, getAvatarImageUrlSync } from "../services/avatarService";
 
 const SIZES = {
   sm: { container: "w-8 h-8", icon: "w-4 h-4", ring: 1 },
@@ -20,6 +22,24 @@ const Avatar = ({ equippedAvatarId, size = "md", tierHex = null, className = "" 
   const s = SIZES[size] || SIZES.md;
   const hasAvatar = equippedAvatarId && equippedAvatarId !== "none";
 
+  // Intentar resolución síncrona primero (cache ya cargada)
+  const [src, setSrc] = useState(() =>
+    hasAvatar ? getAvatarImageUrlSync(equippedAvatarId) : null
+  );
+
+  useEffect(() => {
+    if (!hasAvatar) { setSrc(null); return; }
+    // Si la cache síncrona ya resolvió, no hacer nada
+    const syncUrl = getAvatarImageUrlSync(equippedAvatarId);
+    if (syncUrl) { setSrc(syncUrl); return; }
+    // Si no, esperar a la versión async
+    let cancelled = false;
+    getAvatarImageUrl(equippedAvatarId).then((url) => {
+      if (!cancelled) setSrc(url);
+    });
+    return () => { cancelled = true; };
+  }, [equippedAvatarId, hasAvatar]);
+
   // Estilos de borde/resplandor basados en el tier
   const ringStyle = tierHex
     ? {
@@ -28,23 +48,17 @@ const Avatar = ({ equippedAvatarId, size = "md", tierHex = null, className = "" 
       }
     : {};
 
-  if (hasAvatar) {
+  if (hasAvatar && src) {
     return (
       <div
-        className={`${s.container} rounded-full overflow-hidden flex-shrink-0 ${className}`}
+        className={`${s.container} rounded-full overflow-hidden shrink-0 ${className}`}
         style={ringStyle}
       >
         <img
-          src={`/avatars/${equippedAvatarId}.webp`}
+          src={src}
           alt="Avatar"
           className="w-full h-full object-cover"
           draggable={false}
-          onError={(e) => {
-            // Fallback: probar jpg si webp falla
-            if (!e.target.src.endsWith(".jpg")) {
-              e.target.src = `/avatars/${equippedAvatarId}.jpg`;
-            }
-          }}
         />
       </div>
     );
@@ -53,7 +67,7 @@ const Avatar = ({ equippedAvatarId, size = "md", tierHex = null, className = "" 
   // Avatar genérico
   return (
     <div
-      className={`${s.container} rounded-full flex items-center justify-center flex-shrink-0
+      className={`${s.container} rounded-full flex items-center justify-center shrink-0
         bg-gray-800/80 border border-white/10 ${className}`}
       style={tierHex ? ringStyle : {}}
     >

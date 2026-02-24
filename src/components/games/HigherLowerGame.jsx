@@ -117,7 +117,7 @@ const CardBack = ({ className = "" }) => (
     {/* Borde interior */}
     <div className="absolute inset-2 rounded-xl border border-white/[0.06] flex items-center justify-center">
       <img
-        src="/logoScrollinn.png"
+        src="/logoScrollinn-noBg.png"
         alt=""
         className="w-10 h-10 opacity-25"
         draggable={false}
