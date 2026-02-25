@@ -290,6 +290,15 @@ const GAMES = [
     skipCountdown: true,
     requiresScrollLock: true,
   },
+  {
+    id: "memory-sequence",
+    title: "Memory Sequence",
+    description: "Memoriza los números y tócalos en orden",
+    color: "bg-indigo-900",
+    emoji: "🧠",
+    logo: "/logo-memorysequence.png",
+    gameComponent: "MemorySequence",
+  },
 ];
 
 export default GAMES;

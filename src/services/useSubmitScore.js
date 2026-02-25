@@ -106,4 +106,5 @@ export const GAME_IDS = {
   CrossroadDartGame: 'crossroad-dart',
   MentalMathGame: 'mental-math',
   PerfectCircleGame: 'perfect-circle',
+  MemorySequenceGame: 'memory-sequence',
 };

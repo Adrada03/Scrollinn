@@ -51,6 +51,7 @@ import GravityDrawGame from "./games/GravityDrawGame";
 import CrossroadDartGame from "./games/CrossroadDartGame";
 import MentalMathGame from "./games/MentalMathGame";
 import PerfectCircleGame from "./games/PerfectCircleGame";
+import MemorySequenceGame from "./games/MemorySequenceGame";
 
 /** Registro de componentes reales de juego */
 const GAME_COMPONENTS = {
@@ -83,6 +84,7 @@ const GAME_COMPONENTS = {
   CrossroadDart: CrossroadDartGame,
   MentalMath: MentalMathGame,
   PerfectCircle: PerfectCircleGame,
+  MemorySequence: MemorySequenceGame,
 };
 
 /* ================================================================

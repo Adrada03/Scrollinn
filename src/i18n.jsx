@@ -131,6 +131,12 @@ const translations = {
     "desc.crossroad-dart": "Cruza las intersecciones esquivando el tráfico",
     "desc.mental-math":    "Resuelve multiplicaciones antes de que se acabe el tiempo",
     "desc.perfect-circle": "Dibuja un círculo perfecto de un solo trazo",
+    "desc.memory-sequence": "Memoriza los números y tócalos en orden",
+
+    // ── MemorySequence ────────────────────────────
+    "memseq.round":       "Ronda",
+    "memseq.instruction": "Toca el 1 para empezar",
+    "memseq.subtitle":    "rondas completadas",
 
     // ── PerfectCircle ─────────────────────────────
     "perfectcircle.instruction": "Dibuja un círculo de un solo trazo",
@@ -508,6 +514,12 @@ const translations = {
     "desc.crossroad-dart": "Cross the intersections dodging the traffic",
     "desc.mental-math":    "Solve multiplications before time runs out",
     "desc.perfect-circle": "Draw a perfect circle in a single stroke",
+    "desc.memory-sequence": "Memorize the numbers and tap them in order",
+
+    // ── MemorySequence ────────────────────────────
+    "memseq.round":       "Round",
+    "memseq.instruction": "Tap 1 to start",
+    "memseq.subtitle":    "rounds completed",
 
     // ── PerfectCircle ─────────────────────────────
     "perfectcircle.instruction": "Draw a circle in a single stroke",
