@@ -59,7 +59,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, loading: isSubmittingScore } = useSubmitScore(userId, GAME_IDS.SwipeSorterGame);
+  const { submit, loading: isSubmittingScore, xpGained } = useSubmitScore(userId, GAME_IDS.SwipeSorterGame);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -424,6 +424,8 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}
+            xpGained={xpGained}
+
             isLoading={isRankingLoading}
           />
         </div>

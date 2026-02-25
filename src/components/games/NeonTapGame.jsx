@@ -63,7 +63,7 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.NeonTapGame);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.NeonTapGame);
 
   const intervalRef = useRef(INITIAL_INTERVAL);
   const timerIdRef  = useRef(null);
@@ -326,6 +326,8 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}
+            xpGained={xpGained}
+
             isLoading={isRankingLoading}
           />
         )}

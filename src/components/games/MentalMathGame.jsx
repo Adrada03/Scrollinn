@@ -228,7 +228,7 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const barTextRef = useRef(null);
   const barContainerRef = useRef(null);
 
-  const { submit } = useSubmitScore(userId, GAME_IDS.MentalMathGame);
+  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.MentalMathGame);
 
   /* ── RAF Timer Loop (direct DOM — 60 fps, no re-renders) ── */
   const syncBarDOM = useCallback(() => {
@@ -524,6 +524,8 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}
+            xpGained={xpGained}
+
             isLoading={isRankingLoading}
           />
         )}

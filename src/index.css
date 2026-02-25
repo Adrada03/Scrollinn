@@ -54,6 +54,13 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* XP reveal pop animation (GameOverPanel) */
+@keyframes xpPop {
+  0%   { transform: scale(0.3); opacity: 0; }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 /* ============================================
    Cyberpunk Profile Card — Animations & FX
    ============================================ */

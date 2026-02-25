@@ -30,7 +30,7 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock })
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
-  const { submit } = useSubmitScore(userId, GAME_IDS.FrenzyTapGame);
+  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.FrenzyTapGame);
 
   // Refs para mantener estado fiable dentro de callbacks/intervals
   const scoreRef     = useRef(0);
@@ -256,6 +256,8 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock })
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}
+            xpGained={xpGained}
+
             isLoading={isRankingLoading}
           />
         </div>

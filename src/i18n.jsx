@@ -69,6 +69,8 @@ const translations = {
     "gameover.loading":    "Cargando ranking...",
     "gameover.replay":     "Jugar de nuevo",
     "gameover.next":       "Siguiente juego",
+    "gameover.calculating_xp": "Calculando XP...",
+    "gameover.no_xp":      "No has conseguido XP. ¡Inténtalo de nuevo!",
 
     // ── Public Profile Modal ────────────────────
     "profile.close":           "Cerrar",
@@ -443,6 +445,8 @@ const translations = {
     "gameover.loading":    "Loading ranking...",
     "gameover.replay":     "Play again",
     "gameover.next":       "Next game",
+    "gameover.calculating_xp": "Calculating XP...",
+    "gameover.no_xp":      "No XP earned. Try again!",
 
     // ── Public Profile Modal ────────────────────
     "profile.close":           "Close",

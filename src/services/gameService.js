@@ -217,7 +217,7 @@ export async function getUserLikedGameIds(userId) {
   }
 }
 
-export async function submitScore(userId, gameId, score) {
+export async function submitScore(userId, gameId, score, xpGained = 0) {
   try {
     // 1. Obtener info del juego
     const { data: game, error: gameError } = await supabase
@@ -228,10 +228,10 @@ export async function submitScore(userId, gameId, score) {
     if (gameError) throw gameError;
     if (!game) return { success: false, data: null, message: t('svc.game_not_found') };
 
-    // 2. Insertar la puntuación siempre
+    // 2. Insertar la puntuación siempre (con la XP ganada)
     const { error: insertError } = await supabase
       .from('scores')
-      .insert([{ user_id: userId, game_id: gameId, score }]);
+      .insert([{ user_id: userId, game_id: gameId, score, xp_gained: xpGained }]);
     if (insertError) throw insertError;
 
     // 3. Sumar +1 a total_plays
@@ -240,16 +240,31 @@ export async function submitScore(userId, gameId, score) {
       .update({ total_plays: (game.total_plays || 0) + 1 })
       .eq('id', gameId);
 
-    // 4. Obtener el ranking actualizado (top 5 usuarios distintos)
+    // 4. Sumar XP al usuario (solo si ganó algo)
+    if (xpGained > 0) {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('xp')
+        .eq('id', userId)
+        .maybeSingle();
+      if (!userError && userData) {
+        await supabase
+          .from('users')
+          .update({ xp: (userData.xp || 0) + xpGained })
+          .eq('id', userId);
+      }
+    }
+
+    // 5. Obtener el ranking actualizado (top 5 usuarios distintos)
     const updatedTop = await getTop5(gameId);
     const topData = updatedTop.success ? updatedTop.data : [];
     const ranking = formatRanking(topData);
 
-    // 5. Comprobar si el usuario aparece en el Top 5
+    // 6. Comprobar si el usuario aparece en el Top 5
     const inTop5 = topData.some(s => s.user_id === userId);
     const message = inTop5 ? t('svc.top5_made') : t('svc.score_saved');
 
-    return { success: true, data: { ranking }, message };
+    return { success: true, data: { ranking, xpGained }, message };
   } catch (error) {
     return { success: false, data: null, message: error.message };
   }

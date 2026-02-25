@@ -79,7 +79,7 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.OddOneOutGame);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.OddOneOutGame);
 
   const timerRef = useRef(null);
   const hasStartedRef = useRef(false);
@@ -314,6 +314,8 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}
+            xpGained={xpGained}
+
             isLoading={isRankingLoading}
           />
         )}

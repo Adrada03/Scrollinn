@@ -70,7 +70,7 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [scoreMessage, setScoreMessage]     = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
-  const { submit } = useSubmitScore(userId, GAME_IDS.RPSDuelGame);
+  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.RPSDuelGame);
 
   // ── Refs (para acceso síncrono dentro de intervals) ──
   const scoreRef     = useRef(0);
@@ -340,6 +340,8 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}
+            xpGained={xpGained}
+
             isLoading={isRankingLoading}
           />
         </div>

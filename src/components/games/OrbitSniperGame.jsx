@@ -138,7 +138,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit } = useSubmitScore(userId, GAME_IDS.OrbitSniperGame);
+  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.OrbitSniperGame);
 
   /* ─────────── Medir contenedor ─────────── */
   useEffect(() => {
@@ -628,6 +628,8 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}
+          xpGained={xpGained}
+
           isLoading={isRankingLoading}
         />
       )}

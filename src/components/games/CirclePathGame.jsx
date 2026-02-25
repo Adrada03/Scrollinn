@@ -385,7 +385,7 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId }) => {
     };
   }, []);
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.CirclePathGame);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.CirclePathGame);
   // Enviar puntuación al terminar
   useEffect(() => {
     if (gameState === GAME_STATES.ENDED && !scoreSubmitted.current) {
@@ -459,6 +459,8 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId }) => {
           onNext={onNextGame}
           ranking={ranking}
           scoreMessage={scoreMessage}
+          xpGained={xpGained}
+
           isLoading={isRankingLoading}
         />
       )}

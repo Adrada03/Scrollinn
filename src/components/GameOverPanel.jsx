@@ -18,7 +18,7 @@
  *   isLoading   (bool)    — si está cargando el ranking
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "../i18n";
 import Avatar from "./Avatar";
 import PublicProfileModal from "./PublicProfileModal";
@@ -31,6 +31,66 @@ const FALLBACK_RANKING = [
   { pos: 5, user: "—", score: "—" },
 ];
 
+/* ── Animación de XP ── */
+const XpDisplay = ({ xpGained }) => {
+  const { t } = useLanguage();
+  const [phase, setPhase] = useState("calculating"); // "calculating" | "reveal"
+
+  useEffect(() => {
+    if (xpGained === null || xpGained === undefined) return;
+    // Mostrar "Calculando..." brevemente, luego revelar el resultado
+    setPhase("calculating");
+    const timer = setTimeout(() => setPhase("reveal"), 1200);
+    return () => clearTimeout(timer);
+  }, [xpGained]);
+
+  if (xpGained === null || xpGained === undefined) return null;
+
+  // Fase "Calculando..."
+  if (phase === "calculating") {
+    return (
+      <div className="flex items-center justify-center gap-2 py-1.5 animate-pulse">
+        <svg className="w-4 h-4 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        <span className="text-sm font-medium text-white/50">
+          {t("gameover.calculating_xp") || "Calculando XP..."}
+        </span>
+      </div>
+    );
+  }
+
+  // Fase "Revelar" — sin XP
+  if (xpGained === 0) {
+    return (
+      <p className="text-center text-xs text-white/30 font-medium py-1.5">
+        {t("gameover.no_xp") || "No has conseguido XP. ¡Inténtalo de nuevo!"}
+      </p>
+    );
+  }
+
+  // Fase "Revelar" — con XP (dorado si es tope ≥ 100)
+  const isMaxTier = xpGained >= 100;
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 py-1.5">
+      <span
+        className={`text-lg font-black tracking-tight animate-[xpPop_0.5s_ease-out] ${
+          isMaxTier
+            ? "text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+            : "text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]"
+        }`}
+      >
+        +{xpGained} XP
+      </span>
+      {isMaxTier && (
+        <span className="text-xs animate-bounce">✨</span>
+      )}
+    </div>
+  );
+};
+
 const GameOverPanel = ({
   title = "Game Over",
   score,
@@ -40,6 +100,7 @@ const GameOverPanel = ({
   ranking = [],
   scoreMessage = "",
   isLoading = false,
+  xpGained = null,
 }) => {
   const { t } = useLanguage();
   const [profileUserId, setProfileUserId] = useState(null);
@@ -76,6 +137,9 @@ const GameOverPanel = ({
             {scoreMessage}
           </p>
         )}
+
+        {/* XP ganada */}
+        <XpDisplay xpGained={xpGained} />
 
         {/* Ranking */}
         <div className="w-full mt-1 rounded-xl bg-white/5 border border-white/10 overflow-hidden">

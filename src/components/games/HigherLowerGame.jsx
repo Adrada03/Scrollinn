@@ -194,7 +194,7 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
   const t2Ref = useRef(null);
   const t3Ref = useRef(null);
 
-  const { submit } = useSubmitScore(userId, GAME_IDS.HigherLowerGame);
+  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.HigherLowerGame);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -479,6 +479,8 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
             onNext={onNextGame}
             ranking={ranking}
             scoreMessage={scoreMessage}
+            xpGained={xpGained}
+
             isLoading={isRankingLoading}
           />
         </div>

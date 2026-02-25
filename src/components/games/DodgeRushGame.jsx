@@ -359,7 +359,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const isPlaying = gameState === STATES.PLAYING;
   const isEnded   = gameState === STATES.ENDED;
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult } = useSubmitScore(userId, GAME_IDS.DodgeRushGame);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.DodgeRushGame);
   // Enviar puntuación al terminar
   useEffect(() => {
     if (isEnded && !scoreSubmitted.current) {
@@ -451,6 +451,8 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
               onNext={onNextGame}
               ranking={ranking}
               scoreMessage={scoreMessage}
+              xpGained={xpGained}
+
               isLoading={isRankingLoading}
             />
           </div>
