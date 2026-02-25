@@ -559,7 +559,7 @@ function drawComboTimer(ctx, g, cx, cy, outerR) {
 /* ═══════════════════ REACT COMPONENT ═══════════════════ */
 const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
 
-const HextrisGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const HextrisGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const canvasRef   = useRef(null);
   const stateRef    = useRef(STATES.IDLE);
@@ -610,6 +610,7 @@ const HextrisGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (!isActive) return;
     const onKey = (e) => {
       if (stateRef.current !== STATES.PLAYING) return;
+      if (pinchGuardRef?.current) return;              // LEY 5
       if (e.key === "ArrowLeft"  || e.key === "a") { e.preventDefault(); rotateHex(gameRef.current, 1);  }
       if (e.key === "ArrowRight" || e.key === "d") { e.preventDefault(); rotateHex(gameRef.current, -1); }
     };
@@ -622,6 +623,7 @@ const HextrisGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (!canvas || !isActive) return;
     const onPtr = (e) => {
       if (stateRef.current !== STATES.PLAYING) return;
+      if (pinchGuardRef?.current) return;              // LEY 5
       const rect = canvas.getBoundingClientRect();
       const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
       rotateHex(gameRef.current, x < rect.width / 2 ? 1 : -1);
@@ -702,7 +704,6 @@ const HextrisGame = ({ isActive, onNextGame, onReplay, userId }) => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
-        style={{ touchAction: uiState === STATES.PLAYING ? "none" : "auto" }}
       />
       {uiState === STATES.ENDED && (
         <GameOverPanel

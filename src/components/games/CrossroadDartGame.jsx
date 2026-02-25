@@ -446,7 +446,7 @@ function drawBlock(ctx, L, yOff) {
    COMPONENT
    ═══════════════════════════════════════════════════ */
 
-const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t }     = useLanguage();
   const canvasRef  = useRef(null);
   const rafRef     = useRef(null);
@@ -526,6 +526,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (!cv) return;
     const down = (e) => {
       e.preventDefault();
+      if (pinchGuardRef?.current) return;              // LEY 5
       if (phaseRef.current === "playing" && subRef.current === "waiting") {
         subRef.current = "dashing";
       }
@@ -1073,7 +1074,6 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId }) => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full z-1"
-        style={{ touchAction: "none" }}
       />
 
       {/* HUD */}

@@ -62,7 +62,7 @@ function generateRound(score) {
 }
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const OverheatGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
 
   const [gameState, setGameState] = useState(STATES.IDLE);
@@ -198,6 +198,7 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId }) => {
     (e) => {
       e.preventDefault();
       if (gameStateRef.current !== STATES.PLAYING) return;
+    if (pinchGuardRef?.current) return;               // LEY 5
       if (flash) return; // Don't accept taps during flash transition
 
       currentTapsRef.current += 1;
@@ -304,7 +305,6 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId }) => {
       className="relative h-full w-full flex flex-col items-center justify-center overflow-hidden select-none"
       style={{
         backgroundColor: `rgb(${bgR}, ${bgG}, ${bgB})`,
-        touchAction: gameState === STATES.PLAYING ? "none" : "auto",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",

@@ -122,7 +122,7 @@ const drawShape = (ctx, shape, x, y, r, rot, color) => {
 };
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
@@ -178,6 +178,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (!canvas) return;
 
     const updatePos = (clientX, clientY) => {
+      if (pinchGuardRef?.current) return;               // LEY 5
       const rect = canvas.getBoundingClientRect();
       playerRef.current = {
         x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
@@ -397,7 +398,6 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full z-1"
-        style={{ touchAction: isPlaying ? "none" : "auto" }}
       />
 
       {/* ── HUD ── */}

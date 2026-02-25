@@ -15,8 +15,11 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLanguage } from "../i18n";
 import useActiveSlide from "../hooks/useActiveSlide";
+import ClearModeWrapper from "./ClearModeWrapper";
+import { useClearMode } from "../context/ClearModeContext";
 import PlaceholderGame from "./PlaceholderGame";
 import GameInterface from "./GameInterface";
+import Countdown from "./Countdown";
 
 /* ── Imports de juegos reales ── */
 import TowerBlocksGame from "./games/TowerBlocksGame";
@@ -127,37 +130,92 @@ const EXTEND_THRESHOLD = 12;   // extiende cuando quedan menos de 12 slides
 const IDLE_TIMEOUT = 8000;     // ms para mostrar hint de scroll
 
 /* ================================================================
-   GameFeed — Componente principal
+   GameFeed — Componente exterior
+   Levanta useActiveSlide y scrollLockedRef al nivel del wrapper
+   para que ClearModeWrapper pueda recibir activeIndex.
    ================================================================ */
 const GameFeed = ({
-  games,            // catálogo maestro (GAMES)
-  selectedGameId,   // id del juego elegido en la galería (o null)
-  gameEpoch = 0,    // se bumps al elegir desde la galería
+  games,
+  selectedGameId,
+  gameEpoch = 0,
   disabled = false,
   likesMap,
   onToggleLike,
   onOpenGallery,
   currentUser,
 }) => {
+  /* ── Hook de scroll snap + IntersectionObserver ── */
+  const { containerRef, activeIndex, scrollToSlide } = useActiveSlide(0);
+  const scrollLockedRef = useRef(false);
+
+  return (
+    <ClearModeWrapper
+      activeIndex={activeIndex}
+      scrollLockedRef={scrollLockedRef}
+      disabled={disabled}
+    >
+      <GameFeedContent
+        games={games}
+        selectedGameId={selectedGameId}
+        gameEpoch={gameEpoch}
+        disabled={disabled}
+        likesMap={likesMap}
+        onToggleLike={onToggleLike}
+        onOpenGallery={onOpenGallery}
+        currentUser={currentUser}
+        containerRef={containerRef}
+        activeIndex={activeIndex}
+        scrollToSlide={scrollToSlide}
+        scrollLockedRef={scrollLockedRef}
+      />
+    </ClearModeWrapper>
+  );
+};
+
+/* ================================================================
+   GameFeedContent — Componente interior (consume ClearMode context)
+   ================================================================ */
+const GameFeedContent = ({
+  games,
+  selectedGameId,
+  gameEpoch = 0,
+  disabled = false,
+  likesMap,
+  onToggleLike,
+  onOpenGallery,
+  currentUser,
+  containerRef,
+  activeIndex,
+  scrollToSlide,
+  scrollLockedRef,
+}) => {
   const { t } = useLanguage();
+
+  /* ── Clear Mode desde el contexto global ── */
+  const { isUiHidden, scaleMotion, pinchGuardRef, nuclearReset } = useClearMode();
 
   /* ── Playlist interna ── */
   const [playlist, setPlaylist] = useState(() => buildInitialPlaylist(games));
   const playlistRef = useRef(playlist);
   playlistRef.current = playlist;
 
-  /* ── Hook de scroll snap + IntersectionObserver ── */
-  const { containerRef, activeIndex, scrollToSlide } = useActiveSlide(0);
-
   /* ── Estado ── */
   const [isCountingDown, setIsCountingDown] = useState(true);
-  const [replayKeys, setReplayKeys] = useState({});     // keyed by uid
+  const [replayKeys, setReplayKeys] = useState({});
   const [showScrollHint, setShowScrollHint] = useState(true);
+  const [isGameOver, setIsGameOver] = useState(false);
 
   /* ── Refs ── */
   const prevActiveRef = useRef(null);
   const prevEpochRef = useRef(gameEpoch);
-  const scrollLockedRef = useRef(false);
+
+  /* ══════════════════════════════════════════════════════════════
+     LEY 1 · Fase del slide activo: 'countdown' | 'playing' | 'game_over'
+     Se calcula derivada de isCountingDown + isGameOver.
+     Controla touch-action y overflow-y de forma centralizada.
+     ══════════════════════════════════════════════════════════════ */
+  const slidePhase = isCountingDown ? "countdown" : isGameOver ? "game_over" : "playing";
+
   const disabledRef = useRef(disabled);
   const activeIndexRef = useRef(activeIndex);
   const idleTimer = useRef(null);
@@ -171,6 +229,7 @@ const GameFeed = ({
      ============================================================== */
   if (prevActiveRef.current !== activeIndex) {
     prevActiveRef.current = activeIndex;
+    setIsGameOver(false);         // Reset game over al cambiar de slide
     const item = playlistRef.current[activeIndex];
     const game = item?.game;
     const shouldSkip = !!(
@@ -232,15 +291,24 @@ const GameFeed = ({
   }, [playlist, scrollToSlide]);
 
   /* ==============================================================
-     Bloquear scroll: modal abierto o juego lo solicita
+     LEY 1 — Control centralizado de scroll (touch-action + overflow)
+     Reemplaza handleScrollLock individual de cada juego.
      ============================================================== */
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    container.style.overflowY =
-      disabled || scrollLockedRef.current ? "hidden" : "scroll";
-  }, [disabled, containerRef]);
 
+    const activeGame = playlistRef.current[activeIndex]?.game;
+    const shouldLock =
+      slidePhase === "playing" &&
+      !!activeGame?.requiresScrollLock &&
+      !disabled;
+
+    scrollLockedRef.current = shouldLock;
+    container.style.overflowY = shouldLock || disabled ? "hidden" : "scroll";
+  }, [slidePhase, activeIndex, disabled, containerRef]);
+
+  /* Fallback: juegos sin requiresScrollLock que usan onScrollLock manualmente */
   const handleScrollLock = useCallback(
     (locked) => {
       scrollLockedRef.current = locked;
@@ -254,10 +322,27 @@ const GameFeed = ({
   );
 
   /* ==============================================================
+     Game Over: desbloquear scroll inmediatamente (señal de GameOverPanel)
+     ============================================================== */
+  useEffect(() => {
+    const handleGameOverUnlock = () => {
+      setIsGameOver(true);
+      scrollLockedRef.current = false;
+      const container = containerRef.current;
+      if (container && !disabledRef.current) {
+        container.style.overflowY = "scroll";
+      }
+    };
+    window.addEventListener("gameover-scroll-unlock", handleGameOverUnlock);
+    return () => window.removeEventListener("gameover-scroll-unlock", handleGameOverUnlock);
+  }, [containerRef]);
+
+  /* ==============================================================
      Replay — remonta el componente del juego actual
      ============================================================== */
   const handleReplay = useCallback((uid, index) => {
     setReplayKeys((prev) => ({ ...prev, [uid]: (prev[uid] || 0) + 1 }));
+    setIsGameOver(false);              // Reset game over en replay
     const game = playlistRef.current[index]?.game;
     const skip = !!(
       game?.gameComponent &&
@@ -265,6 +350,8 @@ const GameFeed = ({
       game.skipCountdown
     );
     setIsCountingDown(!skip);
+    // No llamamos a nuclearReset(): si la UI estaba oculta, sigue oculta.
+    // El Countdown unificado se mostrará igualmente.
   }, []);
 
   /* ==============================================================
@@ -346,63 +433,197 @@ const GameFeed = ({
           const isPlayable = isActive && !isCountingDown;
           const replayKey = replayKeys[uid] || 0;
 
+          /* ── LEY 1: touch-action dinámico en el wrapper del juego ──
+             Solo 'none' si: juego activo + jugando + requiresScrollLock.
+             En el resto → 'pan-y': permite scroll vertical pero reserva
+             el pinch para nuestro JS (clear mode). 'manipulation' no sirve
+             porque el navegador reclama el pinch y no envía touchmove a JS. */
+          const gameTouchAction =
+            isActive &&
+            slidePhase === "playing" &&
+            game.requiresScrollLock
+              ? "none"
+              : "pan-y";
+
           return (
             <section
               key={uid}
               data-slide-index={index}
               className="h-dvh w-full snap-start snap-always relative"
             >
-              {/* ── Contenido del juego ── */}
-              {isNearby ? (
-                game.gameComponent &&
-                GAME_COMPONENTS[game.gameComponent] ? (
-                  (() => {
-                    const GameComp = GAME_COMPONENTS[game.gameComponent];
-                    return (
-                      <GameComp
-                        key={`${uid}-${replayKey}`}
-                        isActive={isPlayable}
-                        onNextGame={() => handleNextGame(index)}
-                        onReplay={() => handleReplay(uid, index)}
-                        userId={currentUser?.id}
-                        onScrollLock={handleScrollLock}
-                      />
-                    );
-                  })()
-                ) : (
-                  <PlaceholderGame
-                    key={`${uid}-ph-${replayKey}`}
-                    color={game.color}
-                    emoji={game.emoji}
-                    isActive={isPlayable}
-                  />
-                )
-              ) : (
+              {/* ── Contenedor escalable: juego + UI se amplían juntos ── */}
+              <motion.div
+                className="h-full w-full origin-center"
+                style={{ scale: isActive ? scaleMotion : 1 }}
+              >
+                {/* ── Wrapper con touch-action dinámico (LEY 1) ── */}
                 <div
-                  className={`h-full w-full ${game.color} flex items-center justify-center`}
+                  className="h-full w-full"
+                  style={{ touchAction: gameTouchAction }}
                 >
-                  <span className="text-6xl opacity-20 select-none">
-                    {game.emoji}
-                  </span>
+                  {/* ── Contenido del juego ── */}
+                  {isNearby ? (
+                    game.gameComponent &&
+                    GAME_COMPONENTS[game.gameComponent] ? (
+                      (() => {
+                        const GameComp = GAME_COMPONENTS[game.gameComponent];
+                        return (
+                          <GameComp
+                            key={`${uid}-${replayKey}`}
+                            isActive={isPlayable}
+                            onNextGame={() => handleNextGame(index)}
+                            onReplay={() => handleReplay(uid, index)}
+                            userId={currentUser?.id}
+                            pinchGuardRef={pinchGuardRef}
+                            onScrollLock={handleScrollLock}
+                          />
+                        );
+                      })()
+                    ) : (
+                      <PlaceholderGame
+                        key={`${uid}-ph-${replayKey}`}
+                        color={game.color}
+                        emoji={game.emoji}
+                        isActive={isPlayable}
+                      />
+                    )
+                  ) : (
+                    <div
+                      className={`h-full w-full ${game.color} flex items-center justify-center`}
+                    >
+                      <span className="text-6xl opacity-20 select-none">
+                        {game.emoji}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {/* ── UI Overlay flotante (por slide) ── */}
-              {isNearby && (
-                <GameInterface
-                  game={game}
-                  gameId={`${uid}-${replayKey}`}
-                  isCountingDown={
-                    isActive && isCountingDown && !shouldSkipCountdown
-                  }
-                  onCountdownComplete={() => setIsCountingDown(false)}
-                  likes={likesMap[game.id]?.count || 0}
-                  isLiked={likesMap[game.id]?.liked || false}
-                  onLike={() => onToggleLike(game.id)}
-                  onOpenGallery={onOpenGallery}
-                  hasRealGame={shouldSkipCountdown}
-                />
-              )}
+                {/* ── UI Overlay (DENTRO del contenedor escalable) ── */}
+                <AnimatePresence>
+                  {isNearby && !isUiHidden && (
+                    <motion.div
+                      key="ui-overlay"
+                      initial={{ opacity: 1 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <GameInterface
+                        game={game}
+                        gameId={`${uid}-${replayKey}`}
+                        isCountingDown={
+                          isActive && isCountingDown && !shouldSkipCountdown
+                        }
+                        onCountdownComplete={() => setIsCountingDown(false)}
+                        likes={likesMap[game.id]?.count || 0}
+                        isLiked={likesMap[game.id]?.liked || false}
+                        onLike={() => onToggleLike(game.id)}
+                        onOpenGallery={onOpenGallery}
+                        hasRealGame={shouldSkipCountdown}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* ── Cuenta atrás unificada: siempre montada, no depende de isUiHidden ── */}
+                {isActive && isCountingDown && !shouldSkipCountdown && (
+                  <Countdown
+                    gameId={`${uid}-${replayKey}`}
+                    onComplete={() => setIsCountingDown(false)}
+                    description={t(`desc.${game.id}`)}
+                  />
+                )}
+              </motion.div>
+
+              {/* ── LEY 2: Skip Button — solo durante gameplay de juegos con scroll bloqueado ── */}
+              <AnimatePresence>
+                {isActive &&
+                  slidePhase === "playing" &&
+                  game.requiresScrollLock && (
+                    <motion.button
+                      key="skip-btn"
+                      initial={{ opacity: 0, scale: 0.6, y: 20 }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                        y: [0, 5, 0],
+                      }}
+                      exit={{ opacity: 0, scale: 0.6, y: 10 }}
+                      transition={{
+                        opacity: { duration: 0.3, ease: "easeOut" },
+                        scale: { duration: 0.3, ease: "easeOut" },
+                        y: {
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        },
+                      }}
+                      whileTap={{ scale: 0.85 }}
+                      onClick={() => scrollToSlide(index + 1, "smooth")}
+                      className="absolute right-4 z-50 flex items-center justify-center
+                                 w-12 h-12 rounded-full
+                                 bg-black/40 backdrop-blur-lg border border-white/15
+                                 text-white/70 hover:text-white hover:bg-black/55
+                                 transition-colors pointer-events-auto
+                                 shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
+                      style={{
+                        bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))",
+                      }}
+                      aria-label={t("ui.next_game") || "Siguiente juego"}
+                    >
+                      {/* Lucide ChevronsDown */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-6 h-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m7 6 5 5 5-5" />
+                        <path d="m7 13 5 5 5-5" />
+                      </svg>
+                    </motion.button>
+                  )}
+              </AnimatePresence>
+
+              {/* ── Botón restaurar UI (X) — FUERA del escalable para tamaño fijo ── */}
+              <AnimatePresence>
+                {isActive && isUiHidden && (
+                  <motion.button
+                    key="restore-btn"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={nuclearReset}
+                    className="absolute bottom-4 left-4 z-50 flex items-center justify-center
+                               w-10 h-10 rounded-full
+                               bg-white/10 backdrop-blur-md border border-white/20
+                               text-white/70 hover:text-white hover:bg-white/20
+                               transition-colors pointer-events-auto
+                               shadow-lg shadow-black/20"
+                    aria-label="Restaurar interfaz"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </section>
           );
         })}

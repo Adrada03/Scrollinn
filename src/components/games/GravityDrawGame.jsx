@@ -120,7 +120,7 @@ function bounceBallOffSeg(g, ax, ay, bx, by, rest, ballR) {
 }
 
 /* ═══════════════════ COMPONENTE ═══════════════════ */
-const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock }) => {
+const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, pinchGuardRef }) => {
   const { t } = useLanguage();
   const canvasRef     = useRef(null);
   const containerRef  = useRef(null);
@@ -1022,6 +1022,7 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
 
   const handlePointerDown = useCallback((e) => {
     if (g.phase !== PHASE.DRAW || g.line) return;
+    if (pinchGuardRef?.current) return;               // LEY 5
     e.preventDefault();
     const pos = getPos(e);
     // La línea debe empezar dentro de la zona de dibujo (entre bola y canasta)
@@ -1142,12 +1143,11 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock 
     <div
       ref={containerRef}
       className="absolute inset-0 overflow-hidden select-none"
-      style={{ background: BG_COLOR, touchAction: "none" }}
+      style={{ background: BG_COLOR }}
     >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
-        style={{ touchAction: "none" }}
         onMouseDown={handlePointerDown}
         onMouseMove={handlePointerMove}
         onMouseUp={handlePointerUp}

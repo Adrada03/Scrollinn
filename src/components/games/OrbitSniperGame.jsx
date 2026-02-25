@@ -78,7 +78,7 @@ function clamp(v, min, max) {
 /* ═══════════════════════════════════════════════════════
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
-const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const containerRef = useRef(null);
 
@@ -380,6 +380,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
   /* ─────────── Disparo (tap) ─────────── */
   const handleTap = useCallback(() => {
     if (phaseRef.current !== PHASE.ORBITING) return;
+    if (pinchGuardRef?.current) return;               // LEY 5
 
     // Vector tangente (perpendicular al radio, en sentido del giro) — px/s
     const spd = g.shootSpeed || 300;
@@ -422,7 +423,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId }) => {
       ref={containerRef}
       className="relative h-full w-full overflow-hidden select-none bg-slate-950"
       onPointerDown={isPlaying ? handleTap : undefined}
-      style={{ cursor: isPlaying ? "pointer" : "default", touchAction: "none" }}
+      style={{ cursor: isPlaying ? "pointer" : "default" }}
     >
       {/* ── Estrellas de fondo ── */}
       {g.stars.map((s, i) => (

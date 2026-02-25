@@ -204,7 +204,7 @@ export const calculateGameXP = (gameId, score) => {
       return Math.min(score * 3, 100);
 
     // 📈 27. HIGHER OR LOWER (10 XP por punto, min 4)
-    case 'higher-or-lower':
+    case 'higher-lower':
       if (score < 4) return 0; // Suelo estricto de la tabla
       return Math.min(score * 10, 100);
 

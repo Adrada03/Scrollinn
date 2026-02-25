@@ -51,11 +51,11 @@ export function useSubmitScore(userId, gameId) {
           const ranking = formatRanking(top.success ? top.data : []);
           result = {
             success: false,
-            data: { ranking, xpGained: 0 },
+            data: { ranking },
             message: t('svc.register_to_save'),
           };
           setLastResult(result);
-          setXpGained(0);
+          // No establecer xpGained (queda null) → XpDisplay no se renderiza
         }
         // Evaluar retos diarios (fire-and-forget, nunca bloquea el Game Over)
         if (userId && gameId) {

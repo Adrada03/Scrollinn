@@ -58,7 +58,7 @@ function degToRad(d) { return (d * Math.PI) / 180; }
 /* ═══════════════════════════════════════════════════════
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
-const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const containerRef = useRef(null);
 
@@ -362,6 +362,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   /* ─────────── Pointer handler ─────────── */
   const handlePointerDown = useCallback(() => {
+    if (pinchGuardRef?.current) return;               // LEY 5
     const p = phaseRef.current;
     if (p === PHASE.AIMING) {
       // Fija ángulo, pasa a POWERING
@@ -429,7 +430,6 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId }) => {
     <div
       ref={containerRef}
       className="relative w-full h-full bg-slate-900 overflow-hidden select-none"
-      style={{ touchAction: isEnded || isIdle ? "auto" : "none" }}
       onPointerDown={handlePointerDown}
     >
       {/* ── Gradient overlays para UI del feed ── */}

@@ -37,7 +37,7 @@ const PERFECT_CIRCLE_COLOR = "#4ade80";    // verde neón
 const CENTER_CROSS_COLOR   = "#4ade80";
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
 
   // ── Phase state ──
@@ -386,6 +386,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const handlePointerDown = useCallback((e) => {
     const p = phaseRef.current;
     if (p === PHASES.ENDED || p === PHASES.ANALYZING || p === PHASES.REVEAL) return;
+    if (pinchGuardRef?.current) return;               // LEY 5
     e.preventDefault();
     const pt = getCanvasPoint(e);
     if (!pt) return;
@@ -428,7 +429,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   return (
     <div
-      className="relative h-full w-full overflow-hidden touch-none select-none bg-black"
+      className="relative h-full w-full overflow-hidden select-none bg-black"
       style={{
         background: "radial-gradient(circle at center, #0f172a 0%, #000000 70%)",
         boxShadow: "inset 0 0 60px rgba(0,0,0,0.85)",
@@ -461,12 +462,12 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {/* ── Centred game container ── */}
       <div
         ref={containerRef}
-        className="relative h-full w-full touch-none"
+        className="relative h-full w-full"
       >
         {/* Canvas */}
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 w-full h-full touch-none z-1"
+          className="absolute inset-0 w-full h-full z-1"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}

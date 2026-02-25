@@ -29,7 +29,7 @@ const MAX_GROW   = 210; // px/s velocidad máxima de crecimiento
 const START_SIZE = 12;  // px diámetro inicial del globo (puntito)
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [targetSize, setTargetSize] = useState(220);
@@ -90,6 +90,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId }) => {
   /* ── Pointer handlers ── */
   const handleDown = useCallback(() => {
     if (gameStateRef.current !== STATES.READY) return;
+    if (pinchGuardRef?.current) return;               // LEY 5
     gameStateRef.current = STATES.INFLATING;
     setGameState(STATES.INFLATING);
     lastTimeRef.current = null;
@@ -161,7 +162,6 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId }) => {
     <div
       className="relative h-full w-full flex items-center justify-center bg-zinc-950 overflow-hidden select-none"
       style={{
-        touchAction: isEnded || gameState === STATES.IDLE ? "auto" : "none",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",

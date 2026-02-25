@@ -62,7 +62,7 @@ const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 const randRange = (a, b) => a + Math.random() * (b - a);
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock }) => {
+const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, pinchGuardRef }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore] = useState(0);
@@ -260,6 +260,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock }
   /* ── Pointer handlers ── */
   const handlePointerDown = useCallback(() => {
     if (gameStateRef.current !== STATES.PLAYING) return;
+    if (pinchGuardRef?.current) return;               // LEY 5
     isRunningRef.current = true;
     setIsRunning(true);
   }, []);
@@ -326,7 +327,6 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock }
     <div
       className="relative h-full w-full flex items-center justify-center overflow-hidden select-none"
       style={{
-        touchAction: "none",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",

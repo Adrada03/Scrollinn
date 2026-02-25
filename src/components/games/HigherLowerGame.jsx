@@ -169,7 +169,7 @@ const FlipCard = ({ card, isFlipped, result = null }) => (
 );
 
 /* ═══════════════════ MAIN COMPONENT ═══════════════════ */
-const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock }) => {
+const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, pinchGuardRef }) => {
   const { t } = useLanguage();
 
   const [gameState, setGameState]     = useState(STATES.IDLE);

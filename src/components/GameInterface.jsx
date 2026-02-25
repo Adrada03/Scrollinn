@@ -10,7 +10,6 @@
  */
 
 import { useCallback, useState, useEffect } from "react";
-import Countdown from "./Countdown";
 import ActionBar from "./ActionBar";
 import DailyChallengesModal from "./DailyChallengesModal";
 import { useLanguage } from "../i18n";
@@ -51,10 +50,6 @@ const GameInterface = ({
     window.addEventListener("challenges-updated", handler);
     return () => window.removeEventListener("challenges-updated", handler);
   }, [refreshChallengeStatus]);
-
-  const handleCountdownDone = useCallback(() => {
-    onCountdownComplete();
-  }, [onCountdownComplete]);
 
   return (
     <div className="absolute inset-0 z-20 pointer-events-none">
@@ -115,14 +110,7 @@ const GameInterface = ({
         </div>
       </div>
 
-      {/* ========== CUENTA ATRÁS (solo placeholders) ========== */}
-      {isCountingDown && !hasRealGame && (
-        <Countdown
-          gameId={gameId}
-          onComplete={handleCountdownDone}
-          description={description}
-        />
-      )}
+      {/* ========== CUENTA ATRÁS (gestionada por Feed.jsx) ========== */}
     </div>
   );
 };

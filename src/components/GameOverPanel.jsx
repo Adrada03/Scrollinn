@@ -23,6 +23,9 @@ import { useLanguage } from "../i18n";
 import Avatar from "./Avatar";
 import PublicProfileModal from "./PublicProfileModal";
 
+/* Notifica al Feed para desbloquear scroll inmediatamente */
+const SCROLL_UNLOCK_EVENT = "gameover-scroll-unlock";
+
 const FALLBACK_RANKING = [
   { pos: 1, user: "—", score: "—" },
   { pos: 2, user: "—", score: "—" },
@@ -105,6 +108,12 @@ const GameOverPanel = ({
   const { t } = useLanguage();
   const [profileUserId, setProfileUserId] = useState(null);
   const displayRanking = ranking.length > 0 ? ranking : FALLBACK_RANKING;
+
+  // Al montar el panel de Game Over, desbloquear scroll inmediatamente
+  useEffect(() => {
+    window.dispatchEvent(new Event(SCROLL_UNLOCK_EVENT));
+  }, []);
+
   return (
     <>
     <PublicProfileModal

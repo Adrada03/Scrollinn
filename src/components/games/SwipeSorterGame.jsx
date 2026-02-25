@@ -32,7 +32,7 @@ const COLORS = [
 const pickColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
 
 /* ═══════════════════ COMPONENT ═══════════════════ */
-const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [score, setScore]         = useState(0);
@@ -152,6 +152,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
   /* ── Pointer/Touch handlers ── */
   const handlePointerDown = useCallback((e) => {
     if (gameStateRef.current !== STATES.PLAYING) return;
+    if (pinchGuardRef?.current) return;               // LEY 5
     dragStartRef.current = { x: e.clientX, y: e.clientY };
     dragXRef.current = 0;
   }, []);
@@ -242,7 +243,6 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
     <div
       className="relative h-full w-full flex items-center justify-center bg-zinc-950 overflow-hidden select-none"
       style={{
-        touchAction: isPlaying ? "none" : "auto",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
@@ -346,7 +346,6 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId }) => {
         <div
           className="z-3 cursor-grab active:cursor-grabbing"
           style={{
-            touchAction: "none",
             transform: `translateX(${cardTranslateX}px) rotate(${cardRotate}deg)`,
             transition: exiting ? "transform 0.2s ease-out, opacity 0.2s" : "none",
             opacity,

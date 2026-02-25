@@ -52,7 +52,7 @@ function createCircle(w, h, type, score) {
 
 /* ─────────── Componente React ─────────── */
 
-const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const canvasRef = useRef(null);
   const stateRef = useRef({
@@ -153,6 +153,8 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId }) => {
       return { x: t.clientX - rect.left, y: t.clientY - rect.top };
     }
     function onDown(e) {
+      if (s.gameState !== GAME_STATES.PLAYING) return; // LEY 3
+      if (pinchGuardRef?.current) return;              // LEY 5
       e.preventDefault();
       s.pointer.down = true;
       const p = getPos(e);
@@ -370,7 +372,6 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId }) => {
         <canvas
           ref={canvasRef}
           className="w-full h-full"
-          style={{ touchAction: isPlaying ? "none" : "auto" }}
         />
       </div>
 

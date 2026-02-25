@@ -37,6 +37,7 @@ const GAMES = [
     emoji: "⚔️",
     logo: "/logo-circleninja.png",
     gameComponent: "CircleNinja",
+    requiresScrollLock: true,
   },
   {
     id: "color-match",
@@ -56,6 +57,7 @@ const GAMES = [
     logo: "/logo-circlepath.png",
     logoScale: 1.6,
     gameComponent: "CirclePath",
+    requiresScrollLock: true,
   },
   {
     id: "hextris",
@@ -65,6 +67,7 @@ const GAMES = [
     emoji: "⬡",
     logo: "/logo-hextris.png",
     gameComponent: "Hextris",
+    requiresScrollLock: true,
   },
   {
     id: "neon-tap",
@@ -119,6 +122,7 @@ const GAMES = [
     emoji: "💥",
     logo: "/logo-dodgerush.png",
     gameComponent: "DodgeRush",
+    requiresScrollLock: true,
   },
   {
     id: "frenzy-tap",
@@ -128,6 +132,7 @@ const GAMES = [
     emoji: "🔥",
     logo: "/logo-frenzytap.png",
     gameComponent: "FrenzyTap",
+    requiresScrollLock: true,
   },
   {
     id: "perfect-scale",
@@ -137,6 +142,7 @@ const GAMES = [
     emoji: "🎯",
     logo: "/logo-perfectscale.png",
     gameComponent: "PerfectScale",
+    requiresScrollLock: true,
   },
   {
     id: "swipe-sorter",
@@ -146,6 +152,7 @@ const GAMES = [
     emoji: "🃏",
     logo: "/logo-swipesorter.png",
     gameComponent: "SwipeSorter",
+    requiresScrollLock: true,
   },
   {
     id: "math-rush",
@@ -164,6 +171,7 @@ const GAMES = [
     emoji: "🌉",
     logo: "/logo-stickbridge.png",
     gameComponent: "StickBridge",
+    requiresScrollLock: true,
   },
   {
     id: "drop-the-box",
@@ -173,6 +181,7 @@ const GAMES = [
     emoji: "📦",
     logo: "/logo-dropthebox.png",
     gameComponent: "DropTheBox",
+    requiresScrollLock: true,
   },
   {
     id: "overheat",
@@ -182,6 +191,7 @@ const GAMES = [
     emoji: "🔥",
     logo: "/logo-overheat.png",
     gameComponent: "Overheat",
+    requiresScrollLock: true,
   },
   {
     id: "memory-loop",
@@ -209,6 +219,7 @@ const GAMES = [
     emoji: "🚀",
     logo: "/logo-vectorleap.png",
     gameComponent: "VectorLeap",
+    requiresScrollLock: true,
   },
   {
     id: "rps-duel",
@@ -227,6 +238,7 @@ const GAMES = [
     emoji: "🎯",
     logo: "/logo-orbitsniper.png",
     gameComponent: "OrbitSniper",
+    requiresScrollLock: true,
   },
   {
     id: "shadow-dash",
@@ -236,6 +248,7 @@ const GAMES = [
     emoji: "🏃",
     logo: "/logo-shadowdash.png",
     gameComponent: "ShadowDash",
+    requiresScrollLock: true,
   },
   {
     id: "gravity-draw",
@@ -245,6 +258,7 @@ const GAMES = [
     emoji: "✏️",
     logo: "/logo-gravitydraw.png",
     gameComponent: "GravityDraw",
+    requiresScrollLock: true,
   },
   {
     id: "crossroad-dart",
@@ -254,6 +268,7 @@ const GAMES = [
     emoji: "🚗",
     logo: "/logo-crossroaddart.png",
     gameComponent: "CrossroadDart",
+    requiresScrollLock: true,
   },
   {
     id: "mental-math",
@@ -273,6 +288,7 @@ const GAMES = [
     logo: "/logo-perfectcircle.png",
     gameComponent: "PerfectCircle",
     skipCountdown: true,
+    requiresScrollLock: true,
   },
 ];
 

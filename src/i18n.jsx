@@ -25,6 +25,7 @@ const translations = {
     "ui.gallery_aria":    "Galería de juegos",
     "ui.games":           "Juegos",
     "ui.swipe_hint":      "Desliza para cambiar de juego",
+    "ui.next_game":        "Siguiente juego",
 
     // ── Auth Modal ──────────────────────────────
     "auth.fill_both":      "Rellena ambos campos.",
@@ -97,7 +98,7 @@ const translations = {
     "svc.game_not_found":     "Juego no encontrado",
     "svc.score_saved":        "¡Puntuación registrada!",
     "svc.top5_made":          "¡Estás en el Top 5!",
-    "svc.register_to_save":   "Regístrate para guardar tu puntuación",
+    "svc.register_to_save":   "Regístrate para guardar tu puntuación y XP",
     "svc.score_error":        "Error al enviar puntuación.",
 
     // ── Game Descriptions (games.js) ────────────
@@ -401,6 +402,7 @@ const translations = {
     "ui.gallery_aria":    "Game gallery",
     "ui.games":           "Games",
     "ui.swipe_hint":      "Swipe to change game",
+    "ui.next_game":        "Next game",
 
     // ── Auth Modal ──────────────────────────────
     "auth.fill_both":      "Please fill in both fields.",
@@ -473,7 +475,7 @@ const translations = {
     "svc.game_not_found":     "Game not found",
     "svc.score_saved":        "Score saved!",
     "svc.top5_made":          "You're in the Top 5!",
-    "svc.register_to_save":   "Sign up to save your score",
+    "svc.register_to_save":   "Sign up to save your score and XP",
     "svc.score_error":        "Error submitting score.",
 
     // ── Game Descriptions ───────────────────────

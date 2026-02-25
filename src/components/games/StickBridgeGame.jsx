@@ -58,7 +58,7 @@ function rand(a, b) { return a + Math.random() * (b - a); }
 /* ═══════════════════════════════════════════════════════
    COMPONENTE
    ═══════════════════════════════════════════════════════ */
-const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const containerRef = useRef(null);
 
@@ -183,6 +183,7 @@ const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId }) => {
   /* ─────────── Pointer handlers ─────────── */
   const handlePointerDown = useCallback(() => {
     if (phase !== PHASE.WAITING) return;
+    if (pinchGuardRef?.current) return;               // LEY 5
     setPhase(PHASE.GROWING);
   }, [phase]);
 
@@ -307,7 +308,6 @@ const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId }) => {
     <div
       ref={containerRef}
       className="relative w-full h-full bg-zinc-900 overflow-hidden select-none"
-      style={{ touchAction: isEnded || phase === PHASE.IDLE ? "auto" : "none" }}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >

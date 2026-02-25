@@ -105,7 +105,7 @@ function addTarget(s) {
 
 /* ─────────── Componente React ─────────── */
 
-const CirclePathGame = ({ isActive, onNextGame, onReplay, userId }) => {
+const CirclePathGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) => {
   const { t } = useLanguage();
   const canvasRef = useRef(null);
   const [ranking, setRanking] = useState([]);
@@ -189,6 +189,7 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId }) => {
     function onTap(e) {
       e.preventDefault();
       if (s.gameState !== GAME_STATES.PLAYING) return;
+      if (pinchGuardRef?.current) return;              // LEY 5
 
       s.destroy = false;
       const rotBall = s.balls[s.rotatingBall];
@@ -416,7 +417,6 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId }) => {
         <canvas
           ref={canvasRef}
           className="w-full h-full"
-          style={{ touchAction: isPlaying ? "none" : "auto" }}
         />
       </div>
 
