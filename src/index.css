@@ -13,6 +13,12 @@ html, body, #root {
   overflow: hidden;
   overscroll-behavior: none;
   background: #000;
+
+  /* ─── CAPA 2: Bloqueo de zoom nativo ───
+     pan-y permite scroll vertical pero el navegador NO reclama
+     el gesto de pinch para sí mismo → nuestro JS lo captura.
+     NUNCA usar 'manipulation' aquí: incluye pinch-zoom. */
+  touch-action: pan-y;
 }
 
 /* Prevenir selección de texto y efectos táctiles */

@@ -216,10 +216,10 @@ const ChallengeCard = ({ challenge, lang, t, onClaim, claimingId }) => {
       layout
       className={`relative rounded-lg border p-3 transition-all duration-300 ${
         is_claimed
-          ? "opacity-50 border-slate-700/20 bg-black/10"
+          ? "opacity-50 border-emerald-500/20 bg-black/30"
           : isComplete
-          ? "border-amber-500/25 bg-amber-500/3"
-          : "border-slate-700/30 bg-black/20"
+          ? "border-amber-500/25 bg-black/40"
+          : "border-white/5 bg-black/40"
       }`}
     >
       {/* ── Top row: title + reward pill ── */}
@@ -496,7 +496,7 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
           onClick={onClose}
         >
           <motion.div
-            className="relative w-full max-w-md bg-linear-to-b from-slate-800 to-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
+            className="relative w-full max-w-md mt-16 max-h-[75svh] flex flex-col bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
             initial={{ scale: 0.85, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.85, opacity: 0, y: 30 }}
@@ -507,7 +507,7 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
             <CoinBurst trigger={coinBurstTrigger} />
 
             {/* ── Top glow accent ── */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-amber-400/40 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
 
             {/* ══════════ HEADER ══════════ */}
             <div className="relative px-5 pt-5 pb-3">
@@ -558,7 +558,7 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
             <div className="mx-5 h-px bg-slate-700/40" />
 
             {/* ══════════ CHALLENGE LIST ══════════ */}
-            <div className="px-4 py-3 space-y-2">
+            <div className="flex-1 min-h-0 px-4 py-3 space-y-2 overflow-y-auto scrollbar-hide">
               {loading ? (
                 <>
                   <SkeletonCard />
@@ -612,7 +612,7 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
             </AnimatePresence>
 
             {/* ── Bottom glow accent ── */}
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-slate-600/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
           </motion.div>
         </motion.div>
       )}

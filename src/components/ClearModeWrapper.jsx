@@ -1,9 +1,13 @@
 /**
  * ClearModeWrapper — Capa superior global para Clear Mode (Pinch-to-zoom)
  *
- * NUEVA ARQUITECTURA: Desacopla completamente la detección del zoom de los
+ * ARQUITECTURA: Desacopla completamente la detección del zoom de los
  * juegos individuales. Este componente vive en lo más alto del Feed y es el
  * ÚNICO responsable de escuchar eventos táctiles para el pinch-to-zoom.
+ *
+ * Principio fundamental: TRANSPARENCIA TOTAL para toques de 1 dedo.
+ * El wrapper NUNCA intercepta, retrasa ni re-despacha toques de un solo
+ * dedo. Solo actúa cuando detecta 2+ dedos (pinch).
  *
  * Props:
  *  - activeIndex:     índice del slide activo en el feed
@@ -36,8 +40,7 @@ import ClearModeContext from "../context/ClearModeContext";
 /* ── Constantes ── */
 const CLEAR_THRESHOLD = 1.2;        // escala mínima para activar modo limpio
 const SPRING_CONFIG = { type: "spring", stiffness: 300, damping: 25 };
-const PINCH_DETECT_WINDOW = 120;    // ms esperando segundo dedo
-const POST_PINCH_COOLDOWN = 150;    // ms bloqueando touches post-pinch
+const POST_PINCH_COOLDOWN = 200;    // ms bloqueando touches post-pinch
 
 export default function ClearModeWrapper({
   activeIndex,
@@ -62,17 +65,9 @@ export default function ClearModeWrapper({
   const didExceedRef = useRef(false);
   const isPinchingRef = useRef(false);
 
-  // Ventana de detección pre-pinch
-  const detectTimerRef = useRef(null);
-  const pendingStartRef = useRef(null);
-  const isDetectingRef = useRef(false);
-
   // Cooldown post-pinch
   const cooldownRef = useRef(false);
   const cooldownTimerRef = useRef(null);
-
-  // Flag para re-despachos sintéticos
-  const isSyntheticRef = useRef(false);
 
   /* ═══════════════════════════════════════════════════════
      Pinch Guard — ref compuesto para que los juegos
@@ -91,14 +86,6 @@ export default function ClearModeWrapper({
   const getDistance = (t0, t1) =>
     Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
 
-  /** Limpieza de la ventana de detección */
-  const clearDetection = useCallback(() => {
-    clearTimeout(detectTimerRef.current);
-    detectTimerRef.current = null;
-    pendingStartRef.current = null;
-    isDetectingRef.current = false;
-  }, []);
-
   /** Activar cooldown post-pinch para bloquear falsos taps */
   const startCooldown = useCallback(() => {
     cooldownRef.current = true;
@@ -106,47 +93,6 @@ export default function ClearModeWrapper({
     cooldownTimerRef.current = setTimeout(() => {
       cooldownRef.current = false;
     }, POST_PINCH_COOLDOWN);
-  }, []);
-
-  /** Re-despachar toque pendiente al elemento original (fue un tap real) */
-  const redispatchPendingTouch = useCallback(() => {
-    const pending = pendingStartRef.current;
-    if (!pending) return;
-
-    const touch = pending.changedTouches[0];
-    if (!touch) return;
-
-    const target = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (!target) return;
-
-    isSyntheticRef.current = true;
-    try {
-      // Re-despachar touchstart
-      target.dispatchEvent(
-        new TouchEvent("touchstart", {
-          bubbles: true,
-          cancelable: true,
-          touches: pending.touches,
-          targetTouches: pending.targetTouches,
-          changedTouches: pending.changedTouches,
-        })
-      );
-      // También pointerdown para juegos basados en canvas/pointer
-      target.dispatchEvent(
-        new PointerEvent("pointerdown", {
-          bubbles: true,
-          cancelable: true,
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          pointerId: touch.identifier,
-          pointerType: "touch",
-          isPrimary: true,
-        })
-      );
-    } finally {
-      // FAILSAFE: garantizar liberación incluso si un handler lanza error
-      isSyntheticRef.current = false;
-    }
   }, []);
 
   /* ═══════════════════════════════════════════════════════
@@ -159,12 +105,8 @@ export default function ClearModeWrapper({
     initialDistRef.current = null;
     didExceedRef.current = false;
     isPinchingRef.current = false;
-    clearTimeout(detectTimerRef.current);
     clearTimeout(cooldownTimerRef.current);
     cooldownRef.current = false;
-    isDetectingRef.current = false;
-    pendingStartRef.current = null;
-    isSyntheticRef.current = false;
   }, [scale]);
 
   /* ═══════════════════════════════════════════════════════
@@ -178,9 +120,14 @@ export default function ClearModeWrapper({
   /* ═══════════════════════════════════════════════════════
      TOUCH EVENT LISTENERS — captura en el wrapper estable
      
-     ¡CLAVE ARQUITECTÓNICA! Los listeners se registran UNA
-     sola vez en wrapperRef (nodo DOM estable). No dependen
-     de activeIndex ni se re-registran al cambiar de slide.
+     PRINCIPIO CLAVE: TRANSPARENCIA TOTAL para 1 dedo.
+     
+     Nunca interceptamos, retrasamos ni re-despachamos toques
+     de un solo dedo. Esto elimina por completo los ghost clicks.
+     Solo actuamos al detectar 2+ dedos (pinch).
+     
+     Los listeners se registran UNA sola vez en wrapperRef
+     (nodo DOM estable). No dependen de activeIndex.
      ═══════════════════════════════════════════════════════ */
   useEffect(() => {
     const el = wrapperRef.current;
@@ -188,64 +135,45 @@ export default function ClearModeWrapper({
 
     /* ─── TOUCHSTART (capture) ─── */
     const handleTouchStart = (e) => {
-      // Dejar pasar re-despachos sintéticos
-      if (isSyntheticRef.current) return;
-
-      // Post-pinch cooldown: bloquear touches residuales
+      // Post-pinch cooldown: bloquear touches residuales del dedo que queda
       if (cooldownRef.current) {
         e.stopPropagation();
+        e.preventDefault();
         return;
       }
 
-      if (e.touches.length === 1 && !isPinchingRef.current) {
-        // Solo interceptar 1 dedo si el scroll está bloqueado (gameplay activo).
-        // Si no, dejar fluir para scroll/tap normal.
-        if (disabledRef.current || !scrollLockedRef?.current) return;
+      // 1 dedo → TRANSPARENCIA TOTAL. No interceptar NUNCA.
+      // El toque fluye directamente al juego sin ninguna interferencia.
+      if (e.touches.length < 2) return;
 
-        // Primer dedo: iniciar ventana de detección
-        isDetectingRef.current = true;
-        pendingStartRef.current = e;
-        e.stopPropagation();
+      // 2+ dedos → iniciar pinch
+      if (disabledRef.current) return;
 
-        detectTimerRef.current = setTimeout(() => {
-          // Timer expiró sin segundo dedo → fue un tap real
-          redispatchPendingTouch();
-          clearDetection();
-        }, PINCH_DETECT_WINDOW);
-      } else if (e.touches.length === 2) {
-        // Segundo dedo: confirmar pinch (SIEMPRE permitido)
-        e.stopPropagation();
-        clearTimeout(detectTimerRef.current);
-        clearDetection();
+      e.stopPropagation();
+      // preventDefault en touchstart con 2 dedos previene que el navegador
+      // inicie su propio gesto de zoom Y evita que genere clicks de accesibilidad
+      e.preventDefault();
 
-        isPinchingRef.current = true;
-        setIsZooming(true);
-        didExceedRef.current = false;
-        initialDistRef.current = getDistance(e.touches[0], e.touches[1]);
-      }
+      isPinchingRef.current = true;
+      setIsZooming(true);
+      didExceedRef.current = false;
+      initialDistRef.current = getDistance(e.touches[0], e.touches[1]);
     };
 
     /* ─── TOUCHMOVE (capture) ─── */
     const handleTouchMove = (e) => {
-      if (isSyntheticRef.current) return;
-
-      // Durante cooldown, bloquear
+      // Durante cooldown, bloquear moves residuales
       if (cooldownRef.current) {
-        e.stopPropagation();
+        if (e.touches.length > 1) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
         return;
       }
 
-      if (isDetectingRef.current && e.touches.length === 1) {
-        // Arrastrando con 1 dedo durante ventana de detección.
-        // Probablemente scroll o interacción real → cancelar detección, re-despachar.
-        redispatchPendingTouch();
-        clearDetection();
-        return; // dejar fluir el move
-      }
-
+      // Solo actuar si estamos en pinch activo con 2 dedos
       if (!isPinchingRef.current || e.touches.length !== 2) return;
 
-      // Pinch activo: actualizar escala
       e.stopPropagation();
       e.preventDefault(); // bloquear zoom nativo del navegador
 
@@ -262,25 +190,20 @@ export default function ClearModeWrapper({
 
     /* ─── TOUCHEND (capture) ─── */
     const handleTouchEnd = (e) => {
-      if (isSyntheticRef.current) return;
-
-      // Post-pinch cooldown: bloquear
+      // Post-pinch cooldown: bloquear touchends residuales
       if (cooldownRef.current) {
         e.stopPropagation();
+        e.preventDefault();
         return;
       }
 
-      // Si estamos en ventana de detección y el dedo se levanta sin 2º dedo
-      if (isDetectingRef.current) {
-        redispatchPendingTouch();
-        clearDetection();
-        return; // dejar fluir el touchend
-      }
-
+      // Solo actuar si estábamos haciendo pinch
       if (!isPinchingRef.current) return;
 
+      // Quedan < 2 dedos → pinch terminó
       if (e.touches.length < 2) {
         e.stopPropagation();
+        e.preventDefault(); // evitar click de accesibilidad del dedo que se levanta
         isPinchingRef.current = false;
         setIsZooming(false);
 
@@ -301,7 +224,6 @@ export default function ClearModeWrapper({
 
     /* ─── TOUCHCANCEL (capture) — limpieza de emergencia ─── */
     const handleTouchCancel = () => {
-      clearDetection();
       if (isPinchingRef.current) {
         isPinchingRef.current = false;
         setIsZooming(false);
@@ -310,7 +232,7 @@ export default function ClearModeWrapper({
       }
     };
 
-    // Registrar en CAPTURE + passive:false para poder preventDefault en pinch
+    // Registrar en CAPTURE + passive:false para poder preventDefault
     const opts = { capture: true, passive: false };
     el.addEventListener("touchstart", handleTouchStart, opts);
     el.addEventListener("touchmove", handleTouchMove, opts);
@@ -322,17 +244,13 @@ export default function ClearModeWrapper({
       el.removeEventListener("touchmove", handleTouchMove, opts);
       el.removeEventListener("touchend", handleTouchEnd, opts);
       el.removeEventListener("touchcancel", handleTouchCancel, opts);
-      clearTimeout(detectTimerRef.current);
       clearTimeout(cooldownTimerRef.current);
-      // FAILSAFE: al desmontar, liberar todos los locks
       cooldownRef.current = false;
       isPinchingRef.current = false;
-      isDetectingRef.current = false;
-      isSyntheticRef.current = false;
     };
     // SIN activeIndex en deps → listeners estables en un nodo DOM que no cambia.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scale, clearDetection, startCooldown, redispatchPendingTouch]);
+  }, [scale, startCooldown]);
 
   /* ═══════════════════════════════════════════════════════
      Context value (memoizado)

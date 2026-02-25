@@ -19,7 +19,9 @@
  */
 
 import { useState, useEffect } from "react";
+import { RefreshCw, ChevronDown } from "lucide-react";
 import { useLanguage } from "../i18n";
+import { useAuth } from "../context/AuthContext";
 import Avatar from "./Avatar";
 import PublicProfileModal from "./PublicProfileModal";
 
@@ -81,7 +83,7 @@ const XpDisplay = ({ xpGained }) => {
       <span
         className={`text-lg font-black tracking-tight animate-[xpPop_0.5s_ease-out] ${
           isMaxTier
-            ? "text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+            ? "text-transparent bg-clip-text bg-linear-to-r from-yellow-300 via-amber-400 to-yellow-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
             : "text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]"
         }`}
       >
@@ -106,6 +108,7 @@ const GameOverPanel = ({
   xpGained = null,
 }) => {
   const { t } = useLanguage();
+  const { currentUser } = useAuth();
   const [profileUserId, setProfileUserId] = useState(null);
   const displayRanking = ranking.length > 0 ? ranking : FALLBACK_RANKING;
 
@@ -121,28 +124,28 @@ const GameOverPanel = ({
       onClose={() => setProfileUserId(null)}
       userId={profileUserId}
     />
-    <div className="absolute inset-0 flex flex-col items-center justify-center z-[6]">
-      <div className="bg-black/50 backdrop-blur-xl rounded-3xl px-6 py-5 flex flex-col items-center gap-2 shadow-2xl w-[90vw] max-w-md">
+    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center pt-20 pb-32 px-4 pointer-events-none">
+      <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl px-5 py-4 flex flex-col items-center gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] w-full max-w-xs border border-white/10 pointer-events-auto overflow-hidden max-h-full">
         {/* Título */}
-        <h2 className="text-2xl font-black text-white tracking-tight">
+        <h2 className="text-base font-extrabold text-white/90 tracking-wide uppercase">
           {title}
         </h2>
 
         {/* Puntuación */}
         <div
-          className="text-5xl font-black text-white/90"
+          className="text-4xl font-black text-transparent bg-clip-text bg-linear-to-b from-white via-white to-white/50 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]"
           style={{ fontFeatureSettings: "'tnum'" }}
         >
           {score}
         </div>
 
         {subtitle && (
-          <p className="text-white/40 text-sm -mt-1">{subtitle}</p>
+          <p className="text-white/40 text-xs -mt-0.5">{subtitle}</p>
         )}
 
         {/* Mensaje de puntuación */}
         {scoreMessage && (
-          <p className="text-xs text-center text-amber-300/80 font-medium -mt-1">
+          <p className="text-[11px] text-center text-amber-300/80 font-medium -mt-0.5">
             {scoreMessage}
           </p>
         )}
@@ -151,9 +154,9 @@ const GameOverPanel = ({
         <XpDisplay xpGained={xpGained} />
 
         {/* Ranking */}
-        <div className="w-full mt-1 rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+        <div className="w-full rounded-xl bg-black/30 border border-white/6 overflow-hidden">
           {/* Header */}
-          <div className="grid grid-cols-[1.5rem_1.75rem_1fr_3.5rem] gap-x-2 items-center px-3 py-1.5 text-[10px] font-bold text-white/30 uppercase tracking-wider border-b border-white/5">
+          <div className="grid grid-cols-[1.2rem_1.5rem_1fr_3rem] gap-x-1.5 items-center px-2.5 py-0.5 text-[9px] font-bold text-white/25 uppercase tracking-wider border-b border-white/6">
             <span>#</span>
             <span></span>
             <span>{t("gameover.user")}</span>
@@ -161,26 +164,29 @@ const GameOverPanel = ({
           </div>
           {/* Loading */}
           {isLoading ? (
-            <div className="px-3 py-4 text-center text-sm text-white/30 animate-pulse">
+            <div className="px-3 py-2 text-center text-xs text-white/30 animate-pulse">
               {t("gameover.loading")}
             </div>
           ) : (
             /* Rows */
             <div>
-              {displayRanking.map((r) => (
-                <div
-                  key={r.pos}
-                  onClick={() => r.userId && setProfileUserId(r.userId)}
-                  className={`grid grid-cols-[1.5rem_1.75rem_1fr_3.5rem] gap-x-2 items-center px-3 py-1.5 text-sm border-b border-white/5 last:border-0 transition-colors${
-                    r.userId ? " cursor-pointer hover:bg-white/5 active:bg-white/10" : ""
-                  }`}
-                >
-                  <span className="text-white/50 font-bold tabular-nums">{r.pos}</span>
-                  <Avatar equippedAvatarId={r.equippedAvatarId} size="sm" className="!w-6 !h-6" />
-                  <span className="text-white/70 font-medium truncate">{r.user}</span>
-                  <span className="text-white/60 font-bold text-right tabular-nums">{r.score}</span>
-                </div>
-              ))}
+              {displayRanking.map((r) => {
+                const isMe = currentUser?.id && r.userId === currentUser.id;
+                return (
+                  <div
+                    key={r.pos}
+                    onClick={() => r.userId && setProfileUserId(r.userId)}
+                    className={`grid grid-cols-[1.2rem_1.5rem_1fr_3rem] gap-x-1.5 items-center px-2.5 py-0.5 text-xs border-b border-white/4 last:border-0 transition-colors ${
+                      isMe ? "bg-white/8 rounded-lg" : ""
+                    }${r.userId ? " cursor-pointer hover:bg-white/5 active:bg-white/10" : ""}`}
+                  >
+                    <span className={`font-bold tabular-nums ${isMe ? "text-emerald-400" : "text-white/40"}`}>{r.pos}</span>
+                    <Avatar equippedAvatarId={r.equippedAvatarId} size="sm" className="w-5! h-5!" />
+                    <span className={`font-medium truncate ${isMe ? "text-white" : "text-white/60"}`}>{r.user}</span>
+                    <span className={`font-bold text-right tabular-nums ${isMe ? "text-emerald-400" : "text-white/50"}`}>{r.score}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -189,11 +195,9 @@ const GameOverPanel = ({
         {onReplay && (
           <button
             onClick={onReplay}
-            className="mt-1 w-full px-5 py-2.5 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold rounded-2xl text-sm transition-all pointer-events-auto border border-white/10 flex items-center justify-center gap-2"
+            className="mt-1 w-full px-4 py-2 md:py-3 bg-slate-800/60 backdrop-blur-md hover:bg-slate-700/60 active:scale-95 text-white/90 font-bold rounded-xl text-sm md:text-base transition-all border border-white/10 shadow-lg flex items-center justify-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
-            </svg>
+            <RefreshCw className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
             {t("gameover.replay")}
           </button>
         )}
@@ -201,12 +205,10 @@ const GameOverPanel = ({
         {/* Siguiente juego */}
         <button
           onClick={onNext}
-          className="mt-1 w-full px-5 py-2.5 bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold rounded-2xl text-sm transition-all pointer-events-auto border border-white/10 flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 md:py-3 bg-slate-800/60 backdrop-blur-md hover:bg-slate-700/60 active:scale-95 text-white/90 font-bold rounded-xl text-sm md:text-base transition-all border border-white/10 shadow-lg flex items-center justify-center gap-2"
         >
           {t("gameover.next")}
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
-          </svg>
+          <ChevronDown className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
         </button>
       </div>
     </div>
