@@ -172,7 +172,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
 
   /* ── Pointer tracking (mouse + touch) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING) return;
+    if (gameState !== STATES.PLAYING || !isActive) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -202,11 +202,12 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
       canvas.removeEventListener("touchmove", onTouch);
       canvas.removeEventListener("touchstart", onTouch);
     };
-  }, [gameState]);
+  }, [gameState, isActive]);
 
-  /* ── Game loop (rAF) ── */
+  /* ── Game loop (rAF, se pausa si isActive=false) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING) return;
+    if (gameState !== STATES.PLAYING || !isActive) return;
+    lastTimeRef.current = null;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -345,9 +346,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
     };
-  }, [gameState]);
-
-  /* ── Cleanup global ── */
+  }, [gameState, isActive]);
   useEffect(() => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);

@@ -92,6 +92,8 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
   const bgOffsetRef = useRef(0);
   const scrollLockTORef = useRef(null);
   const deathTimerRef = useRef(null);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
   // No drenar pánico hasta que el jugador corra por primera vez
   const hasStartedRunningRef = useRef(false);
 
@@ -152,6 +154,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
   /* ── Game loop (rAF) ── */
   const gameLoop = useCallback((timestamp) => {
     if (gameStateRef.current !== STATES.PLAYING) return;
+    if (!isActiveRef.current) { prevTimeRef.current = null; return; } // Pausa
 
     if (!prevTimeRef.current) prevTimeRef.current = timestamp;
     const dt = Math.min((timestamp - prevTimeRef.current) / 1000, 0.1); // cap a 100ms
@@ -246,6 +249,17 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
   useEffect(() => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
+
+  /* ── Pausar/reanudar rAF al perder/ganar foco ── */
+  useEffect(() => {
+    if (!isActive && gameStateRef.current === STATES.PLAYING) {
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    }
+    if (isActive && gameStateRef.current === STATES.PLAYING && !rafRef.current) {
+      prevTimeRef.current = null; // Reset deltaTime para evitar salto
+      rafRef.current = requestAnimationFrame(gameLoop);
+    }
+  }, [isActive, gameLoop]);
 
   /* ── Cleanup ── */
   useEffect(() => {

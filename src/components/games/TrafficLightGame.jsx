@@ -57,6 +57,9 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   const greenTimestampRef = useRef(null); // Date.now() cuando se pone verde
   const timeoutRef = useRef(null);        // setTimeout para el cambio a verde
+  const waitStartRef = useRef(null);      // cuándo empezó el WAITING
+  const waitDelayRef = useRef(0);         // delay total programado
+  const pausedAtGreenRef = useRef(null);  // timestamp de pausa en GREEN
 
   const [ranking, setRanking] = useState([]);
   const [scoreMessage, setScoreMessage] = useState("");
@@ -75,6 +78,9 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
     // Programar el cambio a verde tras un tiempo aleatorio
     const delay = getRandomWait();
+    waitStartRef.current = Date.now();
+    waitDelayRef.current = delay;
+    pausedAtGreenRef.current = null;
     timeoutRef.current = setTimeout(() => {
       greenTimestampRef.current = Date.now();
       setGameState(STATES.GREEN);
@@ -92,6 +98,37 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  /* ── Pause / resume (regla de los 3 segundos) ── */
+  useEffect(() => {
+    if (!isActive) {
+      // WAITING → congelar el setTimeout
+      if (gameState === STATES.WAITING && timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+        const elapsed = Date.now() - waitStartRef.current;
+        waitDelayRef.current = Math.max(0, waitDelayRef.current - elapsed);
+      }
+      // GREEN → congelar la referencia de reacción
+      if (gameState === STATES.GREEN) {
+        pausedAtGreenRef.current = Date.now();
+      }
+    } else {
+      // Reanudar WAITING timeout
+      if (gameState === STATES.WAITING && !timeoutRef.current && waitDelayRef.current > 0) {
+        waitStartRef.current = Date.now();
+        timeoutRef.current = setTimeout(() => {
+          greenTimestampRef.current = Date.now();
+          setGameState(STATES.GREEN);
+        }, waitDelayRef.current);
+      }
+      // Reanudar GREEN: compensar greenTimestampRef
+      if (gameState === STATES.GREEN && pausedAtGreenRef.current !== null) {
+        greenTimestampRef.current += (Date.now() - pausedAtGreenRef.current);
+        pausedAtGreenRef.current = null;
+      }
+    }
+  }, [isActive, gameState]);
 
   /* ── Tap del jugador ── */
   const handleTap = useCallback(() => {

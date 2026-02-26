@@ -87,9 +87,11 @@ const SweetSpotGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
 
-  /* ── rAF loop — movimiento fluido a 60fps ── */
+  /* ── rAF loop — movimiento fluido a 60fps (se pausa si isActive=false) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING) return;
+    if (gameState !== STATES.PLAYING || !isActive) return;
+
+    lastTimeRef.current = null; // Reset para evitar salto de delta
 
     const tick = (timestamp) => {
       if (isPausedRef.current) {
@@ -127,7 +129,7 @@ const SweetSpotGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [gameState]);
+  }, [gameState, isActive]);
 
   /* ── Cleanup general ── */
   useEffect(() => {

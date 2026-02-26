@@ -90,6 +90,8 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
   const timerRef = useRef(null);
   const flashTimeoutRef = useRef(null);
   const tapPulseRef = useRef(null);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
 
   /* ── Start a new round ── */
   const startRound = useCallback((currentScore) => {
@@ -132,6 +134,7 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
 
       // Restart timer
       timerRef.current = setInterval(() => {
+        if (!isActiveRef.current) return; // Pausa
         timeLeftRef.current -= TICK_MS / 1000;
         if (timeLeftRef.current <= 0) {
           timeLeftRef.current = 0;
@@ -163,6 +166,7 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
     startRound(0);
 
     timerRef.current = setInterval(() => {
+      if (!isActiveRef.current) return; // Pausa
       timeLeftRef.current -= TICK_MS / 1000;
       if (timeLeftRef.current <= 0) {
         timeLeftRef.current = 0;
@@ -183,6 +187,31 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
   useEffect(() => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
+
+  /* ── Pausar/reanudar timer al perder/ganar foco ── */
+  useEffect(() => {
+    if (!isActive && gameStateRef.current === STATES.PLAYING) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (isActive && gameStateRef.current === STATES.PLAYING && !timerRef.current) {
+      timerRef.current = setInterval(() => {
+        if (!isActiveRef.current) return;
+        timeLeftRef.current -= TICK_MS / 1000;
+        if (timeLeftRef.current <= 0) {
+          timeLeftRef.current = 0;
+          setTimeLeft(0);
+          if (currentTapsRef.current === targetTapsRef.current) {
+            winRound();
+          } else {
+            endGame();
+          }
+        } else {
+          setTimeLeft(timeLeftRef.current);
+        }
+      }, TICK_MS);
+    }
+  }, [isActive, endGame, winRound]);
 
   /* ── Cleanup ── */
   useEffect(() => {

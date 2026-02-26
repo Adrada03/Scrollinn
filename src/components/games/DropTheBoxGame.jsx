@@ -174,7 +174,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
      GAME LOOP — requestAnimationFrame + deltaTime
      ═══════════════════════════════════════════════════════ */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING && gameState !== STATES.DROPPING) return;
+    if ((gameState !== STATES.PLAYING && gameState !== STATES.DROPPING) || !isActive) return;
 
     lastTimeRef.current = 0; // resetear para evitar salto de dt al re-entrar
 
@@ -273,7 +273,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [gameState, cw, ch, gameW, offsetX, forceRender, boxW, boxH, dropSpeedPxS, speedBumpPxS, overlapMin]);
+  }, [gameState, isActive, cw, ch, gameW, offsetX, forceRender, boxW, boxH, dropSpeedPxS, speedBumpPxS, overlapMin]);
 
   /* ─────────── Drop (tap) con Cooldown ─────────── */
   const handleTap = useCallback(() => {

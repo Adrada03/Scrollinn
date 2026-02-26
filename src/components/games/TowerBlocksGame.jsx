@@ -432,12 +432,24 @@ class TowerBlocksEngine {
   _tick() {
     this.animFrameId = requestAnimationFrame(() => this._tick());
 
+    if (this._paused) return; // skip logic+render while paused
+
     if (this.blocks.length > 0) {
       tickBlock(this.blocks[this.blocks.length - 1]);
     }
 
     this.camera.lookAt(this.lookAtTarget);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  /* ── pause / resume (3-second rule) ── */
+
+  pause() {
+    this._paused = true;
+  }
+
+  resume() {
+    this._paused = false;
   }
 
   /* ── cleanup ── */
@@ -502,6 +514,17 @@ const TowerBlocksGame = ({ isActive, onNextGame, onReplay, userId }) => {
       engineRef.current = null;
     };
   }, []);
+
+  // Pause / resume según isActive (regla de los 3 segundos)
+  useEffect(() => {
+    const eng = engineRef.current;
+    if (!eng) return;
+    if (isActive) {
+      eng.resume();
+    } else {
+      eng.pause();
+    }
+  }, [isActive]);
 
   // Enviar puntuación al terminar la partida
   useEffect(() => {

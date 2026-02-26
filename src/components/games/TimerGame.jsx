@@ -85,11 +85,12 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
 
-  /* ── requestAnimationFrame loop ── */
+  /* ── requestAnimationFrame loop (se pausa si isActive=false) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING) return;
+    if (gameState !== STATES.PLAYING || !isActive) return;
 
-    startRef.current = performance.now();
+    // Compensar tiempo pausado: arrancar desde el elapsed guardado
+    startRef.current = performance.now() - elapsedRef.current;
 
     const tick = (now) => {
       const elapsed = Math.floor(now - startRef.current);
@@ -103,7 +104,7 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [gameState]);
+  }, [gameState, isActive]);
 
   /* ── Cleanup global ── */
   useEffect(() => {

@@ -572,6 +572,8 @@ const HextrisGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) 
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
 
   const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.HextrisGame);
 
@@ -677,6 +679,8 @@ const HextrisGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) 
       lastTimeRef.current = now;
 
       if (stateRef.current === STATES.PLAYING) {
+        // Pausa: no actualizar lógica mientras no tenga foco
+        if (!isActiveRef.current) return;
         update(g, dt);
         if (g.over) {
           stateRef.current = STATES.ENDED;

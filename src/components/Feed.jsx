@@ -149,12 +149,13 @@ const GameFeed = ({
   /* ── Hook de scroll snap + IntersectionObserver ── */
   const { containerRef, activeIndex, scrollToSlide } = useActiveSlide(0);
   const scrollLockedRef = useRef(false);
+  const [isChallengesOpen, setIsChallengesOpen] = useState(false);
 
   return (
     <ClearModeWrapper
       activeIndex={activeIndex}
       scrollLockedRef={scrollLockedRef}
-      disabled={disabled}
+      disabled={disabled || isChallengesOpen}
     >
       <GameFeedContent
         games={games}
@@ -169,6 +170,8 @@ const GameFeed = ({
         activeIndex={activeIndex}
         scrollToSlide={scrollToSlide}
         scrollLockedRef={scrollLockedRef}
+        isChallengesOpen={isChallengesOpen}
+        onChallengesOpenChange={setIsChallengesOpen}
       />
     </ClearModeWrapper>
   );
@@ -190,6 +193,8 @@ const GameFeedContent = ({
   activeIndex,
   scrollToSlide,
   scrollLockedRef,
+  isChallengesOpen = false,
+  onChallengesOpenChange,
 }) => {
   const { t } = useLanguage();
 
@@ -226,22 +231,114 @@ const GameFeedContent = ({
   disabledRef.current = disabled;
   activeIndexRef.current = activeIndex;
 
+  /* ══════════════════════════════════════════════════════════════
+     REGLA DE LOS 3 SEGUNDOS — Timer proactivo
+     Al abandonar un slide en "playing", arranca un timer de 3 s.
+     • Si el timer DISPARA (usuario no ha vuelto) → se incrementa
+       replayKey inmediatamente (el juego se remonta off-screen
+       ya limpio, listo para cuando el usuario vuelva).
+     • Si el usuario vuelve ANTES de 3 s → se cancela el timer y
+       se reanuda la partida en curso sin countdown.
+     ══════════════════════════════════════════════════════════════ */
+  // { [slideIndex]: { timerId, phase } }
+  const pauseContextRef = useRef({});
+
   /* ==============================================================
-     Cuenta atrás — sincronización SÍNCRONA durante el render
+     Cuenta atrás + Regla de 3s — sincronización SÍNCRONA durante el render
      ============================================================== */
   if (prevActiveRef.current !== activeIndex) {
+    const leavingIndex = prevActiveRef.current;
     prevActiveRef.current = activeIndex;
-    setIsGameOver(false);         // Reset game over al cambiar de slide
-    const item = playlistRef.current[activeIndex];
-    const game = item?.game;
-    const shouldSkip = !!(
-      game?.gameComponent &&
-      GAME_COMPONENTS[game.gameComponent] &&
-      game.skipCountdown
-    );
-    const nextCountingDown = !shouldSkip;
-    if (isCountingDown !== nextCountingDown) {
-      setIsCountingDown(nextCountingDown);
+
+    /* ── 1. Registrar contexto del slide que ABANDONA ── */
+    if (leavingIndex !== null) {
+      if (slidePhase === "countdown") {
+        // CASO A: Scroll durante countdown → abortar, forzar remontaje
+        const leavingUid = playlistRef.current[leavingIndex]?.uid;
+        if (leavingUid) {
+          setReplayKeys((prev) => ({ ...prev, [leavingUid]: (prev[leavingUid] || 0) + 1 }));
+        }
+        delete pauseContextRef.current[leavingIndex];
+      } else if (slidePhase === "playing") {
+        // CASO B: Scroll durante gameplay → arrancar timer de 3 s
+        const leavingUid = playlistRef.current[leavingIndex]?.uid;
+        const leavingGame = playlistRef.current[leavingIndex]?.game;
+        const timerId = setTimeout(() => {
+          // Timer disparó: el usuario lleva ≥ 3 s fuera → remontaje proactivo
+          delete pauseContextRef.current[leavingIndex];
+          if (leavingUid) {
+            setReplayKeys((prev) => ({ ...prev, [leavingUid]: (prev[leavingUid] || 0) + 1 }));
+          }
+          // Preparar countdown para cuando vuelva
+          const shouldSkip = !!(
+            leavingGame?.gameComponent &&
+            GAME_COMPONENTS[leavingGame.gameComponent] &&
+            leavingGame.skipCountdown
+          );
+          // Sólo seteamos isCountingDown si ese slide vuelve a ser activo;
+          // por ahora lo guardamos como marca en el contexto.
+          pauseContextRef.current[leavingIndex] = { phase: "reset_done", shouldSkip };
+        }, 3000);
+        pauseContextRef.current[leavingIndex] = { phase: "playing", timerId };
+      } else if (slidePhase === "game_over") {
+        // Game over: forzar remontaje inmediato (ya se terminó la partida)
+        const leavingUid = playlistRef.current[leavingIndex]?.uid;
+        if (leavingUid) {
+          setReplayKeys((prev) => ({ ...prev, [leavingUid]: (prev[leavingUid] || 0) + 1 }));
+        }
+        pauseContextRef.current[leavingIndex] = { phase: "game_over" };
+      }
+    }
+
+    /* ── 2. Invalidar contextos de slides fuera de RENDER_WINDOW ── */
+    for (const idx of Object.keys(pauseContextRef.current)) {
+      if (Math.abs(Number(idx) - activeIndex) > RENDER_WINDOW) {
+        const old = pauseContextRef.current[idx];
+        if (old?.timerId) clearTimeout(old.timerId);
+        delete pauseContextRef.current[idx];
+      }
+    }
+
+    /* ── 3. Decidir qué hacer con el slide al que LLEGAMOS ── */
+    const ctx = pauseContextRef.current[activeIndex];
+
+    if (ctx && ctx.phase === "playing" && ctx.timerId) {
+      // Quick Return (< 3 s): timer aún no ha disparado → cancelar y reanudar
+      clearTimeout(ctx.timerId);
+      delete pauseContextRef.current[activeIndex];
+      setIsGameOver(false);
+      setIsCountingDown(false); // reanudar sin countdown
+    } else if (ctx && ctx.phase === "reset_done") {
+      // El timer ya disparó mientras estábamos fuera → juego ya remontado.
+      // Solo necesitamos ajustar el estado de countdown.
+      delete pauseContextRef.current[activeIndex];
+      setIsGameOver(false);
+      setIsCountingDown(!ctx.shouldSkip);
+    } else if (ctx && ctx.phase === "game_over") {
+      // Volvemos a un slide en game_over → ya se hizo remontaje al salir
+      delete pauseContextRef.current[activeIndex];
+      setIsGameOver(false);
+      const game = playlistRef.current[activeIndex]?.game;
+      const shouldSkip = !!(
+        game?.gameComponent &&
+        GAME_COMPONENTS[game.gameComponent] &&
+        game.skipCountdown
+      );
+      setIsCountingDown(!shouldSkip);
+    } else {
+      // Primera visita o slide sin contexto de pausa → flujo normal
+      setIsGameOver(false);
+      const item = playlistRef.current[activeIndex];
+      const game = item?.game;
+      const shouldSkip = !!(
+        game?.gameComponent &&
+        GAME_COMPONENTS[game.gameComponent] &&
+        game.skipCountdown
+      );
+      const nextCountingDown = !shouldSkip;
+      if (isCountingDown !== nextCountingDown) {
+        setIsCountingDown(nextCountingDown);
+      }
     }
   }
 
@@ -300,15 +397,16 @@ const GameFeedContent = ({
     const container = containerRef.current;
     if (!container) return;
 
+    const effectiveDisabled = disabled || isChallengesOpen;
     const activeGame = playlistRef.current[activeIndex]?.game;
     const shouldLock =
       slidePhase === "playing" &&
       !!activeGame?.requiresScrollLock &&
-      !disabled;
+      !effectiveDisabled;
 
     scrollLockedRef.current = shouldLock;
-    container.style.overflowY = shouldLock || disabled ? "hidden" : "scroll";
-  }, [slidePhase, activeIndex, disabled, containerRef]);
+    container.style.overflowY = shouldLock || effectiveDisabled ? "hidden" : "scroll";
+  }, [slidePhase, activeIndex, disabled, isChallengesOpen, containerRef]);
 
   /* Fallback: juegos sin requiresScrollLock que usan onScrollLock manualmente */
   const handleScrollLock = useCallback(
@@ -432,7 +530,7 @@ const GameFeedContent = ({
             GAME_COMPONENTS[game.gameComponent] &&
             game.skipCountdown
           );
-          const isPlayable = isActive && !isCountingDown;
+          const isPlayable = isActive && !isCountingDown && !disabled && !isChallengesOpen;
           const replayKey = replayKeys[uid] || 0;
 
           /* ── LEY 1: touch-action dinámico en el wrapper del juego ──
@@ -522,13 +620,32 @@ const GameFeedContent = ({
                         onLike={() => onToggleLike(game.id)}
                         onOpenGallery={onOpenGallery}
                         hasRealGame={shouldSkipCountdown}
+                        isChallengesOpen={isChallengesOpen}
+                        onChallengesOpenChange={onChallengesOpenChange}
+                        onNavigateToGame={(targetGameId) => {
+                          const targetGame = games.find(
+                            (g) => g.id === targetGameId
+                          );
+                          if (!targetGame) return;
+                          const insertAt = activeIndexRef.current + 1;
+                          const newItem = {
+                            game: targetGame,
+                            uid: `${targetGame.id}-${++uidCounter}`,
+                          };
+                          setPlaylist((prev) => {
+                            const copy = [...prev];
+                            copy.splice(insertAt, 0, newItem);
+                            return copy;
+                          });
+                          pendingScrollRef.current = insertAt;
+                        }}
                       />
                     </motion.div>
                   )}
                 </AnimatePresence>
 
                 {/* ── Cuenta atrás unificada: siempre montada, no depende de isUiHidden ── */}
-                {isActive && isCountingDown && !shouldSkipCountdown && (
+                {isActive && isCountingDown && !shouldSkipCountdown && !disabled && !isChallengesOpen && (
                   <Countdown
                     gameId={`${uid}-${replayKey}`}
                     onComplete={() => setIsCountingDown(false)}

@@ -112,6 +112,8 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
   const stateRef = useRef({
     gameState: GAME_STATES.IDLE,
     score: 0,
@@ -306,6 +308,14 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       ctx.fillRect(0, 0, w, h);
 
       if (s.gameState === GAME_STATES.IDLE) return;
+
+      // Pausa: congelar lógica mientras no tenga foco
+      if (!isActiveRef.current && s.gameState === GAME_STATES.PLAYING) {
+        drawRing(ctx, s);
+        drawTarget(ctx, s);
+        drawDot(ctx, s);
+        return;
+      }
 
       const sc = s.scale;
 

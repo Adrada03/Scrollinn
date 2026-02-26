@@ -44,6 +44,8 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
   const lastTimeRef    = useRef(null);
   const resultShownRef = useRef(false);
   const growSpeedRef   = useRef(170);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
 
   const [ranking, setRanking] = useState([]);
   const [scoreMessage, setScoreMessage] = useState("");
@@ -76,6 +78,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
   /* ── rAF loop: inflar el globo mientras se mantiene pulsado ── */
   const inflate = useCallback((timestamp) => {
     if (gameStateRef.current !== STATES.INFLATING) return;
+    if (!isActiveRef.current) { lastTimeRef.current = null; return; } // Pausa
 
     if (lastTimeRef.current === null) lastTimeRef.current = timestamp;
     const dt = Math.min((timestamp - lastTimeRef.current) / 1000, 0.05);

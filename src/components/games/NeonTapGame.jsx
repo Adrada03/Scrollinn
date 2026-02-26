@@ -91,9 +91,9 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
 
-  /* ── Temporizador de 30 s ── */
+  /* ── Temporizador de 30 s (se pausa si isActive=false) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING) return;
+    if (gameState !== STATES.PLAYING || !isActive) return;
     tickIdRef.current = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
@@ -104,11 +104,11 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
       });
     }, 1000);
     return () => clearInterval(tickIdRef.current);
-  }, [gameState]);
+  }, [gameState, isActive]);
 
-  /* ── Cambio automático de objetivo ── */
+  /* ── Cambio automático de objetivo (se pausa si isActive=false) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING) return;
+    if (gameState !== STATES.PLAYING || !isActive) return;
     const scheduleNext = () => {
       timerIdRef.current = setTimeout(() => {
         setTarget((prev) => pickTarget(prev));
@@ -118,7 +118,7 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
     };
     scheduleNext();
     return () => clearTimeout(timerIdRef.current);
-  }, [gameState]);
+  }, [gameState, isActive]);
 
   /* ── Limpiar al terminar ── */
   useEffect(() => {

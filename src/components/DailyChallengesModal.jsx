@@ -191,7 +191,7 @@ const XPCelebration = ({ show, t }) => {
 
 // ─── Challenge Card ──────────────────────────────────────────────────────────
 
-const ChallengeCard = ({ challenge, lang, t, onClaim, claimingId }) => {
+const ChallengeCard = ({ challenge, lang, t, onClaim, claimingId, onPlay }) => {
   const {
     id,
     title_es,
@@ -202,6 +202,7 @@ const ChallengeCard = ({ challenge, lang, t, onClaim, claimingId }) => {
     reward_coins,
     current_progress,
     is_claimed,
+    target_game_id,
   } = challenge;
 
   const title = lang === "es" ? title_es : title_en;
@@ -297,10 +298,25 @@ const ChallengeCard = ({ challenge, lang, t, onClaim, claimingId }) => {
             )}
           </motion.button>
         ) : (
-          <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-            <IconLock className="w-3 h-3" />
-            {t("challenges.in_progress")}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500 uppercase tracking-wide">
+              <IconLock className="w-3 h-3" />
+              {t("challenges.in_progress")}
+            </span>
+            {target_game_id && (
+              <motion.button
+                onClick={() => onPlay?.(target_game_id)}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                className="cursor-pointer flex items-center gap-1 px-3 py-1 rounded-full font-bold text-xs text-white bg-emerald-500 hover:bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.35)] transition-all duration-200"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" clipRule="evenodd" />
+                </svg>
+                {t("challenges.play") || "Jugar"}
+              </motion.button>
+            )}
+          </div>
         )}
       </div>
     </motion.div>
@@ -330,7 +346,7 @@ const SkeletonCard = () => (
 
 // ─── Main Modal ──────────────────────────────────────────────────────────────
 
-const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
+const DailyChallengesModal = ({ isOpen, onClose, onStateChange, onNavigateToGame }) => {
   const { currentUser, updateUser } = useAuth();
   const { lang, t } = useLanguage();
 
@@ -486,10 +502,11 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
 
   return (
     <>
+    {createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-60 flex items-center justify-center p-4"
+          className="fixed inset-0 z-100 bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -586,6 +603,10 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
                     t={t}
                     onClaim={handleClaim}
                     claimingId={claimingId}
+                    onPlay={(targetGameId) => {
+                      onClose();
+                      onNavigateToGame?.(targetGameId);
+                    }}
                   />
                 ))
               )}
@@ -616,7 +637,9 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange }) => {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
+    )}
 
     {/* Portal: XP celebration overlay (fixed, above everything) */}
     <XPCelebration show={showXPCelebration} t={t} />

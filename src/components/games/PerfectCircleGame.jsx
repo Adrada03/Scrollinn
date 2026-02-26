@@ -49,6 +49,9 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
   const timerStartRef = useRef(null);  // performance.now() del primer toque
   const timerRafRef = useRef(null);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
+  const pausedAtRef = useRef(null); // timestamp cuando se pausó el timer
 
   // ── Ranking ──
   const [ranking, setRanking] = useState([]);
@@ -364,11 +367,42 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
     }
   }, [phase, displayScore, submit]);
 
+  /* ─────────── Reanudar rAF del timer al recuperar foco ─────────── */
+  useEffect(() => {
+    if (isActive && phaseRef.current === PHASES.DRAWING && !timerRafRef.current) {
+      // Re-iniciar loop; el compensador de pausa en startTimer corregirá el offset
+      const tick = (now) => {
+        if (phaseRef.current !== PHASES.DRAWING) return;
+        if (!isActiveRef.current) { pausedAtRef.current = now; return; }
+        if (pausedAtRef.current) {
+          timerStartRef.current += (now - pausedAtRef.current);
+          pausedAtRef.current = null;
+        }
+        const elapsed = (now - timerStartRef.current) / 1000;
+        const remaining = Math.max(0, TIME_LIMIT - elapsed);
+        setTimeLeft(Math.round(remaining * 10) / 10);
+        if (remaining <= 0) { finishDrawing(); return; }
+        timerRafRef.current = requestAnimationFrame(tick);
+      };
+      timerRafRef.current = requestAnimationFrame(tick);
+    }
+  }, [isActive, finishDrawing]);
+
   /* ═══════════════════ TIMER (rAF) ═══════════════════ */
   const startTimer = useCallback(() => {
     timerStartRef.current = performance.now();
     const tick = (now) => {
       if (phaseRef.current !== PHASES.DRAWING) return;
+      if (!isActiveRef.current) {
+        // Pausa: guardar momento de pausa y dejar de re-encolar
+        pausedAtRef.current = now;
+        return;
+      }
+      // Si venimos de una pausa, compensar el tiempo pausado
+      if (pausedAtRef.current) {
+        timerStartRef.current += (now - pausedAtRef.current);
+        pausedAtRef.current = null;
+      }
       const elapsed = (now - timerStartRef.current) / 1000;
       const remaining = Math.max(0, TIME_LIMIT - elapsed);
       setTimeLeft(Math.round(remaining * 10) / 10);

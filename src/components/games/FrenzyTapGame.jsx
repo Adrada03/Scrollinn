@@ -41,6 +41,8 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
   const [shake, setShake] = useState(false);
   const shakeTORef   = useRef(null);
   const scrollLockTORef = useRef(null);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -56,6 +58,7 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
     onScrollLock?.(true);
 
     timerRef.current = setInterval(() => {
+      if (!isActiveRef.current) return; // Pausa: no decrementa mientras no tenga foco
       timeRef.current -= TICK_MS / 1000;
       if (timeRef.current <= 0) {
         timeRef.current = 0;
@@ -75,6 +78,34 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
   useEffect(() => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
+
+  /* ── Pausar timer al perder foco ── */
+  useEffect(() => {
+    if (!isActive && gameStateRef.current === STATES.PLAYING) {
+      clearInterval(timerRef.current);
+    }
+  }, [isActive]);
+
+  /* ── Reanudar timer al recuperar foco ── */
+  useEffect(() => {
+    if (isActive && gameStateRef.current === STATES.PLAYING && !timerRef.current) {
+      timerRef.current = setInterval(() => {
+        if (!isActiveRef.current) return;
+        timeRef.current -= TICK_MS / 1000;
+        if (timeRef.current <= 0) {
+          timeRef.current = 0;
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+          gameStateRef.current = STATES.ENDED;
+          setTimeLeft(0);
+          setGameState(STATES.ENDED);
+          scrollLockTORef.current = setTimeout(() => onScrollLock?.(false), 2000);
+        } else {
+          setTimeLeft(timeRef.current);
+        }
+      }, TICK_MS);
+    }
+  }, [isActive]);
 
   /* ── Cleanup ── */
   useEffect(() => {

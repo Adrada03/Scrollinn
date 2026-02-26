@@ -26,11 +26,13 @@ const GameInterface = ({
   onLike,
   onOpenGallery,
   hasRealGame,
+  isChallengesOpen = false,
+  onChallengesOpenChange,
+  onNavigateToGame,
 }) => {
   const { t } = useLanguage();
   const { currentUser } = useAuth();
   const description = t(`desc.${game.id}`);
-  const [isChallengesModalOpen, setIsChallengesModalOpen] = useState(false);
   const [challengeStatus, setChallengeStatus] = useState("pending");
 
   // Fetch challenge status on mount + refresh after any game over upsert
@@ -54,13 +56,13 @@ const GameInterface = ({
   return (
     <div className="absolute inset-0 z-20 pointer-events-none">
       {/* ========== ACTION STACK (estilo TikTok/Reels) ========== */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-6 pointer-events-auto">
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-60 flex flex-col items-center gap-6 pointer-events-auto">
         <ActionBar
           likes={likes}
           isLiked={isLiked}
           onLike={onLike}
           onOpenGallery={onOpenGallery}
-          onOpenChallenges={() => setIsChallengesModalOpen(true)}
+          onOpenChallenges={() => onChallengesOpenChange?.(true)}
           challengeStatus={challengeStatus}
         />
       </div>
@@ -68,9 +70,10 @@ const GameInterface = ({
       {/* ========== MODAL RETOS DIARIOS ========== */}
       <div className="pointer-events-auto">
         <DailyChallengesModal
-          isOpen={isChallengesModalOpen}
-          onClose={() => setIsChallengesModalOpen(false)}
+          isOpen={isChallengesOpen}
+          onClose={() => onChallengesOpenChange?.(false)}
           onStateChange={setChallengeStatus}
+          onNavigateToGame={onNavigateToGame}
         />
       </div>
 

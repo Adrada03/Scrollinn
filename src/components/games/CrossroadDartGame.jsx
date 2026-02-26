@@ -539,7 +539,8 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
      GAME LOOP
      ══════════════════════════════ */
   useEffect(() => {
-    if (phase !== "playing") return;
+    if (phase !== "playing" || !isActive) return;
+    lastTRef.current = null;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1027,7 +1028,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
     };
-  }, [phase]);
+  }, [phase, isActive]);
 
   /* ── Cleanup ── */
   useEffect(() => () => {

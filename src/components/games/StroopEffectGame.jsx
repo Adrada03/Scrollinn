@@ -103,9 +103,9 @@ const StroopEffectGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
 
-  /* ── Timer global de 30 s ── */
+  /* ── Timer global de 30 s (se pausa si isActive=false) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING) return;
+    if (gameState !== STATES.PLAYING || !isActive) return;
     tickRef.current = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
@@ -116,7 +116,7 @@ const StroopEffectGame = ({ isActive, onNextGame, onReplay, userId }) => {
       });
     }, 1000);
     return () => clearInterval(tickRef.current);
-  }, [gameState]);
+  }, [gameState, isActive]);
 
   /* ── Limpiar al acabar ── */
   useEffect(() => {

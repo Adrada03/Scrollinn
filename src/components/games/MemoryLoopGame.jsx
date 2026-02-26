@@ -69,6 +69,7 @@ const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const timerStartRef  = useRef(0);
   const timerTotalRef  = useRef(0);
   const rafRef         = useRef(null);
+  const pausedAtRef     = useRef(null);
 
   /* ── Ranking / score ── */
   const [ranking, setRanking]             = useState([]);
@@ -178,8 +179,19 @@ const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   /* ─────────── Cronómetro con RAF ─────────── */
 
+  /* Compensación de pausa: registrar/restaurar timerStartRef */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING || isShowingPattern) {
+    if (!isActive && gameState === STATES.PLAYING && !isShowingPattern && timeLimit > 0) {
+      pausedAtRef.current = performance.now();
+    }
+    if (isActive && pausedAtRef.current !== null) {
+      timerStartRef.current += (performance.now() - pausedAtRef.current);
+      pausedAtRef.current = null;
+    }
+  }, [isActive, gameState, isShowingPattern, timeLimit]);
+
+  useEffect(() => {
+    if (gameState !== STATES.PLAYING || isShowingPattern || !isActive) {
       cancelAnimationFrame(rafRef.current);
       return;
     }
@@ -200,7 +212,7 @@ const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [gameState, isShowingPattern, timeLimit, endGame]);
+  }, [gameState, isShowingPattern, timeLimit, endGame, isActive]);
 
   /* ─────────── Input del jugador ─────────── */
 

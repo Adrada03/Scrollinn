@@ -77,6 +77,8 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
 
   const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.CircleNinjaGame);
   // Enviar puntuación al terminar
@@ -250,6 +252,14 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
     function loop(now) {
       s.animId = requestAnimationFrame(loop);
       ctx.clearRect(0, 0, s.w, s.h);
+
+      // Pausa: congelar toda la lógica de juego mientras no tenga foco
+      if (!isActiveRef.current && s.gameState === GAME_STATES.PLAYING) {
+        drawCircles(ctx, s);
+        drawSlash(ctx, s);
+        drawParticles(ctx, s);
+        return;
+      }
 
       if (s.gameState !== GAME_STATES.PLAYING) {
         drawCircles(ctx, s);

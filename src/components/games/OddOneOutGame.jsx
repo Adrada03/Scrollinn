@@ -92,9 +92,9 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
     }
   }, [isActive, gameState]);
 
-  /* ── Temporizador (cada 1 s) ── */
+  /* ── Temporizador (cada 1 s, se pausa si isActive=false) ── */
   useEffect(() => {
-    if (gameState !== GAME_STATES.PLAYING) {
+    if (gameState !== GAME_STATES.PLAYING || !isActive) {
       clearInterval(timerRef.current);
       return;
     }
@@ -111,7 +111,7 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
     }, 1000);
 
     return () => clearInterval(timerRef.current);
-  }, [gameState]);
+  }, [gameState, isActive]);
 
   /* ── Cleanup general ── */
   useEffect(() => () => clearInterval(timerRef.current), []);

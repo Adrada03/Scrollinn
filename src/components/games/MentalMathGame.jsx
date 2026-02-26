@@ -222,6 +222,8 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const scoreSubmitted = useRef(false);
   const feedbackTimeoutRef = useRef(null);
   const popTimeoutRef = useRef(null);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
 
   // Direct DOM refs for the timer bar
   const barFillRef = useRef(null);
@@ -263,6 +265,8 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
     lastFrameRef.current = performance.now();
     const tick = (now) => {
       if (phaseRef.current !== STATES.PLAYING) return;
+      if (!isActiveRef.current) { lastFrameRef.current = null; return; } // Pausa
+      if (!lastFrameRef.current) lastFrameRef.current = now;
       const dt = (now - lastFrameRef.current) / 1000;
       lastFrameRef.current = now;
       timeLeftRef.current -= dt;
@@ -342,6 +346,16 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
   useEffect(() => {
     if (isActive && phase === STATES.IDLE) startGame();
   }, [isActive, phase, startGame]);
+
+  /* ── Pausar/reanudar rAF al perder/ganar foco ── */
+  useEffect(() => {
+    if (!isActive && phaseRef.current === STATES.PLAYING) {
+      stopTimerLoop();
+    }
+    if (isActive && phaseRef.current === STATES.PLAYING && !rafRef.current) {
+      startTimerLoop();
+    }
+  }, [isActive, stopTimerLoop, startTimerLoop]);
 
   /* ── Cleanup ── */
   useEffect(() => () => {

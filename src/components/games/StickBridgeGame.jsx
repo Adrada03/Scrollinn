@@ -168,7 +168,7 @@ const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
 
   /* ─────────── rAF: crecimiento del palo ─────────── */
   useEffect(() => {
-    if (phase !== PHASE.GROWING) return;
+    if (phase !== PHASE.GROWING || !isActive) return;
     const tick = () => {
       g.stickLen += GROW_SPEED;
       forceRender();
@@ -178,7 +178,7 @@ const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [phase, forceRender, g]);
+  }, [phase, forceRender, g, isActive]);
 
   /* ─────────── Pointer handlers ─────────── */
   const handlePointerDown = useCallback(() => {

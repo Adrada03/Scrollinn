@@ -53,6 +53,8 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
   const dragStartRef  = useRef(null);  // { x, y }
   const dragXRef      = useRef(0);
   const exitTORef     = useRef(null);
+  const isActiveRef = useRef(isActive);
+  isActiveRef.current = isActive;
 
   const [ranking, setRanking] = useState([]);
   const [scoreMessage, setScoreMessage] = useState("");
@@ -81,6 +83,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
     // Timer countdown
     clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
+      if (!isActiveRef.current) return; // Pausa
       if (gameStateRef.current !== STATES.PLAYING) return;
       timeRef.current -= TICK_MS / 1000;
       if (timeRef.current <= 0) {
@@ -140,6 +143,28 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
   useEffect(() => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
+
+  /* ── Pausar/reanudar timer al perder/ganar foco ── */
+  useEffect(() => {
+    if (!isActive && gameStateRef.current === STATES.PLAYING) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (isActive && gameStateRef.current === STATES.PLAYING && !timerRef.current) {
+      timerRef.current = setInterval(() => {
+        if (!isActiveRef.current) return;
+        if (gameStateRef.current !== STATES.PLAYING) return;
+        timeRef.current -= TICK_MS / 1000;
+        if (timeRef.current <= 0) {
+          timeRef.current = 0;
+          setTimeLeft(0);
+          endGame();
+        } else {
+          setTimeLeft(timeRef.current);
+        }
+      }, TICK_MS);
+    }
+  }, [isActive, endGame]);
 
   /* ── Cleanup ── */
   useEffect(() => {
