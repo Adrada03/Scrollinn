@@ -635,8 +635,8 @@ const GameFeedContent = ({
                         hasRealGame={shouldSkipCountdown}
                         isChallengesOpen={isChallengesOpen}
                         onChallengesOpenChange={onChallengesOpenChange}
-                        isInfoOpen={isInfoOpen}
-                        onInfoOpenChange={onInfoOpenChange}
+                        isInfoOpen={isActive && isInfoOpen}
+                        onInfoOpenChange={isActive ? onInfoOpenChange : undefined}
                         onNavigateToGame={(targetGameId) => {
                           const targetGame = games.find(
                             (g) => g.id === targetGameId
