@@ -54,9 +54,9 @@ const GameInterface = ({
   }, [refreshChallengeStatus]);
 
   return (
-    <div className="absolute inset-0 z-20 pointer-events-none">
+    <div className="absolute inset-0 z-[60] pointer-events-none">
       {/* ========== ACTION STACK (estilo TikTok/Reels) ========== */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-60 flex flex-col items-center gap-6 pointer-events-auto">
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-6 pointer-events-auto">
         <ActionBar
           likes={likes}
           isLiked={isLiked}
