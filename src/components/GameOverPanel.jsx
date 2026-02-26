@@ -96,6 +96,27 @@ const XpDisplay = ({ xpGained }) => {
   );
 };
 
+/* ── Skeleton row para el ranking ── */
+const SkeletonRow = ({ index }) => (
+  <div
+    className="grid grid-cols-[1.2rem_1.5rem_1fr_3rem] gap-x-1.5 items-center px-2.5 py-0.5 border-b border-white/4 last:border-0 animate-pulse"
+  >
+    {/* # pos */}
+    <div className="h-3 w-3 rounded-sm bg-slate-700/60" />
+    {/* avatar circle */}
+    <div className="h-5 w-5 rounded-full bg-slate-700/60" />
+    {/* name bar */}
+    <div
+      className="h-3 rounded-md bg-slate-700/60"
+      style={{ width: `${60 + ((index * 17) % 30)}%` }}
+    />
+    {/* score bar */}
+    <div className="h-3 w-8 rounded-md bg-slate-700/60 ml-auto" />
+  </div>
+);
+
+const SKELETON_ROWS = Array.from({ length: 5 }, (_, i) => i);
+
 const GameOverPanel = ({
   title = "Game Over",
   score,
@@ -125,36 +146,41 @@ const GameOverPanel = ({
       userId={profileUserId}
     />
     <div className="absolute inset-0 z-50 flex flex-col items-center justify-center pt-20 pb-32 px-4 pointer-events-none">
+      {/* ── Modal card: flex-col estricto para blindar layout ── */}
       <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl px-5 py-4 flex flex-col items-center gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] w-full max-w-xs border border-white/10 pointer-events-auto overflow-hidden max-h-full">
-        {/* Título */}
-        <h2 className="text-base font-extrabold text-white/90 tracking-wide uppercase">
-          {title}
-        </h2>
 
-        {/* Puntuación */}
-        <div
-          className="text-4xl font-black text-transparent bg-clip-text bg-linear-to-b from-white via-white to-white/50 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-          style={{ fontFeatureSettings: "'tnum'" }}
-        >
-          {score}
+        {/* ── Header zone (shrink-0: nunca se comprime) ── */}
+        <div className="shrink-0 flex flex-col items-center gap-1.5 w-full">
+          {/* Título */}
+          <h2 className="text-base font-extrabold text-white/90 tracking-wide uppercase">
+            {title}
+          </h2>
+
+          {/* Puntuación */}
+          <div
+            className="text-4xl font-black text-transparent bg-clip-text bg-linear-to-b from-white via-white to-white/50 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+            style={{ fontFeatureSettings: "'tnum'" }}
+          >
+            {score}
+          </div>
+
+          {subtitle && (
+            <p className="text-white/40 text-xs -mt-0.5">{subtitle}</p>
+          )}
+
+          {/* Mensaje de puntuación */}
+          {scoreMessage && (
+            <p className="text-[11px] text-center text-amber-300/80 font-medium -mt-0.5">
+              {scoreMessage}
+            </p>
+          )}
+
+          {/* XP ganada */}
+          <XpDisplay xpGained={xpGained} />
         </div>
 
-        {subtitle && (
-          <p className="text-white/40 text-xs -mt-0.5">{subtitle}</p>
-        )}
-
-        {/* Mensaje de puntuación */}
-        {scoreMessage && (
-          <p className="text-[11px] text-center text-amber-300/80 font-medium -mt-0.5">
-            {scoreMessage}
-          </p>
-        )}
-
-        {/* XP ganada */}
-        <XpDisplay xpGained={xpGained} />
-
-        {/* Ranking */}
-        <div className="w-full rounded-xl bg-black/30 border border-white/6 overflow-hidden">
+        {/* ── Ranking zone (altura fija: 5 filas siempre) ── */}
+        <div className="shrink-0 w-full rounded-xl bg-black/30 border border-white/6 overflow-hidden">
           {/* Header */}
           <div className="grid grid-cols-[1.2rem_1.5rem_1fr_3rem] gap-x-1.5 items-center px-2.5 py-0.5 text-[9px] font-bold text-white/25 uppercase tracking-wider border-b border-white/6">
             <span>#</span>
@@ -162,15 +188,15 @@ const GameOverPanel = ({
             <span>{t("gameover.user")}</span>
             <span className="text-right">{t("gameover.points")}</span>
           </div>
-          {/* Loading */}
-          {isLoading ? (
-            <div className="px-3 py-2 text-center text-xs text-white/30 animate-pulse">
-              {t("gameover.loading")}
-            </div>
-          ) : (
-            /* Rows */
-            <div>
-              {displayRanking.map((r) => {
+
+          {/* Rows container — min-h fija para 5 filas (5 × 24px + 4 borders = 124px) */}
+          <div className="min-h-[124px]">
+            {isLoading ? (
+              /* ── Skeleton Loader: 5 filas falsas con animate-pulse ── */
+              SKELETON_ROWS.map((i) => <SkeletonRow key={i} index={i} />)
+            ) : (
+              /* ── Filas reales ── */
+              displayRanking.map((r) => {
                 const isMe = currentUser?.id && r.userId === currentUser.id;
                 return (
                   <div
@@ -186,30 +212,33 @@ const GameOverPanel = ({
                     <span className={`font-bold text-right tabular-nums ${isMe ? "text-emerald-400" : "text-white/50"}`}>{r.score}</span>
                   </div>
                 );
-              })}
-            </div>
-          )}
+              })
+            )}
+          </div>
         </div>
 
-        {/* Jugar de nuevo */}
-        {onReplay && (
-          <button
-            onClick={onReplay}
-            className="mt-1 w-full px-4 py-2 md:py-3 bg-slate-800/60 backdrop-blur-md hover:bg-slate-700/60 active:scale-95 text-white/90 font-bold rounded-xl text-sm md:text-base transition-all border border-white/10 shadow-lg flex items-center justify-center gap-2"
-          >
-            <RefreshCw className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
-            {t("gameover.replay")}
-          </button>
-        )}
+        {/* ── Footer zone (shrink-0: botones anclados) ── */}
+        <div className="shrink-0 flex flex-col gap-1.5 w-full">
+          {/* Jugar de nuevo */}
+          {onReplay && (
+            <button
+              onClick={onReplay}
+              className="mt-1 w-full px-4 py-2 md:py-3 bg-slate-800/60 backdrop-blur-md hover:bg-slate-700/60 active:scale-95 text-white/90 font-bold rounded-xl text-sm md:text-base transition-all border border-white/10 shadow-lg flex items-center justify-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
+              {t("gameover.replay")}
+            </button>
+          )}
 
-        {/* Siguiente juego */}
-        <button
-          onClick={onNext}
-          className="w-full px-4 py-2 md:py-3 bg-slate-800/60 backdrop-blur-md hover:bg-slate-700/60 active:scale-95 text-white/90 font-bold rounded-xl text-sm md:text-base transition-all border border-white/10 shadow-lg flex items-center justify-center gap-2"
-        >
-          {t("gameover.next")}
-          <ChevronDown className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
-        </button>
+          {/* Siguiente juego */}
+          <button
+            onClick={onNext}
+            className="w-full px-4 py-2 md:py-3 bg-slate-800/60 backdrop-blur-md hover:bg-slate-700/60 active:scale-95 text-white/90 font-bold rounded-xl text-sm md:text-base transition-all border border-white/10 shadow-lg flex items-center justify-center gap-2"
+          >
+            {t("gameover.next")}
+            <ChevronDown className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
+          </button>
+        </div>
       </div>
     </div>
     </>
