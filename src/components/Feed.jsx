@@ -661,7 +661,7 @@ const GameFeedContent = ({
 
                 {/* ── ReadyScreen: pantalla de atracción ── */}
                 <AnimatePresence>
-                  {isActive && isReady && !isChallengesOpen && !isInfoOpen && (
+                  {isActive && isReady && !isInfoOpen && (
                     <ReadyScreen
                       key={`ready-${uid}-${replayKey}`}
                       logo={game.logo}
