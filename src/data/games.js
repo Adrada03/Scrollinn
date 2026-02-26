@@ -18,7 +18,6 @@ const GAMES = [
     emoji: "🏗️",
     logo: "/logo-towerblocks.png",
     gameComponent: "TowerBlocks",
-    skipCountdown: true,
   },
   {
     id: "odd-one-out",

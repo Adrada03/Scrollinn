@@ -19,7 +19,9 @@ import ClearModeWrapper from "./ClearModeWrapper";
 import { useClearMode } from "../context/ClearModeContext";
 import PlaceholderGame from "./PlaceholderGame";
 import GameInterface from "./GameInterface";
-import Countdown from "./Countdown";
+import ReadyScreen from "./ReadyScreen";
+import CountdownOverlay from "./CountdownOverlay";
+import { getTodayChallenges, getChallengeStatus } from "../services/challengeService";
 
 /* ── Imports de juegos reales ── */
 import TowerBlocksGame from "./games/TowerBlocksGame";
@@ -150,12 +152,13 @@ const GameFeed = ({
   const { containerRef, activeIndex, scrollToSlide } = useActiveSlide(0);
   const scrollLockedRef = useRef(false);
   const [isChallengesOpen, setIsChallengesOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   return (
     <ClearModeWrapper
       activeIndex={activeIndex}
       scrollLockedRef={scrollLockedRef}
-      disabled={disabled || isChallengesOpen}
+      disabled={disabled || isChallengesOpen || isInfoOpen}
     >
       <GameFeedContent
         games={games}
@@ -172,6 +175,8 @@ const GameFeed = ({
         scrollLockedRef={scrollLockedRef}
         isChallengesOpen={isChallengesOpen}
         onChallengesOpenChange={setIsChallengesOpen}
+        isInfoOpen={isInfoOpen}
+        onInfoOpenChange={setIsInfoOpen}
       />
     </ClearModeWrapper>
   );
@@ -195,6 +200,8 @@ const GameFeedContent = ({
   scrollLockedRef,
   isChallengesOpen = false,
   onChallengesOpenChange,
+  isInfoOpen = false,
+  onInfoOpenChange,
 }) => {
   const { t } = useLanguage();
 
@@ -207,21 +214,44 @@ const GameFeedContent = ({
   playlistRef.current = playlist;
 
   /* ── Estado ── */
-  const [isCountingDown, setIsCountingDown] = useState(true);
+  const [isReady, setIsReady] = useState(true);
+  const [isCountingDown, setIsCountingDown] = useState(false);
   const [replayKeys, setReplayKeys] = useState({});
   const [showScrollHint, setShowScrollHint] = useState(true);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [challengeStatus, setChallengeStatus] = useState("pending");
+
+  /* ── Challenge status (for ReadyScreen buttons) ── */
+  const refreshChallengeStatus = useCallback(() => {
+    if (!currentUser?.id) { setChallengeStatus("none"); return; }
+    getTodayChallenges(currentUser.id).then((data) => {
+      setChallengeStatus(getChallengeStatus(data));
+    });
+  }, [currentUser?.id]);
+
+  useEffect(() => { refreshChallengeStatus(); }, [refreshChallengeStatus]);
+  useEffect(() => {
+    const handler = () => refreshChallengeStatus();
+    window.addEventListener("challenges-changed", handler);
+    return () => window.removeEventListener("challenges-changed", handler);
+  }, [refreshChallengeStatus]);
 
   /* ── Refs ── */
   const prevActiveRef = useRef(null);
   const prevEpochRef = useRef(gameEpoch);
 
   /* ══════════════════════════════════════════════════════════════
-     LEY 1 · Fase del slide activo: 'countdown' | 'playing' | 'game_over'
-     Se calcula derivada de isCountingDown + isGameOver.
+     LEY 1 · Fase del slide activo: 'ready' | 'countdown' | 'playing' | 'game_over'
+     Se calcula derivada de isReady + isCountingDown + isGameOver.
      Controla touch-action y overflow-y de forma centralizada.
      ══════════════════════════════════════════════════════════════ */
-  const slidePhase = isCountingDown ? "countdown" : isGameOver ? "game_over" : "playing";
+  const slidePhase = isReady
+    ? "ready"
+    : isCountingDown
+      ? "countdown"
+      : isGameOver
+        ? "game_over"
+        : "playing";
 
   const disabledRef = useRef(disabled);
   const activeIndexRef = useRef(activeIndex);
@@ -252,7 +282,10 @@ const GameFeedContent = ({
 
     /* ── 1. Registrar contexto del slide que ABANDONA ── */
     if (leavingIndex !== null) {
-      if (slidePhase === "countdown") {
+      if (slidePhase === "ready") {
+        // CASO A0: Scroll durante ready → simplemente salir, no ha empezado nada
+        delete pauseContextRef.current[leavingIndex];
+      } else if (slidePhase === "countdown") {
         // CASO A: Scroll durante countdown → abortar, forzar remontaje
         const leavingUid = playlistRef.current[leavingIndex]?.uid;
         if (leavingUid) {
@@ -307,38 +340,27 @@ const GameFeedContent = ({
       clearTimeout(ctx.timerId);
       delete pauseContextRef.current[activeIndex];
       setIsGameOver(false);
+      setIsReady(false);
       setIsCountingDown(false); // reanudar sin countdown
     } else if (ctx && ctx.phase === "reset_done") {
       // El timer ya disparó mientras estábamos fuera → juego ya remontado.
-      // Solo necesitamos ajustar el estado de countdown.
+      // Volver a pantalla ready.
       delete pauseContextRef.current[activeIndex];
       setIsGameOver(false);
-      setIsCountingDown(!ctx.shouldSkip);
+      setIsReady(true);
+      setIsCountingDown(false);
     } else if (ctx && ctx.phase === "game_over") {
       // Volvemos a un slide en game_over → ya se hizo remontaje al salir
+      // Volver a pantalla ready.
       delete pauseContextRef.current[activeIndex];
       setIsGameOver(false);
-      const game = playlistRef.current[activeIndex]?.game;
-      const shouldSkip = !!(
-        game?.gameComponent &&
-        GAME_COMPONENTS[game.gameComponent] &&
-        game.skipCountdown
-      );
-      setIsCountingDown(!shouldSkip);
+      setIsReady(true);
+      setIsCountingDown(false);
     } else {
-      // Primera visita o slide sin contexto de pausa → flujo normal
+      // Primera visita o slide sin contexto de pausa → flujo ready
       setIsGameOver(false);
-      const item = playlistRef.current[activeIndex];
-      const game = item?.game;
-      const shouldSkip = !!(
-        game?.gameComponent &&
-        GAME_COMPONENTS[game.gameComponent] &&
-        game.skipCountdown
-      );
-      const nextCountingDown = !shouldSkip;
-      if (isCountingDown !== nextCountingDown) {
-        setIsCountingDown(nextCountingDown);
-      }
+      setIsReady(true);
+      setIsCountingDown(false);
     }
   }
 
@@ -397,7 +419,7 @@ const GameFeedContent = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const effectiveDisabled = disabled || isChallengesOpen;
+    const effectiveDisabled = disabled || isChallengesOpen || isInfoOpen;
     const activeGame = playlistRef.current[activeIndex]?.game;
     const shouldLock =
       slidePhase === "playing" &&
@@ -406,7 +428,7 @@ const GameFeedContent = ({
 
     scrollLockedRef.current = shouldLock;
     container.style.overflowY = shouldLock || effectiveDisabled ? "hidden" : "scroll";
-  }, [slidePhase, activeIndex, disabled, isChallengesOpen, containerRef]);
+  }, [slidePhase, activeIndex, disabled, isChallengesOpen, isInfoOpen, containerRef]);
 
   /* Fallback: juegos sin requiresScrollLock que usan onScrollLock manualmente */
   const handleScrollLock = useCallback(
@@ -440,18 +462,16 @@ const GameFeedContent = ({
   /* ==============================================================
      Replay — remonta el componente del juego actual
      ============================================================== */
-  const handleReplay = useCallback((uid, index) => {
+  const handleReplay = useCallback((uid, index, skipCountdown = false) => {
     setReplayKeys((prev) => ({ ...prev, [uid]: (prev[uid] || 0) + 1 }));
-    setIsGameOver(false);              // Reset game over en replay
-    const game = playlistRef.current[index]?.game;
-    const skip = !!(
-      game?.gameComponent &&
-      GAME_COMPONENTS[game.gameComponent] &&
-      game.skipCountdown
-    );
-    setIsCountingDown(!skip);
-    // No llamamos a nuclearReset(): si la UI estaba oculta, sigue oculta.
-    // El Countdown unificado se mostrará igualmente.
+    setIsGameOver(false);
+    // Replay → directo a countdown (no vuelve a ready)
+    setIsReady(false);
+    if (skipCountdown) {
+      setIsCountingDown(false);
+    } else {
+      setIsCountingDown(true);
+    }
   }, []);
 
   /* ==============================================================
@@ -530,7 +550,7 @@ const GameFeedContent = ({
             GAME_COMPONENTS[game.gameComponent] &&
             game.skipCountdown
           );
-          const isPlayable = isActive && !isCountingDown && !disabled && !isChallengesOpen;
+          const isPlayable = isActive && !isReady && !isCountingDown && !disabled && !isChallengesOpen && !isInfoOpen;
           const replayKey = replayKeys[uid] || 0;
 
           /* ── LEY 1: touch-action dinámico en el wrapper del juego ──
@@ -572,7 +592,7 @@ const GameFeedContent = ({
                             key={`${uid}-${replayKey}`}
                             isActive={isPlayable}
                             onNextGame={() => handleNextGame(index)}
-                            onReplay={() => handleReplay(uid, index)}
+                            onReplay={() => handleReplay(uid, index, shouldSkipCountdown)}
                             userId={currentUser?.id}
                             pinchGuardRef={pinchGuardRef}
                             onScrollLock={handleScrollLock}
@@ -615,6 +635,8 @@ const GameFeedContent = ({
                         hasRealGame={shouldSkipCountdown}
                         isChallengesOpen={isChallengesOpen}
                         onChallengesOpenChange={onChallengesOpenChange}
+                        isInfoOpen={isInfoOpen}
+                        onInfoOpenChange={onInfoOpenChange}
                         onNavigateToGame={(targetGameId) => {
                           const targetGame = games.find(
                             (g) => g.id === targetGameId
@@ -637,12 +659,37 @@ const GameFeedContent = ({
                   )}
                 </AnimatePresence>
 
-                {/* ── Cuenta atrás unificada: siempre montada, no depende de isUiHidden ── */}
-                {isActive && isCountingDown && !shouldSkipCountdown && !disabled && !isChallengesOpen && (
-                  <Countdown
+                {/* ── ReadyScreen: pantalla de atracción ── */}
+                <AnimatePresence>
+                  {isActive && isReady && !isChallengesOpen && !isInfoOpen && (
+                    <ReadyScreen
+                      key={`ready-${uid}-${replayKey}`}
+                      logo={game.logo}
+                      logoScale={game.logoScale}
+                      emoji={game.emoji}
+                      title={game.title}
+                      instruction={t(`desc.${game.id}`)}
+                      color={game.color}
+                      onOpenChallenges={() => onChallengesOpenChange?.(true)}
+                      onOpenGallery={onOpenGallery}
+                      challengeStatus={challengeStatus}
+                      onStart={() => {
+                        setIsReady(false);
+                        if (shouldSkipCountdown) {
+                          setIsCountingDown(false);
+                        } else {
+                          setIsCountingDown(true);
+                        }
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* ── CountdownOverlay: 3, 2, 1, GO! flotante sobre el tablero ── */}
+                {isActive && isCountingDown && !shouldSkipCountdown && !disabled && !isChallengesOpen && !isInfoOpen && (
+                  <CountdownOverlay
                     gameId={`${uid}-${replayKey}`}
                     onComplete={() => setIsCountingDown(false)}
-                    description={t(`desc.${game.id}`)}
                   />
                 )}
               </motion.div>

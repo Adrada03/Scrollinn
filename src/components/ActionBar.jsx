@@ -56,22 +56,27 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenChallenges, ch
         className="flex flex-col items-center gap-1 group cursor-pointer"
         aria-label="Retos Diarios"
       >
-        <div className={`${btnBase} relative ${challengeStatus === "allDone" ? "bg-emerald-500/20! border-emerald-500/30!" : ""}`}>
+        <div className={`${btnBase} relative ${
+          challengeStatus === "allDone" ? "bg-emerald-500/20! border-emerald-500/30!" :
+          challengeStatus === "claimable" ? "animate-pulse bg-emerald-500/25! border-emerald-500/40!" :
+          challengeStatus === "pending" ? "animate-pulse bg-red-500/25! border-red-500/40!" : ""
+        }`}>
           {/* Icono de target / diana */}
-          <svg xmlns="http://www.w3.org/2000/svg" className={`w-6 h-6 md:w-7 md:h-7 ${challengeStatus === "allDone" ? "text-emerald-400" : "text-white"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg xmlns="http://www.w3.org/2000/svg" className={`w-6 h-6 md:w-7 md:h-7 ${
+            challengeStatus === "allDone" ? "text-emerald-400" :
+            challengeStatus === "claimable" ? "text-emerald-400" :
+            challengeStatus === "pending" ? "text-red-400" : "text-white"
+          }`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <circle cx="12" cy="12" r="10" />
             <circle cx="12" cy="12" r="6" />
             <circle cx="12" cy="12" r="2" fill="currentColor" />
           </svg>
-          {/* Notification dot — color depends on challenge status */}
-          {challengeStatus === "pending" && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-          )}
-          {challengeStatus === "claimable" && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
-          )}
         </div>
-        <span className={`text-xs md:text-sm font-semibold drop-shadow ${challengeStatus === "allDone" ? "text-emerald-400" : "text-white/80"}`}>Retos</span>
+        <span className={`text-xs md:text-sm font-semibold drop-shadow ${
+          challengeStatus === "allDone" ? "text-emerald-400" :
+          challengeStatus === "claimable" ? "text-emerald-400" :
+          challengeStatus === "pending" ? "text-red-400" : "text-white/80"
+        }`}>Retos</span>
       </button>
 
       {/* === 3. Galería === */}

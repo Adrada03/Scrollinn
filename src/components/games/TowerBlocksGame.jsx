@@ -515,12 +515,16 @@ const TowerBlocksGame = ({ isActive, onNextGame, onReplay, userId }) => {
     };
   }, []);
 
-  // Pause / resume según isActive (regla de los 3 segundos)
+  // Auto-start + pause/resume según isActive
   useEffect(() => {
     const eng = engineRef.current;
     if (!eng) return;
     if (isActive) {
       eng.resume();
+      // Auto-start: si el motor está en READY, arrancamos directamente
+      if (eng.state === GAME_STATES.READY) {
+        eng.startGame();
+      }
     } else {
       eng.pause();
     }
@@ -565,15 +569,12 @@ const TowerBlocksGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
-  // Handler unificado para click/tap — NO permite reiniciar
+  // Handler unificado para click/tap — solo colocar bloques durante gameplay
   const handlePointerDown = useCallback((e) => {
     e.stopPropagation();
     const eng = engineRef.current;
     if (!eng) return;
-    if (eng.state === GAME_STATES.ENDED) return;
-    if (eng.state === GAME_STATES.READY) {
-      eng.startGame();
-    } else {
+    if (eng.state === GAME_STATES.PLAYING) {
       eng.onAction();
     }
   }, []);
@@ -590,21 +591,6 @@ const TowerBlocksGame = ({ isActive, onNextGame, onReplay, userId }) => {
         onPointerDown={handlePointerDown}
         style={{ touchAction: "manipulation" }}
       />
-
-      {/* Pantalla de inicio: "Toca para jugar" */}
-      {status === GAME_STATES.READY && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-[3] pointer-events-none">
-          <p className="text-sm font-bold text-[#333344]/70 text-center mb-1 max-w-xs leading-snug">
-            {t("tower.instruction")}
-          </p>
-          <div className="flex flex-col items-center gap-4 animate-pulse">
-            <img src="/logo-towerblocks.png" alt="Tower Blocks" className="w-20 h-20 object-contain drop-shadow-lg" draggable={false} />
-            <span className="text-lg font-bold text-[#333344] bg-white/40 backdrop-blur-sm px-6 py-3 rounded-2xl shadow-lg">
-              {t("tower.tap_play")}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Gradientes para legibilidad de la UI de Scrollinn */}
       <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-[1]" />
