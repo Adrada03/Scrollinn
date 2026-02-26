@@ -221,8 +221,8 @@ export const calculateGameXP = (gameId, score) => {
 
     // 🧠 30. MEMORY SEQUENCE (15 XP por ronda completada)
     case 'memory-sequence':
-      if (score < 1) return 0; // Suelo: Mínimo 1 ronda
-      return Math.min(Math.floor(score * 15), 100);
+      if (score < 3) return 0; // Suelo: Mínimo 3 rondas
+      return Math.min(Math.floor(score * 12), 100);
 
     default:
       // Si añades un juego nuevo y se te olvida ponerlo aquí, te avisa en consola
