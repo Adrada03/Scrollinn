@@ -582,19 +582,12 @@ const GameFeedContent = ({
                     ) : (
                       <PlaceholderGame
                         key={`${uid}-ph-${replayKey}`}
-                        color={game.color}
-                        emoji={game.emoji}
+                        game={game}
                         isActive={isPlayable}
                       />
                     )
                   ) : (
-                    <div
-                      className={`h-full w-full ${game.color} flex items-center justify-center`}
-                    >
-                      <span className="text-6xl opacity-20 select-none">
-                        {game.emoji}
-                      </span>
-                    </div>
+                    <PlaceholderGame game={game} isActive={false} />
                   )}
                 </div>
 
