@@ -221,7 +221,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-lg z-60"
+            className="fixed inset-0 bg-black/70 backdrop-blur-lg z-110"
             onClick={onClose}
           />
 
@@ -231,7 +231,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, currentUser, onAvatarChange }) 
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
             transition={{ type: "spring", damping: 30, stiffness: 320 }}
-            className="fixed inset-0 z-61 flex items-center justify-center p-4 pointer-events-none"
+            className="fixed inset-0 z-111 flex items-center justify-center p-4 pointer-events-none"
           >
             <div
               className="w-full max-w-md pointer-events-auto overflow-hidden relative"
