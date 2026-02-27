@@ -359,6 +359,11 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange, onNavigateToGame
   const [resetCountdown, setResetCountdown] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // ── Reset coin animation when modal CLOSES so it doesn't replay on reopen ──
+  useEffect(() => {
+    if (!isOpen) setCoinBurstTrigger(0);
+  }, [isOpen]);
+
   // ── Reset timer: countdown to 00:00 Europe/Madrid + auto-refetch ──
   useEffect(() => {
     if (!isOpen) return;
@@ -477,6 +482,9 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange, onNavigateToGame
         if (typeof result.newCoins === "number") {
           updateUser({ coins: result.newCoins });
         }
+
+        // Notificar a Feed / ReadyScreen para que actualicen el estado del botón
+        window.dispatchEvent(new Event("challenges-updated"));
 
         // ── Fase 2 (+600 ms): Gran animación +500 XP ──
         if (isFullClear && typeof result.newXP === "number") {

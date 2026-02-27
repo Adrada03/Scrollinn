@@ -232,8 +232,8 @@ const GameFeedContent = ({
   useEffect(() => { refreshChallengeStatus(); }, [refreshChallengeStatus]);
   useEffect(() => {
     const handler = () => refreshChallengeStatus();
-    window.addEventListener("challenges-changed", handler);
-    return () => window.removeEventListener("challenges-changed", handler);
+    window.addEventListener("challenges-updated", handler);
+    return () => window.removeEventListener("challenges-updated", handler);
   }, [refreshChallengeStatus]);
 
   /* ── Refs ── */
