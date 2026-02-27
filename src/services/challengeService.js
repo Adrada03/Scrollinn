@@ -153,6 +153,19 @@ export async function evaluateAndSaveChallenges(userId, gameId, finalScore) {
   try {
     if (!userId) return;
 
+    // ── Paso 0: Consultar is_lower_better del juego (fuente de verdad: BD) ──
+    const { data: gameData, error: gameErr } = await supabase
+      .from("games")
+      .select("is_lower_better")
+      .eq("id", gameId)
+      .single();
+
+    if (gameErr) {
+      console.warn("evaluateAndSaveChallenges: no se pudo obtener is_lower_better para", gameId, gameErr.message);
+    }
+
+    const isLowerBetter = !!gameData?.is_lower_better;
+
     // ── Paso 1: Obtener retos de hoy + progreso actual ──────────────────
     const today = getSpanishDateString();
 
@@ -187,7 +200,17 @@ export async function evaluateAndSaveChallenges(userId, gameId, finalScore) {
       // Sistema AND: juego válido + puntuación válida
       const isGameValid =
         reto.target_game_id === null || reto.target_game_id === gameId;
-      const isScoreValid = finalScore >= reto.target_score;
+
+      // Validación de score según tipo de juego:
+      //   - "Lower is better" (timer, perfect-scale, traffic-light, color-match):
+      //     el jugador debe igualar o mejorar (bajar) el target_score.
+      //   - Normal (higher is better): el jugador debe igualar o superar.
+      //   - target_score = 0 (reto tipo "solo juega"): siempre se cumple.
+      const isScoreValid =
+        reto.target_score === 0 ||
+        (isLowerBetter
+          ? finalScore <= reto.target_score
+          : finalScore >= reto.target_score);
 
       if (!isGameValid || !isScoreValid) continue;
 
