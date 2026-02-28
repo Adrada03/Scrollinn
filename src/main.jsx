@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { LanguageProvider } from './i18n'
 import { AuthProvider } from './context/AuthContext'
+import { SoundProvider } from './context/SoundContext'
 
 /* ═══════════════════════════════════════════════════════════
    CAPA 3: Bloqueo global de zoom nativo a nivel de documento
@@ -32,7 +33,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <LanguageProvider>
       <AuthProvider>
-        <App />
+        <SoundProvider>
+          <App />
+        </SoundProvider>
       </AuthProvider>
     </LanguageProvider>
   </StrictMode>,

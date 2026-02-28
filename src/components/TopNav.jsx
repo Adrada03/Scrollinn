@@ -12,6 +12,7 @@
 import { useLanguage } from "../i18n";
 import { getLevelFromXP, getTierTextColor, getTierHexColor } from "../utils/leveling";
 import Avatar from "./Avatar";
+import { useSoundEffect } from "../hooks/useSoundEffect";
 
 /* ── Banderas inline (SVG) ── */
 const FlagGB = () => (
@@ -46,6 +47,7 @@ const TopNav = ({
   userLikesCount,
 }) => {
   const { lang, toggleLang, t } = useLanguage();
+  const { playNavigation } = useSoundEffect();
 
   const xp = currentUser?.xp ?? 0;
   const level = currentUser ? getLevelFromXP(xp) : null;
@@ -57,6 +59,7 @@ const TopNav = ({
    * "Favoritos" requiere login + ≥5 likes.
    */
   const handleTabClick = (tabKey) => {
+    playNavigation();
     onTabChange(tabKey);
   };
 
@@ -144,7 +147,7 @@ const TopNav = ({
 
         {/* ── Derecha: Idioma ── */}
         <button
-          onClick={toggleLang}
+          onClick={() => { playNavigation(); toggleLang(); }}
           className="pointer-events-auto shrink-0 w-13 h-10 rounded-md overflow-hidden border border-white/20 shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-transform bg-black/30 backdrop-blur-sm flex items-center justify-center p-0.5"
           aria-label={lang === "es" ? "Switch to English" : "Cambiar a español"}
         >

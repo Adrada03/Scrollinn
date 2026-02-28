@@ -23,6 +23,7 @@
 import { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "../i18n";
+import { useSoundEffect } from "../hooks/useSoundEffect";
 
 /** Max px movement to still count as a tap (not a scroll) */
 const TAP_THRESHOLD = 10;
@@ -40,6 +41,7 @@ const ReadyScreen = ({
   challengeStatus = "pending",
 }) => {
   const { t } = useLanguage();
+  const { playNavigation } = useSoundEffect();
   const startPos = useRef(null);
 
   /* ── Tap detection that coexists with scroll ──
@@ -57,9 +59,10 @@ const ReadyScreen = ({
     const dy = Math.abs(e.clientY - startPos.current.y);
     startPos.current = null;
     if (dx < TAP_THRESHOLD && dy < TAP_THRESHOLD) {
+      playNavigation();
       onStart();
     }
-  }, [onStart]);
+  }, [onStart, playNavigation]);
 
   return (
     <motion.div

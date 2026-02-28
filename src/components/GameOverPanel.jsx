@@ -22,6 +22,7 @@ import { useState, useEffect } from "react";
 import { RefreshCw, ChevronDown } from "lucide-react";
 import { useLanguage } from "../i18n";
 import { useAuth } from "../context/AuthContext";
+import { useSoundEffect } from "../hooks/useSoundEffect";
 import Avatar from "./Avatar";
 import PublicProfileModal from "./PublicProfileModal";
 
@@ -130,6 +131,7 @@ const GameOverPanel = ({
 }) => {
   const { t } = useLanguage();
   const { currentUser } = useAuth();
+  const { playLose, playRecord } = useSoundEffect();
   const [profileUserId, setProfileUserId] = useState(null);
   const displayRanking = ranking.length > 0 ? ranking : FALLBACK_RANKING;
 
@@ -137,6 +139,19 @@ const GameOverPanel = ({
   useEffect(() => {
     window.dispatchEvent(new Event(SCROLL_UNLOCK_EVENT));
   }, []);
+
+  // Sonido al montar: perder (siempre) o récord (si top 5)
+  useEffect(() => {
+    // Pequeño delay para que el panel aparezca visualmente antes del sonido
+    const timer = setTimeout(() => {
+      if (scoreMessage && (scoreMessage.includes("Top 5") || scoreMessage.includes("top 5"))) {
+        playRecord();
+      } else {
+        playLose();
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>

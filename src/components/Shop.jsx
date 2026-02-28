@@ -10,6 +10,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../i18n";
+import { useSoundEffect } from "../hooks/useSoundEffect";
 import { getShopAvatars, purchaseAvatar } from "../services/avatarService";
 
 /* ── Tier palette ── */
@@ -264,6 +265,7 @@ const HoldToConfirmButton = ({ onConfirm, disabled, children }) => {
 const ItemInspectModal = ({ item, lang, t, coins, userId, onClose, onPurchaseSuccess }) => {
   const [purchasing, setPurchasing] = useState(false);
   const [justPurchased, setJustPurchased] = useState(false);
+  const { playCoin } = useSoundEffect();
 
   if (!item) return null;
 
@@ -285,6 +287,7 @@ const ItemInspectModal = ({ item, lang, t, coins, userId, onClose, onPurchaseSuc
     setPurchasing(false);
     if (result.success) {
       setJustPurchased(true);
+      playCoin();
       onPurchaseSuccess(item.id, result.newCoins);
     }
   };

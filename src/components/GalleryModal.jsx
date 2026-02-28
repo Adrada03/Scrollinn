@@ -9,9 +9,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../i18n";
+import { useSoundEffect } from "../hooks/useSoundEffect";
 
 const GalleryModal = ({ isOpen, onClose, games, onSelectGame }) => {
   const { t } = useLanguage();
+  const { playNavigation } = useSoundEffect();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Reset search when modal closes
@@ -138,7 +140,7 @@ const GalleryModal = ({ isOpen, onClose, games, onSelectGame }) => {
                     {filteredGames.map((game) => (
                       <motion.button
                         key={game.id}
-                        onClick={() => onSelectGame(getOriginalIndex(game))}
+                        onClick={() => { playNavigation(); onSelectGame(getOriginalIndex(game)); }}
                         whileTap={{ scale: 0.95 }}
                         className="bg-linear-to-b from-slate-800/80 to-slate-900/80 border border-slate-700/50 rounded-2xl p-3 sm:p-4 md:p-5 flex flex-col items-center justify-center gap-1.5 md:gap-2.5 text-white cursor-pointer relative overflow-hidden group transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-indigo-500/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)]"
                       >

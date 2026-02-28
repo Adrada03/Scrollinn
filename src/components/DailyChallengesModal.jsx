@@ -11,6 +11,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../i18n";
+import { useSoundEffect } from "../hooks/useSoundEffect";
 import { getTodayChallenges, claimReward, getChallengeStatus } from "../services/challengeService";
 import { getSpanishDateString, getMsUntilSpanishMidnight } from "../utils/dateUtils";
 
@@ -349,6 +350,7 @@ const SkeletonCard = () => (
 const DailyChallengesModal = ({ isOpen, onClose, onStateChange, onNavigateToGame }) => {
   const { currentUser, updateUser } = useAuth();
   const { lang, t } = useLanguage();
+  const { playCoin } = useSoundEffect();
 
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -472,6 +474,7 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange, onNavigateToGame
       if (result.success) {
         // ── Fase 1 (0 s): Monedas + marcar reclamado ──
         setCoinBurstTrigger((prev) => prev + 1);
+        playCoin();
 
         setChallenges((prev) =>
           prev.map((ch) =>
