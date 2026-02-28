@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Scrollinn — Minijuegos infinitos</title>
 
+    <!-- SEO: Descripción para buscadores (ES por defecto, se adapta a EN vía script) -->
+    <meta name="description" content="Juega gratis a minijuegos infinitos. Desliza, compite en rankings, sube de nivel y desbloquea logros. Sin descargas — directo en tu navegador." />
+    <meta name="keywords" content="minigames, minijuegos, free games, juegos gratis, online games, scrollinn, browser games, casual games, leaderboard, rankings" />
+
+    <!-- Open Graph (redes sociales) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Scrollinn — Endless Minigames / Minijuegos infinitos" />
+    <meta property="og:description" content="Swipe, play & compete in endless minigames. Level up, climb leaderboards. Free, no downloads. — Desliza, juega y compite. Sube de nivel, sin descargas." />
+    <meta property="og:image" content="/web-app-manifest-512x512.png" />
+    <meta property="og:site_name" content="Scrollinn" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Scrollinn — Endless Minigames" />
+    <meta name="twitter:description" content="Swipe, play & compete in free endless minigames. No downloads needed." />
+    <meta name="twitter:image" content="/web-app-manifest-512x512.png" />
+
+    <!-- SEO: adapta idioma de la meta description según el navegador -->
+    <script>
+      (function () {
+        var lang = (navigator.language || navigator.userLanguage || "es").slice(0, 2);
+        if (lang !== "es") {
+          document.documentElement.lang = "en";
+          document.title = "Scrollinn — Endless Minigames";
+          var meta = document.querySelector('meta[name="description"]');
+          if (meta) meta.content = "Play free endless minigames. Swipe, compete on leaderboards, level up and unlock achievements. No downloads — straight from your browser.";
+        }
+      })();
+    </script>
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/logoScrollinn-noBg.png" />
 
