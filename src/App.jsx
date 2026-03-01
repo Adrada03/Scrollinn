@@ -356,7 +356,8 @@ function App() {
 
       {/* ── Toast elegante ── */}
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-100 animate-fade-in-up pointer-events-none">
+        <div className="fixed left-1/2 -translate-x-1/2 z-100 animate-fade-in-up pointer-events-none"
+             style={{ bottom: 'calc(5rem + var(--sab))' }}>
           <div className="bg-black/80 backdrop-blur-md border border-white/15 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl max-w-xs text-center">
             {toast}
           </div>

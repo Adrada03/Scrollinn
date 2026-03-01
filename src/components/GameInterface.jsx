@@ -58,7 +58,8 @@ const GameInterface = ({
   return (
     <div className="absolute inset-0 z-[60] pointer-events-none">
       {/* ========== ACTION STACK (estilo TikTok/Reels) ========== */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-6 pointer-events-auto">
+      <div className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center gap-6 pointer-events-auto"
+           style={{ right: 'calc(1rem + var(--sar))' }}>
         <ActionBar
           likes={likes}
           isLiked={isLiked}
@@ -80,7 +81,8 @@ const GameInterface = ({
       </div>
 
       {/* ========== INFO INFERIOR — Cápsula Glassmorphism ========== */}
-      <div className="absolute bottom-6 left-4 z-40 pointer-events-auto">
+      <div className="absolute z-40 pointer-events-auto"
+           style={{ bottom: 'calc(1.5rem + var(--sab))', left: 'calc(1rem + var(--sal))' }}>
         <button
           type="button"
           onClick={() => onInfoOpenChange?.(true)}

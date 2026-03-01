@@ -146,6 +146,35 @@ export function SoundProvider({ children }) {
     }
   }, [isMuted]);
 
+  // ── Pausar BGM cuando la app no está visible (segundo plano, cambio de tab) ──
+  // Esto cubre tanto el navegador (cambio de pestaña, minimizar) como apps
+  // nativas empaquetadas con Capacitor / PWA (evento pause/resume).
+  useEffect(() => {
+    const bgm = getBgm();
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        bgm.pause();
+      } else if (!mutedRef.current) {
+        bgm.play().catch(() => {});
+      }
+    }
+
+    // Eventos estándar del navegador
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Eventos nativos de Capacitor (iOS/Android)
+    document.addEventListener("pause", () => bgm.pause());
+    document.addEventListener("resume", () => {
+      if (!mutedRef.current) bgm.play().catch(() => {});
+    });
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // Los listeners de pause/resume se limpian si el provider se desmonta
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const setMuted = useCallback((val) => {
     const muted = typeof val === "function" ? val(isMuted) : val;
     setIsMuted(muted);

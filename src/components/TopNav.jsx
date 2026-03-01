@@ -64,7 +64,8 @@ const TopNav = ({
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-[70] pointer-events-none">
+    <nav className="fixed top-0 left-0 w-full z-70 pointer-events-none"
+         style={{ paddingTop: 'var(--sat)', paddingLeft: 'var(--sal)', paddingRight: 'var(--sar)' }}>
       {/* Degradado para legibilidad */}
       <div className="absolute inset-0 h-24 bg-linear-to-b from-black/60 to-transparent" />
 

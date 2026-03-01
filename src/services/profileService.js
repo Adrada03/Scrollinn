@@ -75,7 +75,7 @@ export async function getPublicProfile(userId) {
     if (!info) continue;
 
     const current = bestByGame[s.game_id];
-    if (!current) {
+    if (current === undefined) {
       bestByGame[s.game_id] = s.score;
     } else if (info.isLowerBetter) {
       if (s.score < current) bestByGame[s.game_id] = s.score;

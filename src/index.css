@@ -4,6 +4,16 @@
    Estilos globales — TikTok Games (Inmersivo)
    ============================================ */
 
+/* ─── Safe Area Insets (notch, barra de estado, nav bar) ───
+   Permite que la UI no quede tapada por elementos del sistema
+   en dispositivos con notch, Dynamic Island, barra de navegación, etc. */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
 /* Viewport fijo sin scroll nativo */
 html, body, #root {
   margin: 0;
