@@ -78,7 +78,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
   const [bgOffset, setBgOffset] = useState(0);
 
   const scoreSubmitted = useRef(false);
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.ShadowDashGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.ShadowDashGame);
 
   // Refs para el game loop
   const gameStateRef = useRef(STATES.IDLE);
@@ -903,6 +903,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
               ranking={ranking}
               scoreMessage={scoreMessage}
               xpGained={xpGained}
+              gameId={gameId}
 
               isLoading={isRankingLoading}
             />

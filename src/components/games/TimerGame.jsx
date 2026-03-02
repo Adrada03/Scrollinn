@@ -69,7 +69,7 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, loading: isSubmittingScore, xpGained } = useSubmitScore(userId, GAME_IDS.TimerGame);
+  const { submit, loading: isSubmittingScore, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.TimerGame);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -290,6 +290,7 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
             ranking={ranking}
             scoreMessage={scoreMessage}
             xpGained={xpGained}
+            gameId={gameId}
 
             isLoading={isRankingLoading}
           />

@@ -58,7 +58,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
   const [scoreMessage, setScoreMessage] = useState("");
   const scoreSubmitted = useRef(false);
 
-  const { submit, loading: isSubmittingScore, xpGained } = useSubmitScore(userId, GAME_IDS.PerfectCircleGame);
+  const { submit, loading: isSubmittingScore, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.PerfectCircleGame);
 
   // ── Canvas & drawing refs ──
   const canvasRef = useRef(null);
@@ -573,6 +573,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
           ranking={ranking.map(r => ({ ...r, score: `${(Number(r.score) / 10).toFixed(1)}%` }))}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
           isLoading={isSubmittingScore}
         />
       )}

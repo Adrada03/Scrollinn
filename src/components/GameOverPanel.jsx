@@ -1,261 +1,724 @@
 /**
- * GameOverPanel.jsx — Panel unificado de Game Over
+ * GameOverPanel.jsx — Overlay inmersivo de Game Over (estilo TikTok)
  *
- * Muestra:
- *  - Título (Game Over / ¡Victoria!)
- *  - Puntuación del jugador
- *  - Ranking (Top 5 mejores puntuaciones de usuarios distintos)
- *  - Mensaje de resultado (guardado / Top 5 / no registrado)
- *  - Botón "Siguiente juego" (scrollea al siguiente)
+ * Diseño: Capa transparente superpuesta sobre el último frame del juego.
+ *  - Sin modal clásico: oscurecimiento + blur sobre el juego congelado.
+ *  - Safe zone derecha para el HUD fijo (ActionBar).
+ *  - Score con animación count-up y glow neón.
+ *  - Bottom Sheet con glassmorphism para el Top 5.
  *
  * Props:
- *   title       (string)  — "Game Over" o "¡Victoria!"
- *   score       (string)  — puntuación a mostrar (puede ser "12", "85%", "7 mov.")
- *   subtitle    (string)  — texto debajo del score
- *   onNext      (fn)      — callback para ir al siguiente juego
- *   ranking     (array)   — [{ pos, user, score }] ranking real del servidor
- *   scoreMessage (string) — mensaje del resultado del envío de puntuación
- *   isLoading   (bool)    — si está cargando el ranking
+ *   title         (string)        — "Game Over" o "¡Victoria!"
+ *   score         (string|number) — puntuación ("12", "85%", "7 mov.")
+ *   subtitle      (string)        — texto debajo del score
+ *   onReplay      (fn)            — callback para reiniciar
+ *   onNext        (fn)            — callback para siguiente juego
+ *   userId        (string|null)   — ID del usuario logueado
+ *   gameId        (string|null)   — ID del juego en la BD
+ *   xpGained      (number|null)   — XP ganada en esta partida
+ *   ranking       (array)         — [{ pos, userId, user, equippedAvatarId, score }] (backward-compat, fallback)
+ *   scoreMessage  (string)        — mensaje del resultado (backward-compat, fallback)
+ *   isLoading     (bool)          — cargando el ranking (backward-compat)
  */
 
-import { useState, useEffect } from "react";
-import { RefreshCw, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { RefreshCw, X } from "lucide-react";
 import { useLanguage } from "../i18n";
 import { useAuth } from "../context/AuthContext";
 import { useSoundEffect } from "../hooks/useSoundEffect";
+import { supabase } from "../supabaseClient";
+import { getLevelProgress } from "../utils/leveling";
+import { getTop5 } from "../services/gameService";
 import Avatar from "./Avatar";
 import PublicProfileModal from "./PublicProfileModal";
 
 /* Notifica al Feed para desbloquear scroll inmediatamente */
 const SCROLL_UNLOCK_EVENT = "gameover-scroll-unlock";
 
-const FALLBACK_RANKING = [
-  { pos: 1, user: "—", score: "—" },
-  { pos: 2, user: "—", score: "—" },
-  { pos: 3, user: "—", score: "—" },
-  { pos: 4, user: "—", score: "—" },
-  { pos: 5, user: "—", score: "—" },
-];
+/* ── Perfect Circle: la BD guarda score×10 → mostrar /10 con “%” ── */
+const PERFECT_CIRCLE_ID = "perfect-circle";
+function displayScoreForGame(raw, gId) {
+  if (gId === PERFECT_CIRCLE_ID) return `${(raw / 10).toFixed(1)}%`;
+  return typeof raw === "number" ? raw.toLocaleString() : String(raw);
+}
 
-/* ── Animación de XP ── */
-const XpDisplay = ({ xpGained }) => {
-  const { t } = useLanguage();
-  const [phase, setPhase] = useState("calculating"); // "calculating" | "reveal"
+/* ── Formateador de ranking raw → UI ── */
+function formatRanking(rawScores) {
+  if (!rawScores?.length) return [];
+  return rawScores.map((s, i) => ({
+    pos: i + 1,
+    userId: s.user_id ?? null,
+    user: s.users?.username ?? "—",
+    equippedAvatarId: s.users?.equipped_avatar_id ?? "none",
+    score: s.score,
+  }));
+}
+
+/* ── Utilidades de parseo de score ── */
+function parseScoreNumber(score) {
+  if (typeof score === "number") return score;
+  if (typeof score === "string") {
+    const m = score.replace(/,/g, "").match(/[\d.]+/);
+    return m ? parseFloat(m[0]) : 0;
+  }
+  return 0;
+}
+
+function getScoreSuffix(score) {
+  if (typeof score === "string") {
+    const m = score.match(/[\d.,]+\s*(.*)/);
+    return m?.[1]?.trim() || "";
+  }
+  return "";
+}
+
+/* ── Hook: reduce fontSize hasta que el texto quepa en una línea ── */
+function useFitText(depValue, { maxPx = 112, minPx = 32 } = {}) {
+  const ref = useRef(null);
+
+  const fit = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Empezar desde el máximo
+    let size = maxPx;
+    el.style.fontSize = `${size}px`;
+    // Reducir iterativamente hasta que quepa o toquemos el mínimo
+    while (el.scrollWidth > el.clientWidth && size > minPx) {
+      size -= 2;
+      el.style.fontSize = `${size}px`;
+    }
+  }, [maxPx, minPx]);
 
   useEffect(() => {
-    if (xpGained === null || xpGained === undefined) return;
-    // Mostrar "Calculando..." brevemente, luego revelar el resultado
-    setPhase("calculating");
-    const timer = setTimeout(() => setPhase("reveal"), 1200);
-    return () => clearTimeout(timer);
-  }, [xpGained]);
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [fit, depValue]);
 
-  if (xpGained === null || xpGained === undefined) return null;
+  return ref;
+}
 
-  // Fase "Calculando..."
-  if (phase === "calculating") {
-    return (
-      <div className="flex items-center justify-center gap-2 py-1.5 animate-pulse">
-        <svg className="w-4 h-4 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-        </svg>
-        <span className="text-sm font-medium text-white/50">
-          {t("gameover.calculating_xp") || "Calculando XP..."}
-        </span>
-      </div>
-    );
-  }
+/* ── Score animado: cuenta desde 0 hasta target con ease-out ── */
+const AnimatedScore = ({ target, suffix }) => {
+  const [val, setVal] = useState(0);
 
-  // Fase "Revelar" — sin XP
-  if (xpGained === 0) {
-    return (
-      <p className="text-center text-xs text-white/30 font-medium py-1.5">
-        {t("gameover.no_xp") || "No has conseguido XP. ¡Inténtalo de nuevo!"}
-      </p>
-    );
-  }
-
-  // Fase "Revelar" — con XP (dorado si es tope ≥ 100)
-  const isMaxTier = xpGained >= 100;
+  useEffect(() => {
+    if (!target) {
+      setVal(0);
+      return;
+    }
+    const dur = 1400;
+    let start = null;
+    let raf;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - p, 3); // ease-out cubic
+      setVal(Math.round(ease * target));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
 
   return (
-    <div className="flex items-center justify-center gap-1.5 py-1.5">
-      <span
-        className={`text-lg font-black tracking-tight animate-[xpPop_0.5s_ease-out] ${
-          isMaxTier
-            ? "text-transparent bg-clip-text bg-linear-to-r from-yellow-300 via-amber-400 to-yellow-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
-            : "text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]"
-        }`}
-      >
-        +{xpGained} XP
-      </span>
-      {isMaxTier && (
-        <span className="text-xs animate-bounce">✨</span>
+    <span className="inline-flex items-baseline gap-1">
+      <span>{val.toLocaleString()}</span>
+      {suffix && (
+        <span className="text-[0.35em] font-bold text-white/60 tracking-normal">
+          {suffix}
+        </span>
       )}
-    </div>
+    </span>
   );
 };
 
-/* ── Skeleton row para el ranking ── */
-const SkeletonRow = ({ index }) => (
-  <div
-    className="grid grid-cols-[1.2rem_1.5rem_1fr_3rem] gap-x-1.5 items-center px-2.5 py-0.5 border-b border-white/4 last:border-0 animate-pulse"
-  >
-    {/* # pos */}
-    <div className="h-3 w-3 rounded-sm bg-slate-700/60" />
-    {/* avatar circle */}
-    <div className="h-5 w-5 rounded-full bg-slate-700/60" />
-    {/* name bar */}
-    <div
-      className="h-3 rounded-md bg-slate-700/60"
-      style={{ width: `${60 + ((index * 17) % 30)}%` }}
-    />
-    {/* score bar */}
-    <div className="h-3 w-8 rounded-md bg-slate-700/60 ml-auto" />
-  </div>
-);
-
-const SKELETON_ROWS = Array.from({ length: 5 }, (_, i) => i);
-
+/* ══════════════════════════════════════════════════════════════
+   GameOverPanel
+   ══════════════════════════════════════════════════════════════ */
 const GameOverPanel = ({
   title = "Game Over",
   score,
   subtitle,
   onReplay,
   onNext,
-  ranking = [],
-  scoreMessage = "",
-  isLoading = false,
+  userId = null,
+  gameId = null,
   xpGained = null,
+  /* backward-compat props (still passed by some game components) */
+  ranking: propRanking = [],
+  scoreMessage = "",
+  isLoading: propIsLoading = false,
 }) => {
   const { t } = useLanguage();
   const { currentUser } = useAuth();
   const { playLose, playRecord } = useSoundEffect();
-  const [profileUserId, setProfileUserId] = useState(null);
-  const displayRanking = ranking.length > 0 ? ranking : FALLBACK_RANKING;
 
-  // Al montar el panel de Game Over, desbloquear scroll inmediatamente
+  const effectiveUserId = userId || currentUser?.id || null;
+
+  /* ── Estado local ── */
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [profileUserId, setProfileUserId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(true);
+
+  /* Resultado de la partida (datos reales desde Supabase) */
+  const [resultData, setResultData] = useState({
+    isNewRecord: false,
+    globalPosition: null,
+    prevHighscore: null,
+  });
+
+  /* Barra de XP dual (nivel real) */
+  const [levelInfo, setLevelInfo] = useState({
+    level: 1,
+    nextLevel: 2,
+    basePercent: 0,
+    gainedPercent: 0,
+  });
+
+  /* Top 5 lazy-loaded */
+  const [top5Data, setTop5Data] = useState([]);
+  const [top5Loading, setTop5Loading] = useState(false);
+
+  const numericScore = parseScoreNumber(score);
+  const scoreSuffix = getScoreSuffix(score);
+  const xpValue = xpGained ?? 0;
+
+  /* ── Fallback: detección de récord vía scoreMessage (si no hay userId/gameId) ── */
+  const isNewRecordFallback =
+    scoreMessage &&
+    /top\s*5|récord|record|nuevo.*récord|new.*record/i.test(scoreMessage);
+
+  /* Valor final: dato real si lo tenemos, fallback si no */
+  const isNewRecord = effectiveUserId && gameId
+    ? resultData.isNewRecord
+    : isNewRecordFallback;
+
+  /* ── Ref para auto-fit del tamaño del score ── */
+  const scoreRef = useFitText(numericScore, { maxPx: 112, minPx: 32 });
+
+  /* ── Desbloquear scroll del Feed al montar ── */
   useEffect(() => {
     window.dispatchEvent(new Event(SCROLL_UNLOCK_EVENT));
   }, []);
 
-  // Sonido al montar: perder (siempre) o récord (si top 5)
+  /* ── Sonido al montar: récord o derrota ── */
   useEffect(() => {
-    // Pequeño delay para que el panel aparezca visualmente antes del sonido
+    if (isProcessing) return; // esperar a que se resuelva si hay datos reales
     const timer = setTimeout(() => {
-      if (scoreMessage && (scoreMessage.includes("Top 5") || scoreMessage.includes("top 5"))) {
-        playRecord();
-      } else {
-        playLose();
-      }
+      if (isNewRecord) playRecord();
+      else playLose();
     }, 200);
     return () => clearTimeout(timer);
+  }, [isProcessing]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ══════════════════════════════════════════════════════════════
+     EFFECT A — Barra de XP (solo necesita effectiveUserId)
+     ══════════════════════════════════════════════════════════════ */
+  useEffect(() => {
+    if (!effectiveUserId) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data: userData } = await supabase
+          .from("users")
+          .select("xp")
+          .eq("id", effectiveUserId)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        const totalXP = userData?.xp ?? 0;
+        const xpBefore = Math.max(0, totalXP - xpValue);
+
+        const before = getLevelProgress(xpBefore);
+        const after = getLevelProgress(totalXP);
+
+        setLevelInfo({
+          level: after.level,
+          nextLevel: after.level + 1,
+          basePercent: after.level === before.level ? before.percentage : 0,
+          gainedPercent: after.level === before.level
+            ? after.percentage - before.percentage
+            : after.percentage,
+        });
+      } catch (err) {
+        console.error("GameOverPanel XP fetch error:", err);
+      }
+    })();
+
+    return () => { cancelled = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ══════════════════════════════════════════════════════════════
+     EFFECT B — Récord + Posición global (necesita userId + gameId)
+     ══════════════════════════════════════════════════════════════ */
+  useEffect(() => {
+    if (!effectiveUserId || !gameId) {
+      setIsProcessing(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        /* ── Queries en paralelo ── */
+        const [gameRes, userScoresRes] = await Promise.all([
+          supabase.from("games").select("is_lower_better").eq("id", gameId).maybeSingle(),
+          supabase
+            .from("scores")
+            .select("score")
+            .eq("user_id", effectiveUserId)
+            .eq("game_id", gameId)
+            .order("achieved_at", { ascending: false })
+            .limit(100),
+        ]);
+
+        if (cancelled) return;
+
+        const isLowerBetter = gameRes.data?.is_lower_better ?? false;
+
+        /* ── ¿Nuevo récord? + Highscore anterior ── */
+        const userScores = (userScoresRes.data || []).map((s) => s.score);
+        const sorted = [...userScores].sort((a, b) =>
+          isLowerBetter ? a - b : b - a
+        );
+
+        let prevHighscore = null;
+        let isRecord = false;
+
+        if (sorted.length <= 1) {
+          // Primera o única partida → siempre es récord
+          isRecord = true;
+        } else if (numericScore === sorted[0]) {
+          // El score actual es el mejor
+          prevHighscore = sorted[1];
+          isRecord = isLowerBetter
+            ? sorted[1] > numericScore
+            : sorted[1] < numericScore;
+        } else {
+          // No es el mejor → no es récord
+          prevHighscore = sorted[0];
+          isRecord = false;
+        }
+
+        /* ── Posición global — Standard Competition Ranking (1,1,3) ── */
+        /* Leemos directamente de highscores (1 fila por user+game, ya dedup) */
+        const { data: allHighscores } = await supabase
+          .from("highscores")
+          .select("score")
+          .eq("game_id", gameId);
+
+        if (cancelled) return;
+
+        // Mejor score del usuario entre sus scores ya cargados
+        const myHighscore = sorted[0] ?? numericScore;
+
+        // Contar cuántos usuarios tienen un score ESTRICTAMENTE mejor
+        let betterCount = 0;
+        for (const row of allHighscores || []) {
+          if (isLowerBetter ? row.score < myHighscore : row.score > myHighscore) {
+            betterCount++;
+          }
+        }
+        const globalPos = betterCount + 1;
+
+        setResultData({
+          isNewRecord: isRecord,
+          globalPosition: globalPos > 0 ? `#${globalPos}` : null,
+          prevHighscore,
+        });
+      } catch (err) {
+        console.error("GameOverPanel record fetch error:", err);
+      } finally {
+        if (!cancelled) setIsProcessing(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── Fetch Top 5 (lazy, al abrir el bottom sheet) ── */
+  const fetchTop5 = useCallback(async () => {
+    if (!gameId) return;
+    setTop5Loading(true);
+    try {
+      const result = await getTop5(gameId);
+      if (result.success && result.data) {
+        setTop5Data(formatRanking(result.data));
+      }
+    } catch (err) {
+      console.error("Top 5 fetch error:", err);
+    } finally {
+      setTop5Loading(false);
+    }
+  }, [gameId]);
+
+  /* Ranking a mostrar: datos reales (lazy), luego prop fallback */
+  const displayRanking =
+    top5Data.length > 0 ? top5Data : propRanking.length > 0 ? propRanking : [];
+  const rankingLoading = top5Loading || (propIsLoading && top5Data.length === 0);
+
+  /* ── Bloquear scroll del feed mientras el Top 5 está abierto ── */
+  useEffect(() => {
+    if (showLeaderboard) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [showLeaderboard]);
+
+  /* ── Ease personalizado tipo "snappy" ── */
+  const snappy = [0.16, 1, 0.3, 1];
 
   return (
     <>
-    <PublicProfileModal
-      isOpen={!!profileUserId}
-      onClose={() => setProfileUserId(null)}
-      userId={profileUserId}
-    />
-    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center pt-20 pb-32 px-4 pointer-events-none">
-      {/* ── Modal card: flex-col estricto para blindar layout ── */}
-      <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl px-5 py-4 flex flex-col items-center gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] w-full max-w-xs border border-white/10 pointer-events-auto overflow-hidden max-h-full">
+      {/* Portal al body para que el perfil siempre quede por encima del bottom sheet */}
+      {createPortal(
+        <PublicProfileModal
+          isOpen={!!profileUserId}
+          onClose={() => setProfileUserId(null)}
+          userId={profileUserId}
+        />,
+        document.body
+      )}
 
-        {/* ── Header zone (shrink-0: nunca se comprime) ── */}
-        <div className="shrink-0 flex flex-col items-center gap-1.5 w-full">
-          {/* Título */}
-          <h2 className="text-base font-extrabold text-white/90 tracking-wide uppercase">
-            {title}
-          </h2>
-
-          {/* Puntuación */}
+      {/* ═══════════════════════════════════════════
+          OVERLAY PRINCIPAL  — bg + blur sobre el juego
+          ═══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="absolute inset-0 z-20 bg-black/60 backdrop-blur-md"
+      >
+        {/* Contenedor con safe zones arriba/abajo + scroll de salvavidas */}
+        <div className="w-full h-full pt-25 pb-20 flex flex-col items-center overflow-y-auto scrollbar-hide">
+          {/* Wrapper centrado — my-auto centra solo si cabe, nunca pisa el pt */}
           <div
-            className="text-4xl font-black text-transparent bg-clip-text bg-linear-to-b from-white via-white to-white/50 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="w-full max-w-75 mx-auto flex flex-col items-center px-4 my-auto shrink-0"
+            style={{ gap: "clamp(0.75rem, 2vh, 1.25rem)" }}
           >
-            {score}
-          </div>
-
-          {subtitle && (
-            <p className="text-white/40 text-xs -mt-0.5">{subtitle}</p>
-          )}
-
-          {/* Mensaje de puntuación */}
-          {scoreMessage && (
-            <p className="text-[11px] text-center text-amber-300/80 font-medium -mt-0.5">
-              {scoreMessage}
+          {/* ════════════════════════════════════
+              TERCIO SUPERIOR — Puntuación
+              ════════════════════════════════════ */}
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15, ease: snappy }}
+            className="flex flex-col items-center gap-1"
+          >
+            {/* Etiqueta superior */}
+            <p className="w-full text-center text-white/80 text-2xl font-bold uppercase tracking-[0.5em] pl-[0.5em] mb-1">
+              {title}
             </p>
-          )}
 
-          {/* XP ganada */}
-          <XpDisplay xpGained={xpGained} />
-        </div>
-
-        {/* ── Ranking zone (altura fija: 5 filas siempre) ── */}
-        <div className="shrink-0 w-full rounded-xl bg-black/30 border border-white/6 overflow-hidden">
-          {/* Header */}
-          <div className="grid grid-cols-[1.2rem_1.5rem_1fr_3rem] gap-x-1.5 items-center px-2.5 py-0.5 text-[9px] font-bold text-white/25 uppercase tracking-wider border-b border-white/6">
-            <span>#</span>
-            <span></span>
-            <span>{t("gameover.user")}</span>
-            <span className="text-right">{t("gameover.points")}</span>
-          </div>
-
-          {/* Rows container — min-h fija para 5 filas (5 × 24px + 4 borders = 124px) */}
-          <div className="min-h-[124px]">
-            {isLoading ? (
-              /* ── Skeleton Loader: 5 filas falsas con animate-pulse ── */
-              SKELETON_ROWS.map((i) => <SkeletonRow key={i} index={i} />)
-            ) : (
-              /* ── Filas reales ── */
-              displayRanking.map((r) => {
-                const isMe = currentUser?.id && r.userId === currentUser.id;
-                return (
-                  <div
-                    key={r.pos}
-                    onClick={() => r.userId && setProfileUserId(r.userId)}
-                    className={`grid grid-cols-[1.2rem_1.5rem_1fr_3rem] gap-x-1.5 items-center px-2.5 py-0.5 text-xs border-b border-white/4 last:border-0 transition-colors ${
-                      isMe ? "bg-white/8 rounded-lg" : ""
-                    }${r.userId ? " cursor-pointer hover:bg-white/5 active:bg-white/10" : ""}`}
-                  >
-                    <span className={`font-bold tabular-nums ${isMe ? "text-emerald-400" : "text-white/40"}`}>{r.pos}</span>
-                    <Avatar equippedAvatarId={r.equippedAvatarId} size="sm" className="w-5! h-5!" />
-                    <span className={`font-medium truncate ${isMe ? "text-white" : "text-white/60"}`}>{r.user}</span>
-                    <span className={`font-bold text-right tabular-nums ${isMe ? "text-emerald-400" : "text-white/50"}`}>{r.score}</span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* ── Footer zone (shrink-0: botones anclados) ── */}
-        <div className="shrink-0 flex flex-col gap-1.5 w-full">
-          {/* Jugar de nuevo */}
-          {onReplay && (
-            <button
-              onClick={onReplay}
-              className="mt-1 w-full px-4 py-2 md:py-3 bg-slate-800/60 backdrop-blur-md hover:bg-slate-700/60 active:scale-95 text-white/90 font-bold rounded-xl text-sm md:text-base transition-all border border-white/10 shadow-lg flex items-center justify-center gap-2"
+            {/* Score GIGANTE — auto-fit JS para que siempre quepa en 1 línea */}
+            <div
+              ref={scoreRef}
+              className="w-full font-black text-white leading-none tabular-nums whitespace-nowrap tracking-tighter text-center"
+              style={{
+                fontSize: "clamp(4rem, 12vh, 7rem)", /* fallback inicial, JS lo sobreescribe */
+                textShadow:
+                  "0 0 20px rgba(255,255,255,0.5), 0 0 60px rgba(255,255,255,0.2), 0 0 100px rgba(255,255,255,0.1)",
+                fontFeatureSettings: "'tnum'",
+              }}
             >
-              <RefreshCw className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
-              {t("gameover.replay")}
-            </button>
-          )}
+              <AnimatedScore target={numericScore} suffix={scoreSuffix} />
+            </div>
 
-          {/* Siguiente juego */}
-          <button
-            onClick={onNext}
-            className="w-full px-4 py-2 md:py-3 bg-slate-800/60 backdrop-blur-md hover:bg-slate-700/60 active:scale-95 text-white/90 font-bold rounded-xl text-sm md:text-base transition-all border border-white/10 shadow-lg flex items-center justify-center gap-2"
+            {subtitle && (
+              <p className="text-white/80 text-base mt-1.5">{subtitle}</p>
+            )}
+
+            {/* ════ Barra de XP Dual (nivel actual → siguiente) ════ */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.4 }}
+              className="flex flex-col items-center gap-1.5 mt-3 w-full max-w-50"
+            >
+              <span
+                className="text-base font-bold text-cyan-400"
+                style={{ textShadow: "0 0 8px rgba(6,182,212,0.5)" }}
+              >
+                +{xpValue} XP
+              </span>
+              <div className="w-full flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-white/50 whitespace-nowrap">
+                  {t('gameover.level')} {levelInfo.level}
+                </span>
+                <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden flex">
+                  {/* XP que ya tenía */}
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${levelInfo.basePercent}%` }}
+                    transition={{ delay: 1.0, duration: 0.6, ease: "easeOut" }}
+                    className="h-full bg-cyan-600"
+                  />
+                  {/* XP ganada en esta partida */}
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${levelInfo.gainedPercent}%` }}
+                    transition={{ delay: 1.5, duration: 0.7, ease: "easeOut" }}
+                    className="h-full bg-cyan-400 animate-pulse"
+                  />
+                </div>
+                <span className="text-[11px] font-semibold text-white/50 whitespace-nowrap">
+                  {t('gameover.level')} {levelInfo.nextLevel}
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* ════════════════════════════════════
+              TERCIO MEDIO — Ranking y mejor puntuación
+              ════════════════════════════════════ */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.6 }}
+            className="flex flex-col items-center gap-3"
           >
-            {t("gameover.next")}
-            <ChevronDown className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
-          </button>
+            {/* ════ Ranking y mejor puntuación ════ */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.25 }}
+              className="flex flex-col items-center gap-1.5 text-base text-white/70 mt-2"
+            >
+              {isProcessing ? (
+                <span className="text-white/40 animate-pulse">{t('gameover.processing')}</span>
+              ) : (
+                <>
+                  {resultData.globalPosition && (
+                    <span>
+                      {t('gameover.global_pos')}:{" "}
+                      <span className="text-cyan-400 font-bold">{resultData.globalPosition}</span>
+                    </span>
+                  )}
+                  {isNewRecord ? (
+                    <span
+                      className="text-yellow-400 font-bold drop-shadow-[0_0_8px_rgba(250,204,21,0.8)] animate-pulse"
+                    >
+                      🏆 {t('gameover.new_record')}
+                    </span>
+                  ) : resultData.prevHighscore != null ? (
+                    <span className="text-white/50">
+                      {t('gameover.best_score')}:{" "}
+                      <span className="text-white/80 font-semibold">{displayScoreForGame(resultData.prevHighscore, gameId)}</span>
+                    </span>
+                  ) : (
+                    <span className="text-white/40">{t('gameover.first_game')}</span>
+                  )}
+                </>
+              )}
+            </motion.div>
+
+
+          </motion.div>
+
+          {/* ════════════════════════════════════
+              TERCIO INFERIOR — Zona de acción
+              ════════════════════════════════════ */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.35, ease: snappy }}
+            className="flex flex-col items-center gap-3 w-full"
+          >
+            {/* Botón principal: JUGAR DE NUEVO (píldora verde neón) */}
+            {onReplay && (
+              <button
+                onClick={onReplay}
+                className="w-full py-4 rounded-full font-black text-xl tracking-wide text-white
+                           bg-emerald-500 hover:bg-emerald-400
+                           active:scale-95 transition-all duration-150
+                           shadow-[0_0_24px_rgba(16,185,129,0.45),0_0_60px_rgba(16,185,129,0.15)]
+                           flex items-center justify-center gap-2.5 cursor-pointer"
+              >
+                <RefreshCw className="w-5 h-5" strokeWidth={2.5} />
+                {t('gameover.replay').toUpperCase()}
+              </button>
+            )}
+
+            {/* VER TOP 5 — Ghost Button */}
+            <button
+              onClick={() => {
+                setShowLeaderboard(true);
+                if (top5Data.length === 0) fetchTop5();
+              }}
+              className="px-6 py-2 mt-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10
+                         active:scale-95 transition-all text-sm font-bold tracking-wider text-white cursor-pointer"
+            >
+              {t('gameover.view_top5')}
+            </button>
+
+          </motion.div>
+          </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════
+          BOTTOM SHEET — Leaderboard Top 5
+          Portal al body para escapar del stacking context
+          ═══════════════════════════════════════════ */}
+      {createPortal(
+        <AnimatePresence>
+          {showLeaderboard && (
+            <>
+              {/* Backdrop — clic para cerrar, bloquea scroll */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-200 bg-black/50 touch-none"
+                onClick={() => setShowLeaderboard(false)}
+                onTouchMove={(e) => e.stopPropagation()}
+                onWheel={(e) => e.stopPropagation()}
+              />
+
+              {/* Sheet — 75% inferior, glassmorphism, full width */}
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.6 }}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100 || info.velocity.y > 300) {
+                    setShowLeaderboard(false);
+                  }
+                }}
+                className="fixed bottom-0 inset-x-0 z-201 h-[75vh] rounded-t-3xl flex flex-col overflow-hidden
+                           bg-black/80 backdrop-blur-xl border-t border-white/15 touch-none"
+            >
+              {/* Handle pill — zona de arrastre */}
+              <div className="flex justify-center pt-3 pb-1 shrink-0 cursor-grab active:cursor-grabbing">
+                <div className="w-10 h-1 rounded-full bg-white/20" />
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-3 shrink-0">
+                <h3 className="text-white font-extrabold text-xl tracking-tight">
+                  {t('gameover.top5')}
+                </h3>
+                <button
+                  onClick={() => setShowLeaderboard(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full
+                             bg-white/10 hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
+                >
+                  <X className="w-4 h-4 text-white/60" />
+                </button>
+              </div>
+
+              {/* Divider */}
+              <div className="mx-6 h-px bg-white/8 shrink-0" />
+
+              {/* Lista de jugadores */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
+                {rankingLoading
+                  ? /* ── Skeleton Loader ── */
+                    Array.from({ length: 5 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 px-3 py-3.5 animate-pulse"
+                      >
+                        <div className="w-7 h-5 bg-white/8 rounded" />
+                        <div className="w-9 h-9 bg-white/8 rounded-full" />
+                        <div
+                          className="flex-1 h-4 bg-white/8 rounded"
+                          style={{ width: `${55 + i * 8}%` }}
+                        />
+                        <div className="w-12 h-4 bg-white/8 rounded" />
+                      </div>
+                    ))
+                  : /* ── Filas reales ── */
+                    displayRanking.map((r, i) => {
+                      const isMe =
+                        currentUser?.id && r.userId === currentUser.id;
+                      const medals = [
+                        "text-yellow-400",
+                        "text-gray-300",
+                        "text-amber-600",
+                      ];
+
+                      return (
+                        <motion.div
+                          key={r.pos}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.07, duration: 0.25 }}
+                          onClick={() =>
+                            r.userId && setProfileUserId(r.userId)
+                          }
+                          className={`flex items-center gap-4 px-4 py-4 rounded-2xl mb-1.5 transition-colors ${
+                            isMe
+                              ? "bg-emerald-500/10 border border-emerald-400/20"
+                              : "border border-transparent [@media(hover:hover)]:hover:bg-white/5"
+                          }${
+                            r.userId
+                              ? " cursor-pointer active:bg-white/10"
+                              : ""
+                          }`}
+                        >
+                          {/* Posición */}
+                          <span
+                            className={`text-xl font-black w-8 text-center tabular-nums ${
+                              i < 3 ? medals[i] : "text-white/25"
+                            }`}
+                          >
+                            {r.pos}
+                          </span>
+
+                          {/* Avatar */}
+                          <Avatar
+                            equippedAvatarId={r.equippedAvatarId}
+                            size="sm"
+                            className="w-10! h-10!"
+                          />
+
+                          {/* Nombre */}
+                          <span
+                            className={`flex-1 font-semibold text-lg truncate ${
+                              isMe ? "text-white" : "text-white/55"
+                            }`}
+                          >
+                            {r.user}
+                            {isMe && (
+                              <span className="ml-1.5 text-[10px] text-emerald-400 font-bold uppercase">
+                                ({t('gameover.you')})
+                              </span>
+                            )}
+                          </span>
+
+                          {/* Puntuación */}
+                          <span
+                            className={`font-bold tabular-nums text-lg ${
+                              isMe ? "text-emerald-400" : "text-white/35"
+                            }`}
+                          >
+                            {displayScoreForGame(r.score, gameId)}
+                          </span>
+                        </motion.div>
+                      );
+                    })}
+              </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 };

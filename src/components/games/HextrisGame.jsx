@@ -575,7 +575,7 @@ const HextrisGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) 
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.HextrisGame);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.HextrisGame);
 
   // Enviar puntuación al terminar
   useEffect(() => {
@@ -719,6 +719,7 @@ const HextrisGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }) 
           ranking={ranking}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
 
           isLoading={isRankingLoading}
         />

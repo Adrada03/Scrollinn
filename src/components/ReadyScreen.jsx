@@ -142,7 +142,7 @@ const ReadyScreen = ({
         {/* ── Instrucciones ── */}
         {instruction && (
           <motion.p
-            className="text-white/60 text-sm md:text-base text-center leading-relaxed mb-6 max-w-70"
+            className="text-white/70 text-lg md:text-xl text-center leading-relaxed mb-6 max-w-70"
             style={{ textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -154,7 +154,7 @@ const ReadyScreen = ({
 
         {/* ── "Toca para empezar" — Texto parpadeante ── */}
         <motion.p
-          className="text-white/80 text-sm md:text-base font-semibold tracking-widest uppercase"
+          className="text-white/90 text-base md:text-lg font-semibold tracking-widest uppercase"
           style={{ textShadow: "0 0 20px rgba(255,255,255,0.3)" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}

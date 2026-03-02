@@ -2,22 +2,20 @@
  * profileService.js — Consultas para el Perfil Público de un jugador
  *
  * Exporta:
- *  - getPublicProfile(userId) → { user, topGames }
+ *  - getPublicProfile(userId) → { user, topGames, careerStats }
  *
- * Lógica del "Top 3 Juegos Destacados":
- *   1. Para cada juego, obtiene el mejor score (récord) del usuario.
- *   2. Calcula la posición global de ese récord entre todos los usuarios
- *      (cuántos usuarios tienen un récord mejor → rank = count + 1).
- *   3. Ordena por mejor posición (rank más bajo) y devuelve los 3 mejores.
+ * Usa el RPC `get_user_profile_stats` que lee directamente de la tabla
+ * optimizada `highscores`, devolviendo top1Count, top5Count y bestPositions
+ * ya calculados en el servidor.
  */
 
 import { supabase } from "../supabaseClient";
 
 /**
- * Obtiene los datos públicos de un usuario y sus 3 juegos más destacados.
+ * Obtiene los datos públicos de un usuario y sus mejores posiciones.
  *
  * @param {string} userId — UUID del usuario
- * @returns {Promise<{ user: object|null, topGames: Array }>}
+ * @returns {Promise<{ user: object|null, topGames: Array, careerStats: { totalTop1: number, totalTop5: number } }>}
  */
 export async function getPublicProfile(userId) {
   if (!userId) return { user: null, topGames: [], careerStats: { totalTop1: 0, totalTop5: 0 } };
@@ -41,107 +39,32 @@ export async function getPublicProfile(userId) {
     equipped_avatar_id: userData.equipped_avatar_id ?? "none",
   };
 
-  // ── 2. Obtener todos los scores del usuario ───────────────────────────────
-  const { data: userScores, error: scoresError } = await supabase
-    .from("scores")
-    .select("game_id, score")
-    .eq("user_id", userId);
-
-  if (scoresError || !userScores || userScores.length === 0) {
-    return { user, topGames: [], careerStats: { totalTop1: 0, totalTop5: 0 } };
-  }
-
-  // ── 3. Obtener la dirección de cada juego (is_lower_better) ───────────────
-  const gameIds = [...new Set(userScores.map((s) => s.game_id))];
-
-  const { data: gamesInfo, error: gamesError } = await supabase
-    .from("games")
-    .select("id, name, is_lower_better")
-    .in("id", gameIds);
-
-  if (gamesError || !gamesInfo) {
-    return { user, topGames: [], careerStats: { totalTop1: 0, totalTop5: 0 } };
-  }
-
-  const gamesMap = {};
-  for (const g of gamesInfo) {
-    gamesMap[g.id] = { name: g.name, isLowerBetter: !!g.is_lower_better };
-  }
-
-  // ── 4. Calcular el récord del usuario por juego ───────────────────────────
-  const bestByGame = {};
-  for (const s of userScores) {
-    const info = gamesMap[s.game_id];
-    if (!info) continue;
-
-    const current = bestByGame[s.game_id];
-    if (current === undefined) {
-      bestByGame[s.game_id] = s.score;
-    } else if (info.isLowerBetter) {
-      if (s.score < current) bestByGame[s.game_id] = s.score;
-    } else {
-      if (s.score > current) bestByGame[s.game_id] = s.score;
-    }
-  }
-
-  // ── 5. Para cada juego, calcular la posición global ───────────────────────
-  //    rank = (# de usuarios distintos con un récord estrictamente mejor) + 1
-  const rankPromises = Object.entries(bestByGame).map(
-    async ([gameId, bestScore]) => {
-      const info = gamesMap[gameId];
-      if (!info) return null;
-
-      // Traer todos los scores de ese juego para calcular el rank
-      // (solo necesitamos user_id y score para deduplicar)
-      const { data: allScores, error: allError } = await supabase
-        .from("scores")
-        .select("user_id, score")
-        .eq("game_id", gameId);
-
-      if (allError || !allScores) return null;
-
-      // Mejor score por usuario
-      const bestPerUser = {};
-      for (const s of allScores) {
-        const curr = bestPerUser[s.user_id];
-        if (curr === undefined) {
-          bestPerUser[s.user_id] = s.score;
-        } else if (info.isLowerBetter) {
-          if (s.score < curr) bestPerUser[s.user_id] = s.score;
-        } else {
-          if (s.score > curr) bestPerUser[s.user_id] = s.score;
-        }
-      }
-
-      // Contar cuántos usuarios tienen un récord estrictamente mejor
-      let betterCount = 0;
-      for (const [uid, uScore] of Object.entries(bestPerUser)) {
-        if (uid === userId) continue;
-        if (info.isLowerBetter) {
-          if (uScore < bestScore) betterCount++;
-        } else {
-          if (uScore > bestScore) betterCount++;
-        }
-      }
-
-      return {
-        gameId,
-        gameName: info.name,
-        rank: betterCount + 1,
-        score: bestScore,
-      };
-    }
+  // ── 2. Stats vía RPC (lee de highscores, ya calculado en el servidor) ─────
+  const { data: stats, error: statsError } = await supabase.rpc(
+    "get_user_profile_stats",
+    { p_user_id: userId }
   );
 
-  const results = (await Promise.all(rankPromises)).filter(Boolean);
+  if (statsError || !stats) {
+    console.warn("getPublicProfile: RPC error", statsError?.message);
+    return { user, topGames: [], careerStats: { totalTop1: 0, totalTop5: 0 } };
+  }
 
-  // ── 6. Ordenar por mejor posición y devolver top 3 ────────────────────────
-  results.sort((a, b) => a.rank - b.rank);
-  const topGames = results.slice(0, 3);
+  // ── 3. Mapear bestPositions al formato que esperan los componentes ────────
+  //    Cogemos las 5 mejores posiciones del jugador (ya vienen ordenadas)
+  const topGames = (stats.bestPositions ?? [])
+    .slice(0, 5)
+    .map((bp) => ({
+      gameId: bp.game_id,
+      gameName: bp.game_name,
+      rank: bp.position,
+      score: bp.score,
+    }));
 
-  // ── 7. Career highlights: contar Top 1 y Top 5 en todos los juegos ────────
-  const totalTop1 = results.filter((r) => r.rank === 1).length;
-  const totalTop5 = results.filter((r) => r.rank <= 5).length;
+  const careerStats = {
+    totalTop1: stats.top1Count ?? 0,
+    totalTop5: stats.top5Count ?? 0,
+  };
 
-  return { user, topGames, careerStats: { totalTop1, totalTop5 } };
+  return { user, topGames, careerStats };
 }

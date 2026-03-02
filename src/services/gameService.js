@@ -228,10 +228,10 @@ export async function submitScore(userId, gameId, score, xpGained = 0) {
     if (gameError) throw gameError;
     if (!game) return { success: false, data: null, message: t('svc.game_not_found') };
 
-    // 2. Insertar la puntuación siempre (con la XP ganada)
+    // 2. Insertar la puntuación siempre
     const { error: insertError } = await supabase
       .from('scores')
-      .insert([{ user_id: userId, game_id: gameId, score, xp_gained: xpGained }]);
+      .insert([{ user_id: userId, game_id: gameId, score }]);
     if (insertError) throw insertError;
 
     // 3. Sumar +1 a total_plays

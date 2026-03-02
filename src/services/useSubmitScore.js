@@ -72,7 +72,7 @@ export function useSubmitScore(userId, gameId) {
     [userId, gameId]
   );
 
-  return { submit, loading, error, lastResult, xpGained };
+  return { submit, loading, error, lastResult, xpGained, gameId };
 }
 
 // Diccionario de gameId por componente (deben coincidir con games.id en la BD)

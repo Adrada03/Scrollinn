@@ -59,7 +59,11 @@ function getRankCardStyle(rank) {
     borderColor: "rgba(255,255,255,0.06)",
   };
 }
-
+/* ── Perfect Circle: la BD guarda score×10 → mostrar /10 con “%” ── */
+function displayScoreForGame(raw, gId) {
+  if (gId === "perfect-circle") return `${(raw / 10).toFixed(1)}%`;
+  return typeof raw === "number" ? raw.toLocaleString() : String(raw);
+}
 // ─── Componente ──────────────────────────────────────────────────────────────
 
 const PublicProfileModal = ({ isOpen, onClose, userId }) => {
@@ -115,7 +119,7 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[80]"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-300"
           />
 
           {/* Modal */}
@@ -125,10 +129,10 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 30 }}
             transition={{ type: "spring", damping: 28, stiffness: 350 }}
-            className="fixed inset-0 z-[81] flex items-center justify-center p-4 pointer-events-none"
+            className="fixed inset-0 z-301 flex items-center justify-center p-4 pointer-events-none"
           >
             <div
-              className="relative w-full max-w-md pointer-events-auto rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-md max-h-[calc(100dvh-2rem)] pointer-events-auto rounded-3xl shadow-2xl overflow-y-auto overflow-x-hidden"
               style={{
                 background: "linear-gradient(180deg, #0c1222 0%, #070d1a 50%, #0a0f1e 100%)",
                 border: "1px solid rgba(148,163,184,0.08)",
@@ -188,7 +192,7 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                   CONTENIDO PRINCIPAL
                  ═══════════════════════════════════════════════════════════════ */}
               {!loading && user && (
-                <div className="relative px-6 pt-7 pb-6 flex flex-col gap-4">
+                <div className="relative px-5 pt-6 pb-5 flex flex-col gap-3">
 
                   {/* ── HERO: Avatar + Username + Badge (horizontal) ── */}
                   <div className="flex items-center gap-4">
@@ -295,28 +299,28 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                   />
 
                   {/* ── CAREER + FEATURED GAMES (side by side) ── */}
-                  <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0 w-full">
+                  <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0 w-full">
 
                     {/* Left column: Career highlights */}
-                    <div className="flex flex-col gap-2">
-                      <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/20 mb-0.5">
+                    <div className="flex flex-col gap-1.5">
+                      <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20 mb-0.5">
                         {t("profile.career")}
                       </h3>
                       {/* Top 1 */}
                       <div
-                        className="relative overflow-hidden flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                        className="relative overflow-hidden flex items-center gap-2 px-2.5 py-2 rounded-xl"
                         style={{
                           background: "linear-gradient(145deg, rgba(251,191,36,0.06) 0%, rgba(251,191,36,0.01) 100%)",
                           border: "1px solid rgba(251,191,36,0.12)",
                         }}
                       >
-                        <span className="text-lg leading-none">🏆</span>
+                        <span className="text-base leading-none">🏆</span>
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/25">
+                          <span className="text-[9px] font-semibold uppercase tracking-wider text-white/25">
                             {t("profile.total_top1")}
                           </span>
                           <span
-                            className="text-xl font-black leading-tight tabular-nums"
+                            className="text-lg font-black leading-tight tabular-nums"
                             style={{
                               color: careerStats.totalTop1 > 0 ? "#fbbf24" : "rgba(255,255,255,0.15)",
                               fontFeatureSettings: "'tnum'",
@@ -329,19 +333,19 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                       </div>
                       {/* Top 5 */}
                       <div
-                        className="relative overflow-hidden flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                        className="relative overflow-hidden flex items-center gap-2 px-2.5 py-2 rounded-xl"
                         style={{
                           background: "linear-gradient(145deg, rgba(34,211,238,0.05) 0%, rgba(34,211,238,0.01) 100%)",
                           border: "1px solid rgba(34,211,238,0.10)",
                         }}
                       >
-                        <span className="text-lg leading-none">🏅</span>
+                        <span className="text-base leading-none">🏅</span>
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-white/25">
+                          <span className="text-[9px] font-semibold uppercase tracking-wider text-white/25">
                             {t("profile.total_top5")}
                           </span>
                           <span
-                            className="text-xl font-black leading-tight tabular-nums"
+                            className="text-lg font-black leading-tight tabular-nums"
                             style={{
                               color: careerStats.totalTop5 > 0 ? "#22d3ee" : "rgba(255,255,255,0.15)",
                               fontFeatureSettings: "'tnum'",
@@ -355,8 +359,8 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                     </div>
 
                     {/* Right column: Featured games */}
-                    <div className="flex flex-col gap-2">
-                      <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/20 mb-0.5">
+                    <div className="flex flex-col gap-1.5">
+                      <h3 className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20 mb-0.5">
                         {t("profile.featured_games")}
                       </h3>
 
@@ -365,20 +369,20 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                           {t("profile.no_data")}
                         </p>
                       ) : (
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1">
                           {topGames.map((g) => {
                             const cardStyle = getRankCardStyle(g.rank);
                             return (
                               <div
                                 key={g.gameId}
-                                className="relative overflow-hidden flex items-center justify-between px-3 py-2.5 rounded-lg"
+                                className="relative overflow-hidden flex items-center justify-between px-2.5 py-1.5 rounded-lg"
                                 style={{
                                   background: cardStyle.background,
                                   border: `1px solid ${cardStyle.borderColor}`,
                                 }}
                               >
                                 <div className="flex flex-col min-w-0">
-                                  <span className="text-[13px] font-bold text-white/75 truncate">
+                                  <span className="text-[11px] font-bold text-white/75 truncate">
                                     <span className={`font-black ${getRankAccent(g.rank)}`}>Top {g.rank}</span>
                                     {" "}
                                     <span className="text-white/30">{t("profile.in_game")}</span>
@@ -387,25 +391,16 @@ const PublicProfileModal = ({ isOpen, onClose, userId }) => {
                                   </span>
                                 </div>
                                 <span
-                                  className="text-[13px] font-bold text-white/40 ml-2 shrink-0 tabular-nums"
+                                  className="text-[11px] font-bold text-white/40 ml-2 shrink-0 tabular-nums"
                                   style={{ fontFeatureSettings: "'tnum'" }}
                                 >
-                                  {g.score.toLocaleString()}
+                                  {displayScoreForGame(g.score, g.gameId)}
                                 </span>
                               </div>
                             );
                           })}
 
-                          {topGames.length < 3 &&
-                            Array.from({ length: 3 - topGames.length }).map((_, i) => (
-                              <div
-                                key={`empty-${i}`}
-                                className="flex items-center justify-center px-3 py-2.5 rounded-lg border border-dashed"
-                                style={{ borderColor: "rgba(255,255,255,0.04)" }}
-                              >
-                                <span className="text-[10px] text-white/8">—</span>
-                              </div>
-                            ))}
+
                         </div>
                       )}
                     </div>

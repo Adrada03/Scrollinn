@@ -1038,7 +1038,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
   /* ══════════════════════════════
      SCORE SUBMISSION
      ══════════════════════════════ */
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.CrossroadDartGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.CrossroadDartGame);
 
   useEffect(() => {
     if (phase === "ended" && !scoreSubmitted.current) {
@@ -1129,6 +1129,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
                 ranking={ranking}
                 scoreMessage={scoreMessage}
                 xpGained={xpGained}
+                gameId={gameId}
 
                 isLoading={isRankingLoading}
               />

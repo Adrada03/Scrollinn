@@ -100,7 +100,7 @@ const MemorySequenceGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [roundFlash, setRoundFlash] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.MemorySequenceGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.MemorySequenceGame);
 
   /* ── Start game when isActive flips ── */
   const startGame = useCallback(() => {
@@ -310,6 +310,7 @@ const MemorySequenceGame = ({ isActive, onNextGame, onReplay, userId }) => {
           ranking={ranking}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
           isLoading={isRankingLoading}
         />
       )}

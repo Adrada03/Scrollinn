@@ -23,6 +23,12 @@ import Avatar from "./Avatar";
 
 // ─── Helpers visuales (mismos que PublicProfileModal) ─────────────────────────
 
+/* Perfect Circle: la BD guarda score×10 → mostrar /10 con "%" */
+function displayScoreForGame(raw, gId) {
+  if (gId === "perfect-circle") return `${(raw / 10).toFixed(1)}%`;
+  return typeof raw === "number" ? raw.toLocaleString() : String(raw);
+}
+
 function getRankAccent(rank) {
   if (rank === 1) return "text-amber-400";
   if (rank === 2) return "text-slate-300";
@@ -441,22 +447,12 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess, currentUser, onOpenAvatarMo
                                         className="text-[13px] font-bold text-white/40 ml-2 shrink-0 tabular-nums"
                                         style={{ fontFeatureSettings: "'tnum'" }}
                                       >
-                                        {g.score.toLocaleString()}
+                                        {displayScoreForGame(g.score, g.gameId)}
                                       </span>
                                     </div>
                                   );
                                 })}
 
-                                {topGames.length < 3 &&
-                                  Array.from({ length: 3 - topGames.length }).map((_, i) => (
-                                    <div
-                                      key={`empty-${i}`}
-                                      className="flex items-center justify-center px-3 py-2 rounded-lg border border-dashed"
-                                      style={{ borderColor: "rgba(255,255,255,0.04)" }}
-                                    >
-                                      <span className="text-[10px] text-white/8">—</span>
-                                    </div>
-                                  ))}
                               </div>
                             )}
                           </div>

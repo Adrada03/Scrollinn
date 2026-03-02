@@ -172,3 +172,19 @@ CREATE TABLE user_challenge_progress (
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, challenge_id)
 );
+
+-- 1. Creamos la tabla highscores
+CREATE TABLE highscores (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    game_id VARCHAR NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+    score INT4 NOT NULL,
+    achieved_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    -- ESTO ES LA MAGIA: Obliga a que solo exista UNA fila por usuario y juego
+    UNIQUE(user_id, game_id)
+);
+
+-- 2. Creamos un índice compuesto para que el TOP 5 vuele a la velocidad de la luz
+-- Ordena por juego y luego por puntuación.
+CREATE INDEX idx_highscores_game_score ON highscores(game_id, score);

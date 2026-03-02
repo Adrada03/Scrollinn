@@ -107,7 +107,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted                    = useRef(false);
 
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.VectorLeapGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.VectorLeapGame);
 
   /* ─────────── Medir contenedor ─────────── */
   useEffect(() => {
@@ -636,6 +636,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
           ranking={ranking}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
 
           isLoading={isRankingLoading}
         />

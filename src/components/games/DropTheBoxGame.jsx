@@ -289,7 +289,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
   }, [gameState, craneY, cableExt]);
 
   /* ─────────── Enviar puntuación al terminar ─────────── */
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.DropTheBoxGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.DropTheBoxGame);
 
   useEffect(() => {
     if (gameState === STATES.ENDED && !scoreSubmitted.current) {
@@ -550,6 +550,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
           ranking={ranking}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
 
           isLoading={isRankingLoading}
         />

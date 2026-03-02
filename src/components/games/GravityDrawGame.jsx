@@ -140,7 +140,7 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted                          = useRef(false);
 
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.GravityDrawGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.GravityDrawGame);
 
   /* ── Datos mutables del juego ── */
   const g = useRef({
@@ -1182,6 +1182,7 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
           ranking={ranking}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
 
           isLoading={isRankingLoading}
         />

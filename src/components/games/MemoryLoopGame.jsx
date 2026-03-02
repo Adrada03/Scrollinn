@@ -77,7 +77,7 @@ const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.MemoryLoopGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.MemoryLoopGame);
 
   /* ── Refs para evitar stale closures ── */
   const sequenceRef    = useRef(sequence);
@@ -435,6 +435,7 @@ const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
             ranking={ranking}
             scoreMessage={scoreMessage}
             xpGained={xpGained}
+            gameId={gameId}
 
             isLoading={isRankingLoading}
           />

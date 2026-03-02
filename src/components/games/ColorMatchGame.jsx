@@ -150,7 +150,7 @@ const ColorMatchGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const isPlaying = gameState === GAME_STATES.PLAYING;
   const isEnded = gameState === GAME_STATES.ENDED;
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.ColorMatchGame);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.ColorMatchGame);
   // Enviar puntuación al terminar (solo si ganó: menos movimientos = mejor)
   useEffect(() => {
     if (isEnded && won && !scoreSubmitted.current) {
@@ -364,6 +364,7 @@ const ColorMatchGame = ({ isActive, onNextGame, onReplay, userId }) => {
           ranking={ranking}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
 
           isLoading={isRankingLoading}
         />

@@ -73,7 +73,7 @@ const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.MathRushGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.MathRushGame);
 
   // Refs
   const scoreRef      = useRef(0);
@@ -357,6 +357,7 @@ const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
             ranking={ranking}
             scoreMessage={scoreMessage}
             xpGained={xpGained}
+            gameId={gameId}
 
             isLoading={isRankingLoading}
           />

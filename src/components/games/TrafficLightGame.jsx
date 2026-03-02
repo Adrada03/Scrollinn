@@ -66,7 +66,7 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, loading: isSubmittingScore, xpGained } = useSubmitScore(userId, GAME_IDS.TrafficLightGame);
+  const { submit, loading: isSubmittingScore, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.TrafficLightGame);
 
   /* ── Arrancar: pasar a WAITING (pantalla roja) ── */
   const startGame = useCallback(() => {
@@ -275,6 +275,7 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
             ranking={ranking}
             scoreMessage={scoreMessage}
             xpGained={xpGained}
+            gameId={gameId}
 
             isLoading={isRankingLoading}
           />

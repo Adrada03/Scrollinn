@@ -52,7 +52,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.PerfectScaleGame);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.PerfectScaleGame);
 
   /* ── Generar objetivo aleatorio y preparar ── */
   const initRound = useCallback(() => {
@@ -309,6 +309,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
               ranking={ranking}
               scoreMessage={scoreMessage}
               xpGained={xpGained}
+              gameId={gameId}
 
               isLoading={isRankingLoading}
             />

@@ -97,7 +97,7 @@ const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted                    = useRef(false);
 
-  const { submit, loading: isSubmittingScore, xpGained } = useSubmitScore(userId, GAME_IDS.StickBridgeGame);
+  const { submit, loading: isSubmittingScore, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.StickBridgeGame);
 
   /* ─────────── Helpers ─────────── */
   const clearTimers = useCallback(() => {
@@ -540,6 +540,7 @@ const StickBridgeGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
           ranking={ranking}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
 
           isLoading={isRankingLoading}
         />

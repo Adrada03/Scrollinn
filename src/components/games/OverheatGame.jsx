@@ -78,7 +78,7 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, xpGained } = useSubmitScore(userId, GAME_IDS.OverheatGame);
+  const { submit, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.OverheatGame);
 
   // Refs for stable callbacks
   const scoreRef = useRef(0);
@@ -566,6 +566,7 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
             ranking={ranking}
             scoreMessage={scoreMessage}
             xpGained={xpGained}
+            gameId={gameId}
 
             isLoading={isRankingLoading}
           />

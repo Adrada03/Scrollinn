@@ -80,7 +80,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
 
-  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained } = useSubmitScore(userId, GAME_IDS.CircleNinjaGame);
+  const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.CircleNinjaGame);
   // Enviar puntuación al terminar
   useEffect(() => {
     if (gameState === GAME_STATES.ENDED && !scoreSubmitted.current) {
@@ -436,6 +436,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
           ranking={ranking}
           scoreMessage={scoreMessage}
           xpGained={xpGained}
+          gameId={gameId}
 
           isLoading={isRankingLoading}
         />

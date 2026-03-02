@@ -63,7 +63,7 @@ const SweetSpotGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  const { submit, loading: isSubmittingScore, xpGained } = useSubmitScore(userId, GAME_IDS.SweetSpotGame);
+  const { submit, loading: isSubmittingScore, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.SweetSpotGame);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -357,6 +357,7 @@ const SweetSpotGame = ({ isActive, onNextGame, onReplay, userId }) => {
             ranking={ranking}
             scoreMessage={scoreMessage}
             xpGained={xpGained}
+            gameId={gameId}
 
             isLoading={isRankingLoading}
           />
