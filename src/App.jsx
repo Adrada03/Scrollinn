@@ -1,24 +1,38 @@
-/**
- * App.jsx — Componente raíz de TikTok Games (Modo Inmersivo)
- *
- * Orquesta:
- *  1. GameFeed — Feed vertical infinito a pantalla completa
- *  2. GalleryModal — Modal de selección de juegos
- *  3. Estado de likes por juego (sincronizado con la BD)
- *  4. Pestañas: Todos | Favoritos | Tienda
- */
+// Utilidad: mapa de likes vacío para inicializar estado
+function emptyLikesMap() {
+  const map = {};
+  GAMES.forEach((game) => {
+    map[game.id] = { count: 0, liked: false };
+  });
+  return map;
+}
 
+// Lanza un juego directamente desde el perfil (bypass tabs)
+const playGameDirectly = (gameId) => {
+  const cleanId = typeof gameId === "string" ? gameId.trim().toLowerCase() : String(gameId);
+  const game = GAMES.find(g => g.id && g.id.toLowerCase() === cleanId);
+  if (game) {
+    window.scrollTo(0, 0);
+    // Cambia a pestaña jugar y selecciona el juego
+    window.dispatchEvent(new CustomEvent("playGameDirectly", { detail: game.id }));
+  } else {
+    // eslint-disable-next-line no-console
+    console.warn("[playGameDirectly] No se encontró el juego con id:", gameId);
+  }
+};
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 
 // Componentes
 import TopNav from "./components/TopNav";
+import BottomNavigationBar from "./components/BottomNavigationBar";
 import GameFeed from "./components/Feed";
 import GalleryModal from "./components/GalleryModal";
 import AuthModal from "./components/AuthModal";
 import AvatarSelectionModal from "./components/AvatarSelectionModal";
 import Shop from "./components/Shop";
+import UserProfile from "./components/UserProfile";
 
 // Datos
 import GAMES from "./data/games";
@@ -36,19 +50,21 @@ import { useAuth } from "./context/AuthContext";
  * Estado inicial vacío — se rellena al cargar desde la BD.
  * Mientras carga, cada juego muestra 0 likes.
  */
-const emptyLikesMap = () => {
-  const map = {};
-  GAMES.forEach((game) => {
-    map[game.id] = { count: 0, liked: false };
-  });
-  return map;
+
+
+
+/**
+ * Variants para fade entre pestañas principales.
+ */
+const fadeVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 /**
- * Variants para la transición horizontal entre pestañas.
+ * Variants para la transición horizontal entre sub-pestañas del feed.
  * `custom` = slideDirection (+1 derecha, -1 izquierda).
- * Usar variants + custom permite que AnimatePresence pase la dirección
- * correcta al componente que está saliendo (exit), evitando glitches.
  */
 const slideVariants = {
   enter: (dir) => ({ x: dir > 0 ? "40%" : "-40%", opacity: 0 }),
@@ -57,19 +73,51 @@ const slideVariants = {
 };
 
 /* ── Lock Screen Overlay ── */
-const LockScreen = ({ icon, title, description }) => (
-  <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-md">
-    <div className="flex flex-col items-center gap-5 max-w-xs text-center px-6">
-      {/* Candado / icono */}
-      <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-        {icon || (
-          <svg className="w-12 h-12 text-white/40" fill="currentColor" viewBox="0 0 20 20">
+const LockScreen = ({ title, description, benefits, ctaText, onAction }) => (
+  <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl px-8">
+    <div className="flex flex-col items-center gap-4 max-w-sm text-center w-full">
+      {/* Lock icon with glow */}
+      <div className="relative mb-1">
+        <div className="absolute -inset-4 bg-cyan-400/15 rounded-full blur-2xl" />
+        <div className="relative w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+          <svg className="w-10 h-10 text-cyan-400/60" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
           </svg>
-        )}
+        </div>
       </div>
+
       <h2 className="text-white text-xl font-bold leading-tight">{title}</h2>
-      <p className="text-white/60 text-sm leading-relaxed">{description}</p>
+      <p className="text-white/45 text-sm leading-relaxed">{description}</p>
+
+      {/* Benefits list */}
+      {benefits && benefits.length > 0 && (
+        <div className="w-full mt-2 space-y-2 text-left">
+          {benefits.map((b, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/4 border border-white/5"
+            >
+              <span className="text-lg shrink-0 leading-none">{b.icon}</span>
+              <span className="text-white/65 text-[13px] leading-snug">{b.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* CTA button */}
+      {onAction && ctaText && (
+        <button
+          onClick={onAction}
+          className="mt-4 w-full py-3.5 rounded-2xl font-bold text-sm tracking-wide text-white
+            cursor-pointer active:scale-95 transition-all duration-200"
+          style={{
+            background: "linear-gradient(135deg, #06b6d4, #3b82f6)",
+            boxShadow: "0 8px 32px rgba(6,182,212,0.25), 0 2px 8px rgba(6,182,212,0.15)",
+          }}
+        >
+          {ctaText}
+        </button>
+      )}
     </div>
   </div>
 );
@@ -85,14 +133,17 @@ function App() {
   const [gameEpoch, setGameEpoch] = useState(0);
   const likesLoaded = useRef(false);
 
-  // ── Tab system ──
+  // ── Bottom Navigation Tab system ──
+  const [mainTab, setMainTab] = useState("jugar"); // 'tienda' | 'jugar' | 'perfil'
+
+  // ── Feed sub-tabs (Todos | Favoritos) ──
   const [activeTab, setActiveTab] = useState("all");
   const [userLikesCount, setUserLikesCount] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0); // -1 izq, +1 der
   const prevTabRef = useRef("all");
 
-  /** Orden de las pestañas para calcular dirección del slide */
-  const TAB_ORDER = { all: 0, favorites: 1, shop: 2 };
+  /** Orden de las sub-pestañas del feed para calcular dirección del slide */
+  const TAB_ORDER = { all: 0, favorites: 1 };
 
   // ── Toast notification ──
   const [toast, setToast] = useState(null);
@@ -105,7 +156,7 @@ function App() {
   }, []);
 
   /**
-   * Callback para cambio de pestaña desde TopNav.
+   * Callback para cambio de sub-pestaña del feed desde TopNav.
    * Si recibe "__toast__", muestra un toast en vez de cambiar la tab.
    */
   const handleTabChange = useCallback((tab, message) => {
@@ -250,84 +301,187 @@ function App() {
     updateUser({ equipped_avatar_id: newAvatarId });
   }, [updateUser]);
 
+
+  /**
+   * Navega a un juego desde el perfil: igual que GalleryModal
+   * Busca el índice en la lista activa y llama a handleSelectGame(index)
+   */
+
+  // Estado temporal para lanzar juego tras cambio de pestaña
+  const [pendingProfileGameId, setPendingProfileGameId] = useState(null);
+
+  /**
+   * Navega a la pestaña central y abre el juego indicado desde el perfil.
+   * Garantiza que el cambio de pestaña y subpestaña se complete antes de lanzar el juego.
+   */
+  const launchGameFromProfile = useCallback((gameId) => {
+    setActiveTab("all");
+    setMainTab("jugar");
+    setPendingProfileGameId(gameId);
+  }, []);
+
+  // Efecto: cuando pendingProfileGameId está seteado y la pestaña es la correcta, lanza el juego
+  useEffect(() => {
+    if (pendingProfileGameId && mainTab === "jugar" && activeTab === "all") {
+      const list = GAMES;
+      const cleanId = typeof pendingProfileGameId === "string" ? pendingProfileGameId.trim().toLowerCase() : String(pendingProfileGameId);
+      const index = list.findIndex((g) => (g.id && g.id.toLowerCase()) === cleanId);
+      if (index !== -1) {
+        handleSelectGame(index);
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn("[Perfil] No se encontró el juego con id:", pendingProfileGameId, "en GAMES. IDs disponibles:", list.map(g => g.id));
+        alert("No se encontró el juego en la lista. ID: " + pendingProfileGameId);
+      }
+      setPendingProfileGameId(null);
+    }
+  }, [pendingProfileGameId, mainTab, activeTab, handleSelectGame]);
+
+  /** Benefits shown on lock screens for non-logged-in users */
+  const loginBenefits = [
+    { icon: "🏆", text: t("lock.benefit_scores") },
+    { icon: "🎨", text: t("lock.benefit_avatars") },
+    { icon: "📈", text: t("lock.benefit_levels") },
+    { icon: "❤️", text: t("lock.benefit_favorites") },
+  ];
+
   return (
     <>
-      {/* Barra de navegación superior fija */}
-      <TopNav
-        onOpenAuth={() => setIsAuthOpen(true)}
-        currentUser={currentUser}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        userLikesCount={userLikesCount}
-      />
+      {/* ── Layout principal — flex column para evitar solapamiento ── */}
+      <div className="h-dvh w-full flex flex-col bg-black overflow-hidden">
+        <main className="flex-1 relative overflow-hidden flex flex-col min-h-0">
+        <AnimatePresence mode="wait" initial={false}>
+          {/* ═══ PESTAÑA: TIENDA ═══ */}
+          {mainTab === "tienda" && (
+            <motion.div
+              key="tab-tienda"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              {/* Lock screen para Tienda sin login */}
+              {!currentUser && (
+                <LockScreen
+                  title={t("lock.shop_title")}
+                  description={t("lock.shop_desc")}
+                  benefits={loginBenefits}
+                  ctaText={t("lock.cta")}
+                  onAction={() => setIsAuthOpen(true)}
+                />
+              )}
 
-      {/* ── Contenido principal con transición horizontal ── */}
-      <AnimatePresence mode="wait" initial={false} custom={slideDirection}>
-        {activeTab !== "shop" ? (
-          <motion.div
-            key={activeTab}
-            custom={slideDirection}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
-            className="h-dvh w-full"
-          >
-            {/* Lock screen para Favoritos */}
-            {activeTab === "favorites" && !currentUser ? (
-              <LockScreen
-                title={t("lock.login_title")}
-                description={t("lock.login_desc")}
-              />
-            ) : activeTab === "favorites" && currentUser && (userLikesCount ?? 0) < 5 ? (
-              <LockScreen
-                title={t("lock.fav_title")}
-                description={t("lock.fav_desc", { count: userLikesCount ?? 0 })}
-              />
-            ) : (
-              /* Feed principal (visible en pestañas "Todos" y "Favoritos") */
-              <GameFeed
-                key={`feed-${activeTab}`}
-                games={activeTab === "favorites" ? favoriteGames : GAMES}
-                selectedGameId={selectedGameId}
-                gameEpoch={gameEpoch}
-                disabled={isGalleryOpen || isAuthOpen}
-                likesMap={likesMap}
-                onToggleLike={handleToggleLike}
-                onOpenGallery={() => setIsGalleryOpen(true)}
+              <Shop
+                coins={currentUser?.coins ?? 0}
                 currentUser={currentUser}
+                onCoinsChange={(newCoins) => updateUser({ coins: newCoins })}
               />
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="shop"
-            custom={slideDirection}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
-            className="h-dvh w-full"
-          >
-            {/* Lock screen para Tienda sin login */}
-            {!currentUser && (
-              <LockScreen
-                title={t("lock.shop_title")}
-                description={t("lock.shop_desc")}
-              />
-            )}
+            </motion.div>
+          )}
 
-            {/* Pantalla de la Tienda */}
-            <Shop
-              coins={currentUser?.coins ?? 0}
-              currentUser={currentUser}
-              onCoinsChange={(newCoins) => updateUser({ coins: newCoins })}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* ═══ PESTAÑA: JUGAR ═══ */}
+          {mainTab === "jugar" && (
+            <motion.div
+              key="tab-jugar"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              {/* Top Nav simplificada: solo Todos | Favoritos */}
+              <TopNav
+                onOpenAuth={() => setIsAuthOpen(true)}
+                currentUser={currentUser}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                userLikesCount={userLikesCount}
+              />
+
+              {/* Sub-contenido con transición slide */}
+              <AnimatePresence mode="wait" initial={false} custom={slideDirection}>
+                <motion.div
+                  key={activeTab}
+                  custom={slideDirection}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="h-full w-full"
+                >
+                  {/* Lock screen para Favoritos */}
+                  {activeTab === "favorites" && !currentUser ? (
+                    <LockScreen
+                      title={t("lock.login_title")}
+                      description={t("lock.login_desc")}
+                      benefits={loginBenefits}
+                      ctaText={t("lock.cta")}
+                      onAction={() => setIsAuthOpen(true)}
+                    />
+                  ) : activeTab === "favorites" && currentUser && (userLikesCount ?? 0) < 5 ? (
+                    <LockScreen
+                      title={t("lock.fav_title")}
+                      description={t("lock.fav_desc", { count: userLikesCount ?? 0 })}
+                    />
+                  ) : (
+                    <GameFeed
+                      key={`feed-${activeTab}`}
+                      games={activeTab === "favorites" ? favoriteGames : GAMES}
+                      selectedGameId={selectedGameId}
+                      gameEpoch={gameEpoch}
+                      disabled={isGalleryOpen || isAuthOpen}
+                      likesMap={likesMap}
+                      onToggleLike={handleToggleLike}
+                      onOpenGallery={() => setIsGalleryOpen(true)}
+                      currentUser={currentUser}
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          )}
+
+          {/* ═══ PESTAÑA: PERFIL ═══ */}
+          {mainTab === "perfil" && (
+            <motion.div
+              key="tab-perfil"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              {!currentUser ? (
+                <LockScreen
+                  title={t("profile.login_required_title")}
+                  description={t("profile.login_required_desc")}
+                  benefits={loginBenefits}
+                  ctaText={t("lock.cta")}
+                  onAction={() => setIsAuthOpen(true)}
+                />
+              ) : (
+                <UserProfile
+                  onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
+                  onPlayGame={playGameDirectly}
+                />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        </main>
+
+        {/* ── Bottom Navigation Bar ── */}
+        <BottomNavigationBar
+          activeTab={mainTab}
+          onTabChange={setMainTab}
+          currentUser={currentUser}
+        />
+      </div>
 
       {/* Modal de galería (sobre todo) */}
       <GalleryModal
@@ -352,12 +506,12 @@ function App() {
         onClose={() => setIsAvatarModalOpen(false)}
         currentUser={currentUser}
         onAvatarChange={handleAvatarChange}
+        onGoToShop={() => setMainTab("tienda")}
       />
 
       {/* ── Toast elegante ── */}
       {toast && (
-        <div className="fixed left-1/2 -translate-x-1/2 z-100 animate-fade-in-up pointer-events-none"
-             style={{ bottom: 'calc(5rem + var(--sab))' }}>
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-28 z-99 animate-fade-in-up pointer-events-none">
           <div className="bg-black/80 backdrop-blur-md border border-white/15 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-2xl max-w-xs text-center">
             {toast}
           </div>

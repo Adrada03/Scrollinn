@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { submitScore, getTop5, incrementPlays } from '../services/gameService';
 import { evaluateAndSaveChallenges } from '../services/challengeService';
 import { calculateGameXP } from '../data/pointsToXpPerGame';
+import { useAuth } from '../context/AuthContext';
 import { t } from '../i18n';
 
 /**
@@ -25,6 +26,7 @@ function formatRanking(rawScores) {
  * @returns {Object} { submit, loading, error, lastResult, xpGained }
  */
 export function useSubmitScore(userId, gameId) {
+  const { updateUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastResult, setLastResult] = useState(null);
@@ -44,6 +46,11 @@ export function useSubmitScore(userId, gameId) {
           result = await submitScore(userId, gameId, score, xp);
           setLastResult(result);
           setXpGained(xp);
+
+          // Sync XP locally so profile reflects it immediately
+          if (xp > 0) {
+            updateUser((prev) => ({ ...prev, xp: (prev.xp || 0) + xp }));
+          }
         } else if (gameId) {
           // Usuario no registrado: incrementar plays, mostrar ranking y avisar
           await incrementPlays(gameId);

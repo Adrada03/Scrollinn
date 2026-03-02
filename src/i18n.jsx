@@ -348,10 +348,15 @@ const translations = {
 
     // ── Avatar System ────────────────────────────
     "avatar.select_title":    "Seleccionar Avatar",
+    "avatar.collection_title": "Tu Colección",
     "avatar.default":         "Por defecto",
     "avatar.save":            "Guardar",
     "avatar.saving":          "Guardando...",
     "avatar.edit":            "Cambiar avatar",
+    "avatar.equipped":        "Equipado",
+    "avatar.equip":           "Equipar Avatar",
+    "avatar.go_to_shop":      "Ir a la Tienda",
+    "avatar.tap_to_inspect":  "Toca un avatar para ver sus detalles",
     "avatar.no_avatars":      "Aún no tienes avatares. \u00a1Sigue jugando para desbloquearlos!",
     "avatar.details":         "Detalles",
     "avatar.back":            "Volver",
@@ -369,12 +374,36 @@ const translations = {
     "tab.shop":             "Tienda",
     "tab.fav_locked":       "¡Dale like a 5 juegos para desbloquear tu lista de favoritos! (Llevas {{count}}/5)",
     "tab.login_required":   "Inicia sesión para acceder",
-    "lock.login_title":     "Regístrate para acceder",
-    "lock.login_desc":      "Inicia sesión o crea una cuenta para desbloquear esta sección.",
+    "lock.login_title":     "Accede a tus Favoritos",
+    "lock.login_desc":      "Guarda tus juegos preferidos y accede a ellos rápidamente.",
     "lock.fav_title":       "Favoritos bloqueados",
     "lock.fav_desc":        "Necesitas tener 5 juegos en favoritos para acceder a este modo. (Llevas {{count}}/5)",
-    "lock.shop_title":      "Tienda bloqueada",
-    "lock.shop_desc":       "Regístrate o inicia sesión para poder usar la tienda.",
+    "lock.shop_title":      "Desbloquea la Tienda",
+    "lock.shop_desc":       "Accede a avatares exclusivos, personaliza tu perfil y gasta tus monedas.",
+    "lock.benefit_scores":  "Guarda puntuaciones y compite en rankings globales",
+    "lock.benefit_avatars": "Desbloquea avatares exclusivos en la tienda",
+    "lock.benefit_levels":  "Gana XP, sube de nivel y presume de tu rango",
+    "lock.benefit_favorites": "Crea tu lista personalizada de favoritos",
+    "lock.cta":             "Crear cuenta · Iniciar sesión",
+
+    // ── Bottom Navigation ────────────────────────
+    "nav.play":             "Jugar",
+    "nav.profile":          "Perfíl",
+
+    // ── Settings Modal ──────────────────────────
+    "settings.title":       "Ajustes",
+    "settings.language":    "Idioma",
+    "settings.sound":       "Sonido",
+
+    // ── User Profile ────────────────────────────
+    "profile.level":                "Nivel",
+    "profile.my_rankings":          "Mis Rankings",
+    "profile.no_rankings":          "Juega partidas para ver tus mejores posiciones aquí",
+    "profile.search_placeholder":    "Buscar juego...",
+    "profile.no_results":            "Sin resultados",
+    "profile.best_score_label":     "Récord",
+    "profile.login_required_title": "Tu Perfil te espera",
+    "profile.login_required_desc":  "Registra tus logros, sube de nivel y presume de tus rankings.",
 
     // ── Shop ─────────────────────────────────────
     "shop.title":           "Tienda",
@@ -740,10 +769,15 @@ const translations = {
 
     // ── Avatar System ────────────────────────────
     "avatar.select_title":    "Select Avatar",
+    "avatar.collection_title": "Your Collection",
     "avatar.default":         "Default",
     "avatar.save":            "Save",
     "avatar.saving":          "Saving...",
     "avatar.edit":            "Change avatar",
+    "avatar.equipped":        "Equipped",
+    "avatar.equip":           "Equip Avatar",
+    "avatar.go_to_shop":      "Go to Shop",
+    "avatar.tap_to_inspect":  "Tap an avatar to see its details",
     "avatar.no_avatars":      "You don't have any avatars yet. Keep playing to unlock them!",
     "avatar.details":         "Details",
     "avatar.back":            "Back",
@@ -761,12 +795,36 @@ const translations = {
     "tab.shop":             "Shop",
     "tab.fav_locked":       "Like 5 games to unlock your favorites list! ({{count}}/5 so far)",
     "tab.login_required":   "Log in to access",
-    "lock.login_title":     "Sign up to access",
-    "lock.login_desc":      "Log in or create an account to unlock this section.",
+    "lock.login_title":     "Access your Favorites",
+    "lock.login_desc":      "Save your favorite games and access them quickly.",
     "lock.fav_title":       "Favorites locked",
     "lock.fav_desc":        "You need to have 5 games in your favorites to access this mode. ({{count}}/5 so far)",
-    "lock.shop_title":      "Shop locked",
-    "lock.shop_desc":       "Sign up or log in to use the shop.",
+    "lock.shop_title":      "Unlock the Shop",
+    "lock.shop_desc":       "Access exclusive avatars, customize your profile and spend your coins.",
+    "lock.benefit_scores":  "Save scores & compete in global rankings",
+    "lock.benefit_avatars": "Unlock exclusive avatars in the shop",
+    "lock.benefit_levels":  "Earn XP, level up & show off your rank",
+    "lock.benefit_favorites": "Build your personalized favorites list",
+    "lock.cta":             "Create account · Log in",
+
+    // ── Bottom Navigation ────────────────────────
+    "nav.play":             "Play",
+    "nav.profile":          "Profile",
+
+    // ── Settings Modal ──────────────────────────
+    "settings.title":       "Settings",
+    "settings.language":    "Language",
+    "settings.sound":       "Sound",
+
+    // ── User Profile ────────────────────────────
+    "profile.level":                "Level",
+    "profile.my_rankings":          "My Rankings",
+    "profile.no_rankings":          "Play games to see your best positions here",
+    "profile.search_placeholder":    "Search game...",
+    "profile.no_results":            "No results",
+    "profile.best_score_label":     "Best",
+    "profile.login_required_title": "Your Profile awaits",
+    "profile.login_required_desc":  "Track your achievements, level up and show off your rankings.",
 
     // ── Shop ─────────────────────────────────────
     "shop.title":           "Shop",

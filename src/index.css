@@ -48,6 +48,26 @@ body {
   display: none;              /* Chrome / Safari / Opera */
 }
 
+/* ─── Custom scrollbar — futurista tenue ─── */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34,211,238,0.18) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(34,211,238,0.25), rgba(34,211,238,0.08));
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(34,211,238,0.4), rgba(34,211,238,0.15));
+}
+
 /* Tipografía para la cuenta atrás */
 @keyframes countdown-pulse {
   0% { transform: scale(0.5); opacity: 0; }

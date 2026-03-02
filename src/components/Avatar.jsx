@@ -16,6 +16,7 @@ const SIZES = {
   sm: { container: "w-8 h-8", icon: "w-4 h-4", ring: 1 },
   md: { container: "w-13 h-13", icon: "w-7 h-7", ring: 2 },
   lg: { container: "w-[88px] h-[88px]", icon: "w-10 h-10", ring: 2 },
+  xl: { container: "w-28 h-28", icon: "w-12 h-12", ring: 3 },
 };
 
 const Avatar = ({ equippedAvatarId, size = "md", tierHex = null, className = "" }) => {

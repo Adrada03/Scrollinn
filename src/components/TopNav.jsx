@@ -1,42 +1,18 @@
 /**
- * TopNav.jsx — Barra de navegación superior fija estilo TikTok
+ * TopNav.jsx — Barra de navegación superior fija (simplificada)
  *
- * Layout:
- *  - Izquierda: Avatar / Login
- *  - Centro: Pestañas "Todos" | "Favoritos" | "Tienda"
- *  - Derecha: Selector de idioma
- *
- * La pestaña "Favoritos" se desbloquea al tener ≥ 5 likes.
+ * Layout: Solo selector central "Todos" | "Favoritos"
+ * Los controles de Perfil, Idioma y Tienda se han movido
+ * a la Bottom Navigation Bar y al panel de Ajustes.
  */
 
 import { useLanguage } from "../i18n";
-import { getLevelFromXP, getTierTextColor, getTierHexColor } from "../utils/leveling";
-import Avatar from "./Avatar";
 import { useSoundEffect } from "../hooks/useSoundEffect";
 
-/* ── Banderas inline (SVG) ── */
-const FlagGB = () => (
-  <svg viewBox="0 0 60 40" className="w-full h-full rounded-sm" aria-hidden="true">
-    <rect fill="#012169" width="60" height="40"/>
-    <path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" strokeWidth="8"/>
-    <path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" strokeWidth="4"/>
-    <path d="M30,0 V40 M0,20 H60" stroke="#fff" strokeWidth="12"/>
-    <path d="M30,0 V40 M0,20 H60" stroke="#C8102E" strokeWidth="6"/>
-  </svg>
-);
-
-const FlagES = () => (
-  <svg viewBox="0 0 60 40" className="w-full h-full rounded-sm" aria-hidden="true">
-    <rect fill="#AA151B" width="60" height="40"/>
-    <rect fill="#F1BF00" y="10" width="60" height="20"/>
-  </svg>
-);
-
-/* ── Tabs config ── */
+/* ── Tabs config (solo Todos y Favoritos) ── */
 const TABS = [
   { key: "all",       i18nKey: "tab.all" },
   { key: "favorites", i18nKey: "tab.favorites" },
-  { key: "shop",      i18nKey: "tab.shop" },
 ];
 
 const TopNav = ({
@@ -46,13 +22,8 @@ const TopNav = ({
   onTabChange,
   userLikesCount,
 }) => {
-  const { lang, toggleLang, t } = useLanguage();
+  const { t } = useLanguage();
   const { playNavigation } = useSoundEffect();
-
-  const xp = currentUser?.xp ?? 0;
-  const level = currentUser ? getLevelFromXP(xp) : null;
-  const tierText = level ? getTierTextColor(level) : '';
-  const tierHex = level ? getTierHexColor(level) : null;
 
   /**
    * Maneja clic en una pestaña.
@@ -67,50 +38,16 @@ const TopNav = ({
     <nav className="fixed top-0 left-0 w-full z-70 pointer-events-none"
          style={{ paddingTop: 'var(--sat)', paddingLeft: 'var(--sal)', paddingRight: 'var(--sar)' }}>
       {/* Degradado para legibilidad */}
-      <div className="absolute inset-0 h-24 bg-linear-to-b from-black/60 to-transparent" />
+      <div className="absolute inset-0 h-20 bg-linear-to-b from-black/60 to-transparent" />
 
-      {/* Contenido */}
-      <div className="relative flex items-center justify-between px-4 pt-3 pb-2">
-        {/* ── Izquierda: Login / Perfil ── */}
-        <button
-          onClick={onOpenAuth}
-          className="pointer-events-auto flex items-center gap-2 cursor-pointer group shrink-0"
-          aria-label={currentUser ? "Mi cuenta" : "Registrarse"}
-        >
-          <div className="relative">
-            <Avatar
-              equippedAvatarId={currentUser?.equipped_avatar_id}
-              size="md"
-              tierHex={currentUser ? tierHex : null}
-              className={!currentUser ? "bg-black/30 backdrop-blur-sm border-white/15 hover:bg-black/50" : ""}
-            />
-
-            {/* Badge de nivel */}
-            {currentUser && level != null && (
-              <div
-                className={`absolute -bottom-1 -right-1 translate-x-1/4 translate-y-1/4
-                  w-6 h-6 rounded-full bg-gray-900 border border-white/20
-                  flex items-center justify-center ${tierText}`}
-              >
-                <span className="text-[11px] font-bold leading-none">{level}</span>
-              </div>
-            )}
-          </div>
-
-          {currentUser && (
-            <span className="text-xs font-semibold text-emerald-300 drop-shadow-md hidden sm:inline">
-              {currentUser.username}
-            </span>
-          )}
-        </button>
-
-        {/* ── Centro: Pestañas TikTok ── */}
-        <div className="absolute left-1/2 -translate-x-1/2 pointer-events-auto flex items-center gap-6">
+      {/* Contenido: Solo pestañas centradas */}
+      <div className="relative flex items-center justify-center px-4 pt-3 pb-2">
+        {/* ── Centro: Pestañas Todos | Favoritos ── */}
+        <div className="pointer-events-auto flex items-center gap-6">
           {TABS.map(({ key, i18nKey }) => {
             const isActive = activeTab === key;
             const isLocked =
-              (key === "favorites" && (!currentUser || (userLikesCount ?? 0) < 5)) ||
-              (key === "shop" && !currentUser);
+              key === "favorites" && (!currentUser || (userLikesCount ?? 0) < 5);
 
             return (
               <button
@@ -145,15 +82,6 @@ const TopNav = ({
             );
           })}
         </div>
-
-        {/* ── Derecha: Idioma ── */}
-        <button
-          onClick={() => { playNavigation(); toggleLang(); }}
-          className="pointer-events-auto shrink-0 w-13 h-10 rounded-md overflow-hidden border border-white/20 shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-transform bg-black/30 backdrop-blur-sm flex items-center justify-center p-0.5"
-          aria-label={lang === "es" ? "Switch to English" : "Cambiar a español"}
-        >
-          {lang === "es" ? <FlagGB /> : <FlagES />}
-        </button>
       </div>
     </nav>
   );

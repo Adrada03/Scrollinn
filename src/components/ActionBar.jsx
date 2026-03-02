@@ -4,8 +4,9 @@
  * Columna vertical de iconos a la derecha:
  *  - Like (corazón) con contador
  *  - Retos Diarios
- *  - Volumen ON/OFF (neón)
  *  - Galería de juegos
+ *
+ * (El botón de Volumen se ha movido a Ajustes del Perfil)
  *
  * Todos los botones tienen fondo oscuro semi-opaco + borde
  * para garantizar contraste sobre cualquier fondo de juego.
@@ -13,7 +14,6 @@
 
 import { motion } from "framer-motion";
 import { useLanguage } from "../i18n";
-import { useSound } from "../context/SoundContext";
 import { useSoundEffect } from "../hooks/useSoundEffect";
 
 const btnBase =
@@ -22,7 +22,6 @@ const btnBase =
 
 const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenChallenges, challengeStatus = "pending" }) => {
   const { t } = useLanguage();
-  const { isMuted, toggleMute } = useSound();
   const { playNavigation } = useSoundEffect();
   return (
     <div className="flex flex-col items-center gap-6">
@@ -84,63 +83,7 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenChallenges, ch
         }`}>Retos</span>
       </button>
 
-      {/* === 3. Volumen ON/OFF (neón) === */}
-      <button
-        onClick={() => {
-          toggleMute();
-          // Si estamos activando el sonido, reproducir un pop de confirmación
-          if (isMuted) {
-            // Pequeño delay para que el estado cambie antes de reproducir
-            setTimeout(() => {
-              try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if (ctx.state === "suspended") ctx.resume();
-                const t0 = ctx.currentTime;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(1200, t0);
-                osc.frequency.exponentialRampToValueAtTime(800, t0 + 0.06);
-                gain.gain.setValueAtTime(0.18, t0);
-                gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(t0);
-                osc.stop(t0 + 0.1);
-              } catch {}
-            }, 50);
-          }
-        }}
-        className="flex flex-col items-center gap-1 group cursor-pointer"
-        aria-label={isMuted ? "Activar sonido" : "Silenciar"}
-      >
-        <div className={`${btnBase} relative transition-all duration-200 ${
-          !isMuted
-            ? "bg-violet-500/20! border-violet-500/30! shadow-[0_0_12px_rgba(139,92,246,0.25)]"
-            : ""
-        }`}>
-          {!isMuted ? (
-            /* Altavoz CON ondas (sonido encendido) — estilo neón */
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 md:w-7 md:h-7 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 010 12.728" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5z" />
-            </svg>
-          ) : (
-            /* Altavoz con X (sonido apagado) */
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 md:w-7 md:h-7 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M23 9l-6 6" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l6 6" />
-            </svg>
-          )}
-        </div>
-        <span className={`text-xs md:text-sm font-semibold drop-shadow ${
-          !isMuted ? "text-violet-400" : "text-white/50"
-        }`}>{!isMuted ? "Sound" : "Mute"}</span>
-      </button>
-
-      {/* === 4. Galería === */}
+      {/* === 3. Galería === */}
       <button
         onClick={onOpenGallery}
         className="flex flex-col items-center gap-1 group cursor-pointer"

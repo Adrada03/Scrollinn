@@ -131,7 +131,6 @@ function buildInitialPlaylist(games) {
 
 const RENDER_WINDOW = 1;       // ±1 slide monta componente real
 const EXTEND_THRESHOLD = 12;   // extiende cuando quedan menos de 12 slides
-const IDLE_TIMEOUT = 8000;     // ms para mostrar hint de scroll
 
 /* ================================================================
    GameFeed — Componente exterior
@@ -147,12 +146,34 @@ const GameFeed = ({
   onToggleLike,
   onOpenGallery,
   currentUser,
+  pendingGameIdToLaunch,
+  setPendingGameIdToLaunch,
+  handleSelectGame,
 }) => {
   /* ── Hook de scroll snap + IntersectionObserver ── */
   const { containerRef, activeIndex, scrollToSlide } = useActiveSlide(0);
   const scrollLockedRef = useRef(false);
   const [isChallengesOpen, setIsChallengesOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  // Efecto: Si hay pendingGameIdToLaunch y estamos en la pestaña correcta, lanzar el juego y limpiar el estado
+  useEffect(() => {
+    if (
+      pendingGameIdToLaunch &&
+      typeof handleSelectGame === "function" &&
+      Array.isArray(games) && games.length > 0
+    ) {
+      const cleanId = typeof pendingGameIdToLaunch === "string" ? pendingGameIdToLaunch.trim().toLowerCase() : String(pendingGameIdToLaunch);
+      const index = games.findIndex((g) => (g.id && g.id.toLowerCase()) === cleanId);
+      if (index !== -1) {
+        handleSelectGame(index);
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn("[Feed] No se encontró el juego con id:", pendingGameIdToLaunch, "en games:", games.map(g => g.id));
+      }
+      setPendingGameIdToLaunch(null);
+    }
+  }, [pendingGameIdToLaunch, games, handleSelectGame, setPendingGameIdToLaunch]);
 
   return (
     <ClearModeWrapper
@@ -217,7 +238,6 @@ const GameFeedContent = ({
   const [isReady, setIsReady] = useState(true);
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [replayKeys, setReplayKeys] = useState({});
-  const [showScrollHint, setShowScrollHint] = useState(true);
   const [isGameOver, setIsGameOver] = useState(false);
   const [challengeStatus, setChallengeStatus] = useState("pending");
 
@@ -255,7 +275,6 @@ const GameFeedContent = ({
 
   const disabledRef = useRef(disabled);
   const activeIndexRef = useRef(activeIndex);
-  const idleTimer = useRef(null);
   const pendingScrollRef = useRef(null);
 
   disabledRef.current = disabled;
@@ -506,40 +525,13 @@ const GameFeedContent = ({
   }, [scrollToSlide]);
 
   /* ==============================================================
-     Idle hint
-     ============================================================== */
-  const resetIdleTimer = useCallback(() => {
-    setShowScrollHint(false);
-    clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(
-      () => setShowScrollHint(true),
-      IDLE_TIMEOUT
-    );
-  }, []);
-
-  useEffect(() => {
-    idleTimer.current = setTimeout(
-      () => setShowScrollHint(true),
-      IDLE_TIMEOUT
-    );
-    const events = ["pointerdown", "keydown", "wheel", "touchstart"];
-    events.forEach((ev) =>
-      window.addEventListener(ev, resetIdleTimer, { passive: true })
-    );
-    return () => {
-      clearTimeout(idleTimer.current);
-      events.forEach((ev) => window.removeEventListener(ev, resetIdleTimer));
-    };
-  }, [resetIdleTimer]);
-
-  /* ==============================================================
      RENDER
      ============================================================== */
   return (
     <>
       <div
         ref={containerRef}
-        className="h-dvh w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide overscroll-none bg-black"
+        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide overscroll-none bg-black"
       >
         {playlist.map((item, index) => {
           const { game, uid } = item;
@@ -569,7 +561,7 @@ const GameFeedContent = ({
             <section
               key={uid}
               data-slide-index={index}
-              className="h-dvh w-full snap-start snap-always relative"
+              className="h-full w-full snap-start snap-always relative"
             >
               {/* ── Contenedor escalable: juego + UI se amplían juntos ── */}
               <motion.div
@@ -788,45 +780,6 @@ const GameFeedContent = ({
         })}
       </div>
 
-      {/* ── Scroll Hint ── */}
-      <AnimatePresence>
-        {showScrollHint && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.4 }}
-            className="fixed bottom-2 left-0 right-0 z-30 flex flex-col items-center pointer-events-none select-none"
-          >
-            <span
-              className="text-white/40 text-xs font-medium tracking-wide"
-              style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
-            >
-              {t("ui.swipe_hint")}
-            </span>
-            <motion.svg
-              animate={{ y: [0, 5, 0] }}
-              transition={{
-                duration: 1.4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5 text-white/30 mt-0.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19 9l-7 7-7-7"
-              />
-            </motion.svg>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 };

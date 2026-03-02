@@ -111,6 +111,49 @@ export async function getUserAvatars(userId) {
 }
 
 /**
+ * Obtiene TODOS los avatares del catálogo y marca cuáles posee el usuario.
+ * Ideal para el modal "Tu Colección" con avatares locked/unlocked.
+ *
+ * @param {string} userId - UUID del usuario
+ * @returns {Promise<{ success: boolean, data: Array|null, error?: string }>}
+ */
+export async function getAllAvatarsWithOwnership(userId) {
+  try {
+    if (!userId) return { success: false, data: null, error: 'No user ID' };
+
+    // 1. Todos los avatares del catálogo
+    const { data: allAvatars, error: avatarsErr } = await supabase
+      .from('avatars')
+      .select('id, name_es, name_en, description_es, description_en, tier, image_url, unlock_type, requirement, base_price');
+    if (avatarsErr) throw avatarsErr;
+
+    // 2. IDs que posee el usuario
+    const { data: userRows, error: uaErr } = await supabase
+      .from('user_avatars')
+      .select('avatar_id')
+      .eq('user_id', userId);
+    if (uaErr) throw uaErr;
+
+    const ownedIds = new Set((userRows || []).map(r => r.avatar_id));
+
+    // 3. Combinar: owned flag + orden (owned primero, luego locked)
+    const avatars = (allAvatars || [])
+      .map(a => ({ ...a, owned: ownedIds.has(a.id) }))
+      .sort((a, b) => {
+        if (a.owned !== b.owned) return a.owned ? -1 : 1;
+        // Dentro de cada grupo: por tier (legend > hacker > cyberpunk > rookie)
+        const tierOrder = { legend: 0, hacker: 1, cyberpunk: 2, rookie: 3 };
+        return (tierOrder[a.tier] ?? 4) - (tierOrder[b.tier] ?? 4);
+      });
+
+    return { success: true, data: avatars };
+  } catch (err) {
+    console.error('getAllAvatarsWithOwnership error:', err);
+    return { success: false, data: null, error: err.message };
+  }
+}
+
+/**
  * Actualiza el avatar equipado del usuario.
  *
  * @param {string} userId  - UUID del usuario

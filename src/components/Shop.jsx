@@ -491,7 +491,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
   }, [onCoinsChange]);
 
   return (
-    <div className="fixed inset-0 z-30 flex flex-col bg-slate-950/95 backdrop-blur-sm overflow-hidden">
+    <div className="h-full w-full flex flex-col bg-slate-950/95 backdrop-blur-sm overflow-hidden">
       {/* ── HUD de monedas (solo escritorio) ── */}
       <div className="hidden md:flex relative justify-end md:absolute md:top-20 md:right-4 md:z-40 md:p-0 pointer-events-auto">
         <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-yellow-500/30 rounded-full px-4 py-2 shadow-lg shadow-yellow-500/10">
@@ -503,7 +503,8 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
       </div>
 
       {/* ═════ MOBILE LAYOUT — Escala al viewport, sin scroll ═════ */}
-      <div className="md:hidden flex flex-col h-dvh w-full px-4 pt-16 pb-[2dvh] bg-[#0B0E17]">
+      <div className="md:hidden flex flex-col h-full w-full px-4 pt-4 pb-2 bg-[#0B0E17]"
+           style={{ paddingTop: 'calc(var(--sat) + 16px)' }}>
 
         {/* ── 1. FILA DE MONEDAS ── */}
         <div className="shrink-0 w-full flex justify-end mb-[1.5dvh]">
@@ -828,7 +829,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
       </div>
 
       {/* ═════ DESKTOP LAYOUT (scrollable) ═════ */}
-      <div className="hidden md:flex md:flex-col flex-1 overflow-y-auto pt-24 pb-10 px-4">
+      <div className="hidden md:flex md:flex-col flex-1 overflow-y-auto pt-4 pb-10 px-4">
         {/* Temporizador de rotación */}
         <div className="mb-5 shrink-0">
           <RotationTimer t={t} />
