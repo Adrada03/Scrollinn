@@ -58,7 +58,7 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenChallenges, ch
       <button
         onClick={onOpenChallenges}
         className="flex flex-col items-center gap-1 group cursor-pointer"
-        aria-label="Retos Diarios"
+        aria-label={t("gallery.challenges_aria")}
       >
         <div className={`${btnBase} relative ${
           challengeStatus === "allDone" ? "bg-emerald-500/20! border-emerald-500/30!" :
@@ -80,7 +80,7 @@ const ActionBar = ({ likes, isLiked, onLike, onOpenGallery, onOpenChallenges, ch
           challengeStatus === "allDone" ? "text-emerald-400" :
           challengeStatus === "claimable" ? "text-emerald-400" :
           challengeStatus === "pending" ? "text-red-400" : "text-white/80"
-        }`}>Retos</span>
+        }`}>{t("ui.challenges")}</span>
       </button>
 
       {/* === 3. Galería === */}

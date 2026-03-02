@@ -45,7 +45,7 @@ const GalleryModal = ({ isOpen, onClose, games, onSelectGame }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex flex-col justify-center items-center"
+            className="fixed inset-0 z-100 bg-black/60 backdrop-blur-md flex flex-col justify-center items-center"
             onClick={onClose}
           >
 
@@ -154,7 +154,7 @@ const GalleryModal = ({ isOpen, onClose, games, onSelectGame }) => {
                           <img
                             src={game.logo}
                             alt=""
-                            className="w-14 h-14 md:w-18 md:h-18 object-cover rounded-xl flex-shrink-0 mx-auto relative z-10 drop-shadow-lg group-hover:drop-shadow-[0_4px_12px_rgba(99,102,241,0.3)] transition-all duration-300"
+                            className="w-14 h-14 md:w-18 md:h-18 object-cover rounded-xl shrink-0 mx-auto relative z-10 drop-shadow-lg group-hover:drop-shadow-[0_4px_12px_rgba(99,102,241,0.3)] transition-all duration-300"
                             draggable={false}
                           />
                         ) : (
@@ -162,7 +162,7 @@ const GalleryModal = ({ isOpen, onClose, games, onSelectGame }) => {
                             {game.emoji}
                           </span>
                         )}
-                        <span className="text-[10px] sm:text-xs md:text-sm text-center font-medium leading-tight whitespace-normal break-words mt-2 relative z-10 text-white/90 group-hover:text-white transition-colors duration-300">
+                        <span className="text-[10px] sm:text-xs md:text-sm text-center font-medium leading-tight whitespace-normal wrap-break-word mt-2 relative z-10 text-white/90 group-hover:text-white transition-colors duration-300">
                           {game.title}
                         </span>
                       </motion.button>

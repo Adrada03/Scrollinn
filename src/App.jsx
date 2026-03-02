@@ -28,7 +28,7 @@ import { Analytics } from "@vercel/analytics/react";
 import TopNav from "./components/TopNav";
 import BottomNavigationBar from "./components/BottomNavigationBar";
 import GameFeed from "./components/Feed";
-import GalleryModal from "./components/GalleryModal";
+import GameSelectorSheet from "./components/GameSelectorSheet";
 import AuthModal from "./components/AuthModal";
 import AvatarSelectionModal from "./components/AvatarSelectionModal";
 import Shop from "./components/Shop";
@@ -126,7 +126,7 @@ function App() {
   const { currentUser, login, logout, updateUser } = useAuth();
   const { t } = useLanguage();
   const [selectedGameId, setSelectedGameId] = useState(null);
-  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isGameSelectorOpen, setIsGameSelectorOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [likesMap, setLikesMap] = useState(emptyLikesMap);
@@ -223,11 +223,11 @@ function App() {
     return GAMES.filter((g) => likesMap[g.id]?.liked);
   }, [activeTab, likesMap]);
 
-  // Escape cierra la galería
+  // Escape cierra modales abiertos
   const handleKeyDown = useCallback(
     (e) => {
-      if (e.key === "Escape" && isGalleryOpen) {
-        setIsGalleryOpen(false);
+      if (e.key === "Escape" && isGameSelectorOpen) {
+        setIsGameSelectorOpen(false);
       }
       if (e.key === "Escape" && isAuthOpen) {
         setIsAuthOpen(false);
@@ -236,7 +236,7 @@ function App() {
         setIsAvatarModalOpen(false);
       }
     },
-    [isGalleryOpen, isAuthOpen, isAvatarModalOpen]
+    [isGameSelectorOpen, isAuthOpen, isAvatarModalOpen]
   );
 
   useEffect(() => {
@@ -290,7 +290,7 @@ function App() {
     const list = activeTab === "favorites" ? favoriteGames : GAMES;
     setSelectedGameId(list[index].id);
     setGameEpoch((e) => e + 1);
-    setIsGalleryOpen(false);
+    setIsGameSelectorOpen(false);
   }, [activeTab, favoriteGames]);
 
   /**
@@ -349,6 +349,7 @@ function App() {
     <>
       {/* ── Layout principal — flex column para evitar solapamiento ── */}
       <div className="h-dvh w-full flex flex-col bg-black overflow-hidden">
+
         <main className="flex-1 relative overflow-hidden flex flex-col min-h-0">
         <AnimatePresence mode="wait" initial={false}>
           {/* ═══ PESTAÑA: TIENDA ═══ */}
@@ -399,6 +400,7 @@ function App() {
                 activeTab={activeTab}
                 onTabChange={handleTabChange}
                 userLikesCount={userLikesCount}
+                onSearchClick={() => setIsGameSelectorOpen(true)}
               />
 
               {/* Sub-contenido con transición slide */}
@@ -433,10 +435,10 @@ function App() {
                       games={activeTab === "favorites" ? favoriteGames : GAMES}
                       selectedGameId={selectedGameId}
                       gameEpoch={gameEpoch}
-                      disabled={isGalleryOpen || isAuthOpen}
+                      disabled={isGameSelectorOpen || isAuthOpen}
                       likesMap={likesMap}
                       onToggleLike={handleToggleLike}
-                      onOpenGallery={() => setIsGalleryOpen(true)}
+                      onOpenGallery={() => setIsGameSelectorOpen(true)}
                       currentUser={currentUser}
                     />
                   )}
@@ -483,12 +485,17 @@ function App() {
         />
       </div>
 
-      {/* Modal de galería (sobre todo) */}
-      <GalleryModal
-        isOpen={isGalleryOpen}
-        onClose={() => setIsGalleryOpen(false)}
+
+      {/* Nuevo Bottom Sheet de selección de juego */}
+      <GameSelectorSheet
+        isOpen={isGameSelectorOpen}
+        onClose={() => setIsGameSelectorOpen(false)}
         games={activeGames}
-        onSelectGame={handleSelectGame}
+        onSelectGame={(idx) => {
+          handleSelectGame(idx);
+          setIsGameSelectorOpen(false);
+        }}
+        selectedGameId={selectedGameId}
       />
 
       {/* Modal de autenticación */}

@@ -66,7 +66,10 @@ const translations = {
     // ── Gallery Modal ───────────────────────────
     "gallery.choose":      "Elige un juego",
     "gallery.search":      "Buscar juego...",
+    "gallery.search_game":  "Buscar juego",
     "gallery.noResults":   "No se encontraron juegos",
+    "gallery.playing":     "Jugando",
+    "gallery.challenges_aria": "Retos Diarios",
 
     // ── Game Over Panel ─────────────────────────
     "gameover.user":       "Usuario",
@@ -490,7 +493,10 @@ const translations = {
     // ── Gallery Modal ───────────────────────────
     "gallery.choose":      "Choose a game",
     "gallery.search":      "Search game...",
+    "gallery.search_game":  "Search game",
     "gallery.noResults":   "No games found",
+    "gallery.playing":     "Playing",
+    "gallery.challenges_aria": "Daily Challenges",
 
     // ── Game Over Panel ─────────────────────────
     "gameover.user":       "User",
