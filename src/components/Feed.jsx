@@ -600,24 +600,26 @@ const GameFeedContent = ({
                   )}
                 </div>
 
+                {/* ── Game title label (scrolls with the slide) ── */}
+                <div
+                  className="absolute top-0 left-0 right-0 z-[61] flex justify-center pointer-events-none"
+                  style={{ paddingTop: 'calc(3.75rem + var(--sat, 0px))' }}
+                >
+                  <span className="text-[10px] sm:text-xs font-bold tracking-widest text-cyan-400 uppercase drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] select-none">
+                    {game.title}
+                  </span>
+                </div>
+
                 {/* ── UI Overlay (DENTRO del contenedor escalable) ── */}
                 <AnimatePresence>
                   {isNearby && !isUiHidden && (
                     <motion.div
                       key="ui-overlay"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25 }}
                     >
-                      {/* ── Nombre del juego (arriba centrado, se scrollea con el slide) ── */}
-                      <div className="absolute top-0 left-0 right-0 z-[61] flex justify-center pointer-events-none"
-                           style={{ paddingTop: 'calc(2.75rem + var(--sat, 0px))' }}>
-                        <span className="text-[10px] sm:text-xs font-bold tracking-widest text-cyan-400 uppercase drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] select-none">
-                          {game.title}
-                        </span>
-                      </div>
-
                       <GameInterface
                         game={game}
                         gameId={`${uid}-${replayKey}`}

@@ -168,7 +168,7 @@ const GameOverPanel = ({
   const [resultData, setResultData] = useState({
     isNewRecord: false,
     globalPosition: null,
-    prevHighscore: null,
+    bestScore: null,
   });
 
   /* Barra de XP dual (nivel real) */
@@ -264,73 +264,65 @@ const GameOverPanel = ({
 
   /* ══════════════════════════════════════════════════════════════
      EFFECT B — Récord + Posición global (necesita userId + gameId)
+     Espera a que propIsLoading pase a false (submit completado y
+     trigger de highscores ejecutado) antes de consultar.
      ══════════════════════════════════════════════════════════════ */
   useEffect(() => {
     if (!effectiveUserId || !gameId) {
       setIsProcessing(false);
       return;
     }
+    // Mientras el juego aún está enviando la puntuación, no leer highscores
+    if (propIsLoading) return;
 
     let cancelled = false;
 
     (async () => {
       try {
-        /* ── Queries en paralelo ── */
-        const [gameRes, userScoresRes] = await Promise.all([
+        /* ── Queries en paralelo (todo desde highscores) ── */
+        const [gameRes, userHsRes, allHsRes] = await Promise.all([
           supabase.from("games").select("is_lower_better").eq("id", gameId).maybeSingle(),
           supabase
-            .from("scores")
+            .from("highscores")
             .select("score")
             .eq("user_id", effectiveUserId)
             .eq("game_id", gameId)
-            .order("achieved_at", { ascending: false })
-            .limit(100),
+            .maybeSingle(),
+          supabase
+            .from("highscores")
+            .select("score")
+            .eq("game_id", gameId),
         ]);
 
         if (cancelled) return;
 
         const isLowerBetter = gameRes.data?.is_lower_better ?? false;
+        const myHighscore = userHsRes.data?.score ?? null;
 
-        /* ── ¿Nuevo récord? + Highscore anterior ── */
-        const userScores = (userScoresRes.data || []).map((s) => s.score);
-        const sorted = [...userScores].sort((a, b) =>
-          isLowerBetter ? a - b : b - a
-        );
-
-        let prevHighscore = null;
+        /* ── ¿Nuevo récord? ── */
+        let bestScore = null;
         let isRecord = false;
 
-        if (sorted.length <= 1) {
-          // Primera o única partida → siempre es récord
+        if (myHighscore == null) {
+          // Sin entrada en highscores → primera partida
           isRecord = true;
-        } else if (numericScore === sorted[0]) {
-          // El score actual es el mejor
-          prevHighscore = sorted[1];
-          isRecord = isLowerBetter
-            ? sorted[1] > numericScore
-            : sorted[1] < numericScore;
+          bestScore = numericScore;
+        } else if (numericScore === myHighscore) {
+          // El score actual coincide con el highscore (trigger lo actualizó) → récord
+          isRecord = true;
+          bestScore = numericScore;
         } else {
-          // No es el mejor → no es récord
-          prevHighscore = sorted[0];
+          // El score actual no superó el highscore → no es récord
           isRecord = false;
+          bestScore = myHighscore;
         }
 
         /* ── Posición global — Standard Competition Ranking (1,1,3) ── */
-        /* Leemos directamente de highscores (1 fila por user+game, ya dedup) */
-        const { data: allHighscores } = await supabase
-          .from("highscores")
-          .select("score")
-          .eq("game_id", gameId);
+        const effectiveHS = myHighscore ?? numericScore;
 
-        if (cancelled) return;
-
-        // Mejor score del usuario entre sus scores ya cargados
-        const myHighscore = sorted[0] ?? numericScore;
-
-        // Contar cuántos usuarios tienen un score ESTRICTAMENTE mejor
         let betterCount = 0;
-        for (const row of allHighscores || []) {
-          if (isLowerBetter ? row.score < myHighscore : row.score > myHighscore) {
+        for (const row of allHsRes.data || []) {
+          if (isLowerBetter ? row.score < effectiveHS : row.score > effectiveHS) {
             betterCount++;
           }
         }
@@ -339,7 +331,7 @@ const GameOverPanel = ({
         setResultData({
           isNewRecord: isRecord,
           globalPosition: globalPos > 0 ? `#${globalPos}` : null,
-          prevHighscore,
+          bestScore,
         });
       } catch (err) {
         console.error("GameOverPanel record fetch error:", err);
@@ -349,7 +341,7 @@ const GameOverPanel = ({
     })();
 
     return () => { cancelled = true; };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [propIsLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Fetch Top 5 (lazy, al abrir el bottom sheet) ── */
   const fetchTop5 = useCallback(async () => {
@@ -511,18 +503,19 @@ const GameOverPanel = ({
                       <span className="text-cyan-400 font-bold">{resultData.globalPosition}</span>
                     </span>
                   )}
-                  {isNewRecord ? (
+                  {isNewRecord && (
                     <span
                       className="text-yellow-400 font-bold drop-shadow-[0_0_8px_rgba(250,204,21,0.8)] animate-pulse"
                     >
                       🏆 {t('gameover.new_record')}
                     </span>
-                  ) : resultData.prevHighscore != null ? (
+                  )}
+                  {resultData.bestScore != null ? (
                     <span className="text-white/50">
                       {t('gameover.best_score')}:{" "}
-                      <span className="text-white/80 font-semibold">{displayScoreForGame(resultData.prevHighscore, gameId)}</span>
+                      <span className="text-white/80 font-semibold">{displayScoreForGame(resultData.bestScore, gameId)}</span>
                     </span>
-                  ) : (
+                  ) : !isNewRecord && (
                     <span className="text-white/40">{t('gameover.first_game')}</span>
                   )}
                 </>

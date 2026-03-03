@@ -97,7 +97,8 @@ export async function toggleLike(userId, gameId) {
 }
 
 /**
- * Obtiene el Top 5 de puntuaciones (mejor score por usuario distinto, all-time).
+ * Obtiene el Top 5 de puntuaciones desde la tabla `highscores`
+ * (1 fila por usuario+juego, mantenida por trigger en BD).
  */
 export async function getTop5(gameId) {
   try {
@@ -109,33 +110,22 @@ export async function getTop5(gameId) {
     if (gameError) throw gameError;
     if (!game) return { success: false, data: null, message: t('svc.game_not_found') };
 
-    // Traer las mejores puntuaciones ordenadas (+ avatar del usuario)
+    // Leer directamente de highscores (ya deduplicado: 1 fila por user+game)
     let query = supabase
-      .from('scores')
-      .select('id, user_id, score, achieved_at, users(username, equipped_avatar_id)')
+      .from('highscores')
+      .select('user_id, score, achieved_at, users(username, equipped_avatar_id)')
       .eq('game_id', gameId);
 
     query = game.is_lower_better
       ? query.order('score', { ascending: true })
       : query.order('score', { ascending: false });
     query = query.order('achieved_at', { ascending: true });
-    query = query.limit(200);
+    query = query.limit(5);
 
-    const { data: scores, error: scoresError } = await query;
-    if (scoresError) throw scoresError;
+    const { data: rows, error: hsError } = await query;
+    if (hsError) throw hsError;
 
-    // Deduplicar: quedarse con la mejor puntuación de cada usuario
-    const seen = new Set();
-    const unique = [];
-    for (const s of scores) {
-      if (!seen.has(s.user_id)) {
-        seen.add(s.user_id);
-        unique.push(s);
-        if (unique.length >= 5) break;
-      }
-    }
-
-    return { success: true, data: unique, message: null };
+    return { success: true, data: rows || [], message: null };
   } catch (error) {
     return { success: false, data: null, message: error.message };
   }

@@ -12,16 +12,12 @@
  * izquierdo o derecho. El objetivo es esquivarlos.
  * Score = "MB" extraídos (sube automáticamente con el tiempo).
  *
- * Zonas visuales:
- *  - Sector 1 (0-199 MB): Cyan · velocidad 1.0x
- *  - Sector 2 (200-499 MB): Naranja neón · velocidad 1.3x
- *  - Sector 3 (500+ MB): Rojo sangre · velocidad 1.6x
+ * Zonas visuales (colores + dificultad continua):
+ *  - Sector 1 (0-199 MB): Cyan
+ *  - Sector 2 (200-499 MB): Naranja neón
+ *  - Sector 3 (500+ MB): Rojo sangre → ∞
  *
- * Props:
- *   isActive   – cuando pasa a true, arranca el juego
- *   onNextGame – callback para "siguiente juego"
- *   onReplay   – callback para reiniciar
- *   userId     – ID del usuario logueado
+ * Difficulty scales infinitely via continuous functions.
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -29,71 +25,106 @@ import GameOverPanel from "../GameOverPanel";
 import { useSubmitScore, GAME_IDS } from "../../services/useSubmitScore";
 import { useLanguage } from "../../i18n";
 
-/* ─────────── Constantes ─────────── */
-const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
+/* ═══════════════════ CONSTANTS ═══════════════════ */
+const STATES = {
+  IDLE: "idle",
+  PLAYING: "playing",
+  CRASHING: "crashing",
+  ENDED: "ended",
+};
 
-// Distancia horizontal del jugador/obstáculos al centro (px)
+// Layout
 const LANE_OFFSET = 40;
-
-// Player Y position (80% from top = 20% from bottom)
 const PLAYER_Y_RATIO = 0.80;
-
-// Obstacle dimensions
 const OBS_WIDTH = 48;
-const OBS_HEIGHT = 80;
-
-// Player dimensions
 const PLAYER_SIZE = 24;
 
-// Spawning
-const BASE_SPAWN_INTERVAL = 900;  // ms entre spawns base
-const MIN_SPAWN_INTERVAL = 280;   // ms mínimo en sector 3
+// Spawning (base / floor)
+const BASE_SPAWN_INTERVAL = 900; // ms
+const MIN_SPAWN_INTERVAL = 180;  // absolute floor
 
-// Fair spawning: minimum reaction buffer (seconds) the player gets
-// when obstacles switch lanes. At 512 px/s (zone 3), 220ms ≈ 13 frames.
-const REACTION_BUFFER = 0.22;
+// Fair spawning reaction buffers (seconds)
+const BASE_REACTION_BUFFER = 0.24;
+const MIN_REACTION_BUFFER = 0.13; // ~8 frames @ 60fps — absolute floor
 
-// Probability of lane change per zone (higher zone = more lane switches)
-const LANE_CHANGE_PROB = [0.35, 0.45, 0.55];
-
-// Speeds (px/s base)
-const BASE_SPEED = 320;
+// Speed (px/s base, before multiplier)
+const BASE_SPEED = 310;
 
 // Zone thresholds
 const ZONE_2_THRESHOLD = 200;
 const ZONE_3_THRESHOLD = 500;
 
-// Zone speed multipliers
-const ZONE_SPEEDS = [1.0, 1.3, 1.6];
+// Crash animation
+const CRASH_DELAY = 800; // ms before Game Over panel appears
 
-// Zone spawn intervals
-const ZONE_SPAWN_INTERVALS = [BASE_SPAWN_INTERVAL, 650, MIN_SPAWN_INTERVAL];
+// Trail
+const TRAIL_COUNT = 4;
 
-/* ─────────── Zone color configs ─────────── */
+/* ─── Continuous difficulty scaling (infinite) ─── */
+const getSpeedMult = (score) => {
+  // 1.0 → 1.15 (zone 1), → 1.6 (zone 2-3 boundary), → ∞ log growth
+  if (score < ZONE_2_THRESHOLD)
+    return 1.0 + 0.15 * (score / ZONE_2_THRESHOLD);
+  if (score < ZONE_3_THRESHOLD)
+    return 1.15 + 0.45 * ((score - ZONE_2_THRESHOLD) / (ZONE_3_THRESHOLD - ZONE_2_THRESHOLD));
+  // Beyond zone 3: logarithmic growth → never stalls, never plateaus
+  return 1.6 + 0.18 * Math.log2(1 + (score - ZONE_3_THRESHOLD) / 200);
+};
+
+const getSpawnInterval = (score) => {
+  // 900ms → 180ms via quadratic ease
+  const t = Math.min(score / 1200, 1);
+  return BASE_SPAWN_INTERVAL - (BASE_SPAWN_INTERVAL - MIN_SPAWN_INTERVAL) * (t * t);
+};
+
+const getReactionBuffer = (score) => {
+  // 0.24s → 0.13s linearly over 1500 score — never below 0.13s
+  const t = Math.min(score / 1500, 1);
+  return BASE_REACTION_BUFFER - (BASE_REACTION_BUFFER - MIN_REACTION_BUFFER) * t;
+};
+
+const getLaneChangeProb = (score) => {
+  // 0.30 → 0.72 — more zigzags as you progress
+  const t = Math.min(score / 800, 1);
+  return 0.30 + 0.42 * t;
+};
+
+/* ─── Zone color configs ─── */
 const ZONE_CONFIGS = [
   {
     // Sector 1: Cyan
-    playerClass: "bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.8)]",
+    playerClass: "bg-cyan-400",
+    playerGlow: "0 0 18px rgba(34,211,238,0.8), 0 0 40px rgba(34,211,238,0.3)",
     lineClass: "bg-cyan-900/50",
-    obsClass: "bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)]",
-    trailColor: "rgba(34,211,238,0.15)",
+    obsClass: "bg-blue-600",
+    obsGlow: "0 0 12px rgba(59,130,246,0.6), inset 0 0 6px rgba(147,197,253,0.3)",
+    trailColor: "rgba(34,211,238,0.35)",
     particleColor: "#22d3ee",
+    gridOpacity: 0.03,
   },
   {
     // Sector 2: Naranja neón
-    playerClass: "bg-orange-400 shadow-[0_0_20px_rgba(251,146,60,0.8)]",
+    playerClass: "bg-orange-400",
+    playerGlow: "0 0 18px rgba(251,146,60,0.8), 0 0 40px rgba(251,146,60,0.3)",
     lineClass: "bg-orange-900/50",
-    obsClass: "bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.5)]",
-    trailColor: "rgba(251,146,60,0.15)",
+    obsClass: "bg-orange-600",
+    obsGlow: "0 0 12px rgba(234,88,12,0.6), inset 0 0 6px rgba(253,186,116,0.3)",
+    trailColor: "rgba(251,146,60,0.35)",
     particleColor: "#fb923c",
+    gridOpacity: 0.05,
   },
   {
-    // Sector 3: Rojo sangre
-    playerClass: "bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.9)] animate-pulse",
+    // Sector 3: Rojo sangre — triple glow (22px + 50px + 80px)
+    playerClass: "bg-red-500",
+    playerGlow:
+      "0 0 22px rgba(239,68,68,0.9), 0 0 50px rgba(239,68,68,0.4), 0 0 80px rgba(239,68,68,0.15)",
     lineClass: "bg-red-900",
-    obsClass: "bg-red-600 shadow-[0_0_15px_red]",
-    trailColor: "rgba(239,68,68,0.15)",
+    obsClass: "bg-red-600",
+    obsGlow:
+      "0 0 15px rgba(239,68,68,0.7), 0 0 30px rgba(239,68,68,0.3), inset 0 0 8px rgba(252,165,165,0.3)",
+    trailColor: "rgba(239,68,68,0.4)",
     particleColor: "#ef4444",
+    gridOpacity: 0.06,
   },
 ];
 
@@ -101,42 +132,47 @@ const ZONE_CONFIGS = [
 const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
 
-  // Only these use useState (view-layer changes)
+  /* ── View-layer state (triggers re-renders) ── */
   const [gameState, setGameState] = useState(STATES.IDLE);
   const [currentZone, setCurrentZone] = useState(0);
-  const [flash, setFlash] = useState(false); // zone transition flash
+  const [flash, setFlash] = useState(false);
   const [ranking, setRanking] = useState([]);
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
   const scoreSubmitted = useRef(false);
 
-  // All mutable game state lives in refs (NO re-renders)
-  const playerLaneRef = useRef(-1);        // -1 = left, 1 = right
-  const obstaclesRef = useRef([]);          // { id, lane, y, height }
+  /* ── Mutable game state (NO re-renders) ── */
+  const playerLaneRef = useRef(-1);
+  const obstaclesRef = useRef([]);
   const scoreRef = useRef(0);
   const speedMultRef = useRef(1.0);
   const spawnTimerRef = useRef(0);
-  const spawnIntervalRef = useRef(BASE_SPAWN_INTERVAL);
   const zoneRef = useRef(0);
   const obstacleIdRef = useRef(0);
   const lastTimeRef = useRef(null);
   const rafRef = useRef(null);
   const gameStateRef = useRef(STATES.IDLE);
-  const containerRef = useRef(null);       // main container
+  const containerRef = useRef(null);
 
-  // Fair-spawning tracking refs
-  const gameTimeRef = useRef(0);             // cumulative game time (seconds)
-  const lastSpawnTimeRef = useRef(-Infinity); // game-time of last obstacle spawn
-  const lastSpawnLaneRef = useRef(0);         // lane of last spawned obstacle (0 = none yet)
-  const lastSpawnHeightRef = useRef(0);       // height of last spawned obstacle
+  // Fair-spawning tracking
+  const gameTimeRef = useRef(0);
+  const lastSpawnTimeRef = useRef(-Infinity);
+  const lastSpawnLaneRef = useRef(0);
+  const lastSpawnHeightRef = useRef(0);
 
-  // DOM refs for direct manipulation (no re-renders)
+  // DOM refs for direct manipulation
   const playerRef = useRef(null);
   const scoreDisplayRef = useRef(null);
   const scoreBgRef = useRef(null);
   const lineRef = useRef(null);
-  const obstaclePoolRef = useRef([]);       // pool of DOM elements
+  const obstaclePoolRef = useRef([]);
   const flashTimeoutRef = useRef(null);
+
+  // Crash + trail
+  const crashTimeoutRef = useRef(null);
+  const trailRefs = useRef([]);
+  const trailHistory = useRef([]);
 
   /* ── Zone tracker ── */
   const getZoneForScore = (s) => {
@@ -145,14 +181,13 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return 0;
   };
 
-  /* ── Start game ── */
+  /* ══════════ Start game ══════════ */
   const startGame = useCallback(() => {
     playerLaneRef.current = -1;
     obstaclesRef.current = [];
     scoreRef.current = 0;
-    speedMultRef.current = ZONE_SPEEDS[0];
+    speedMultRef.current = 1.0;
     spawnTimerRef.current = 0;
-    spawnIntervalRef.current = ZONE_SPAWN_INTERVALS[0];
     zoneRef.current = 0;
     obstacleIdRef.current = 0;
     lastTimeRef.current = null;
@@ -161,9 +196,15 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
     lastSpawnTimeRef.current = -Infinity;
     lastSpawnLaneRef.current = 0;
     lastSpawnHeightRef.current = 0;
+    trailHistory.current = [];
+
     setCurrentZone(0);
     setGameState(STATES.PLAYING);
+    setShowGameOver(false);
     setFlash(false);
+
+    // Clear crash timeout
+    clearTimeout(crashTimeoutRef.current);
 
     // Clear obstacle pool DOM
     obstaclePoolRef.current.forEach((el) => {
@@ -171,23 +212,31 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
     });
     obstaclePoolRef.current = [];
 
-    // Position player on left lane initially
+    // Position player on left lane
     if (playerRef.current) {
       const container = containerRef.current;
       if (container) {
         const cx = container.offsetWidth / 2;
-        playerRef.current.style.transform = `translateX(${cx - LANE_OFFSET - PLAYER_SIZE / 2}px)`;
+        playerRef.current.style.transform = `translateX(${cx - LANE_OFFSET - PLAYER_SIZE / 2}px) scale(1)`;
         playerRef.current.style.opacity = "1";
+        playerRef.current.style.boxShadow = "";
+        playerRef.current.style.transition = "";
       }
     }
 
+    // Reset trail
+    trailRefs.current.forEach((el) => {
+      if (el) el.style.opacity = "0";
+    });
+
+    // Remove shake class
+    if (containerRef.current) {
+      containerRef.current.classList.remove("ce-shake");
+    }
+
     // Reset score display
-    if (scoreDisplayRef.current) {
-      scoreDisplayRef.current.textContent = "0 MB";
-    }
-    if (scoreBgRef.current) {
-      scoreBgRef.current.textContent = "0";
-    }
+    if (scoreDisplayRef.current) scoreDisplayRef.current.textContent = "0 MB";
+    if (scoreBgRef.current) scoreBgRef.current.textContent = "0";
   }, []);
 
   /* ── Auto-start ── */
@@ -195,34 +244,79 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
 
-  /* ── Tap handler (switch lane) ── */
+  /* ══════════ Tap handler ══════════ */
   const handleTap = useCallback(() => {
     if (gameStateRef.current !== STATES.PLAYING) return;
-    playerLaneRef.current *= -1; // toggle lane
+    playerLaneRef.current *= -1;
 
-    // Instant DOM update for player position
     if (playerRef.current && containerRef.current) {
       const cx = containerRef.current.offsetWidth / 2;
-      const targetX = playerLaneRef.current === -1
-        ? cx - LANE_OFFSET - PLAYER_SIZE / 2
-        : cx + LANE_OFFSET - PLAYER_SIZE / 2;
-      playerRef.current.style.transform = `translateX(${targetX}px)`;
+      const targetX =
+        playerLaneRef.current === -1
+          ? cx - LANE_OFFSET - PLAYER_SIZE / 2
+          : cx + LANE_OFFSET - PLAYER_SIZE / 2;
+      playerRef.current.style.transform = `translateX(${targetX}px) scale(1)`;
     }
   }, []);
 
-  /* ── Create obstacle DOM element ── */
+  /* ══════════ Create obstacle DOM ══════════ */
   const createObstacleDom = useCallback((zone) => {
+    const cfg = ZONE_CONFIGS[zone];
     const el = document.createElement("div");
-    el.className = `absolute rounded-md ${ZONE_CONFIGS[zone].obsClass}`;
+    el.className = `absolute rounded-md ${cfg.obsClass}`;
     el.style.width = `${OBS_WIDTH}px`;
     el.style.position = "absolute";
     el.style.willChange = "transform";
     el.style.zIndex = "10";
     el.style.borderRadius = "6px";
+    // Neon glow + subtle white border
+    el.style.boxShadow = cfg.obsGlow;
+    el.style.borderTop = "1px solid rgba(255,255,255,0.15)";
+    el.style.borderLeft = "1px solid rgba(255,255,255,0.08)";
     return el;
   }, []);
 
-  /* ── Game Loop ── */
+  /* ══════════ Crash handler ══════════ */
+  const triggerCrash = useCallback(() => {
+    gameStateRef.current = STATES.CRASHING;
+    setGameState(STATES.CRASHING);
+
+    // Screen shake via CSS class
+    if (containerRef.current) {
+      containerRef.current.classList.add("ce-shake");
+    }
+
+    // Player explosion: scale 1→3.5, white glow, fade out
+    if (playerRef.current) {
+      const currentTransform = playerRef.current.style.transform || "";
+      const baseTranslate = currentTransform.replace(/scale\([^)]*\)/, "").trim();
+      playerRef.current.style.transition =
+        "transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.5s ease-out, box-shadow 0.15s";
+      playerRef.current.style.transform = `${baseTranslate} scale(3.5)`;
+      playerRef.current.style.boxShadow =
+        "0 0 40px #fff, 0 0 80px #fff, 0 0 120px rgba(255,100,100,0.8)";
+      setTimeout(() => {
+        if (playerRef.current) playerRef.current.style.opacity = "0";
+      }, 150);
+    }
+
+    // Hide trail immediately
+    trailRefs.current.forEach((el) => {
+      if (el) el.style.opacity = "0";
+    });
+
+    // After delay → show Game Over
+    crashTimeoutRef.current = setTimeout(() => {
+      gameStateRef.current = STATES.ENDED;
+      setGameState(STATES.ENDED);
+      setShowGameOver(true);
+      if (containerRef.current) {
+        containerRef.current.classList.remove("ce-shake");
+      }
+    }, CRASH_DELAY);
+  }, []);
+
+  /* ═══════════════════ GAME LOOP ═══════════════════ */
   useEffect(() => {
     if (gameState !== STATES.PLAYING || !isActive) return;
 
@@ -231,7 +325,6 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
     const W = () => container.offsetWidth;
     const H = () => container.offsetHeight;
-
     const playerY = () => H() * PLAYER_Y_RATIO;
 
     const tick = (timestamp) => {
@@ -246,66 +339,92 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
       const cx = containerW / 2;
       const pY = playerY();
 
-      // ── Update score ──
-      scoreRef.current += dt * 30 * speedMultRef.current; // ~30 MB/s base
+      /* ── Score ── */
+      const currentSpeedMult = getSpeedMult(scoreRef.current);
+      speedMultRef.current = currentSpeedMult;
+      scoreRef.current += dt * 30 * currentSpeedMult;
       const currentScore = Math.floor(scoreRef.current);
 
-      // ── Check zone change ──
+      /* ── Zone change ── */
       const newZone = getZoneForScore(currentScore);
       if (newZone !== zoneRef.current) {
         zoneRef.current = newZone;
-        speedMultRef.current = ZONE_SPEEDS[newZone];
-        spawnIntervalRef.current = ZONE_SPAWN_INTERVALS[newZone];
-
-        // Trigger zone transition flash
         setCurrentZone(newZone);
         setFlash(true);
         clearTimeout(flashTimeoutRef.current);
-        flashTimeoutRef.current = setTimeout(() => setFlash(false), 200);
+        flashTimeoutRef.current = setTimeout(() => setFlash(false), 350);
+
+        // Update existing obstacle DOM for new zone colors
+        const cfg = ZONE_CONFIGS[newZone];
+        obstaclePoolRef.current.forEach((el) => {
+          if (el) {
+            el.className = `absolute rounded-md ${cfg.obsClass}`;
+            el.style.boxShadow = cfg.obsGlow;
+          }
+        });
       }
 
-      // ── Update score display (DOM direct) ──
-      if (scoreDisplayRef.current) {
+      /* ── Score display (direct DOM) ── */
+      if (scoreDisplayRef.current)
         scoreDisplayRef.current.textContent = `${currentScore} MB`;
-      }
-      if (scoreBgRef.current) {
+      if (scoreBgRef.current)
         scoreBgRef.current.textContent = currentScore;
+
+      /* ── Player glow per zone ── */
+      if (playerRef.current) {
+        playerRef.current.style.boxShadow = ZONE_CONFIGS[zoneRef.current].playerGlow;
       }
 
-      // ── Fair Spawn System ──
-      // Unified spawner guaranteeing at least one safe lane.
-      // When the new obstacle is on a DIFFERENT lane than the previous one,
-      // we enforce a minimum time gap so the player always has enough
-      // frames to react and tap.  Same-lane streaks need no extra gap
-      // because the player simply stays on the opposite side.
-      //
-      // minLaneChangeTime = REACTION_BUFFER + (PLAYER_SIZE + prevHeight) / speed
-      //   → the time for the previous obstacle's danger-zone to fully clear
-      //     the player PLUS a human-reaction buffer.
+      /* ── Trail update ── */
+      const playerX =
+        playerLaneRef.current === -1
+          ? cx - LANE_OFFSET
+          : cx + LANE_OFFSET;
 
+      trailHistory.current.unshift({ x: playerX, t: timestamp });
+      if (trailHistory.current.length > 20) trailHistory.current.length = 20;
+
+      const trailCfg = ZONE_CONFIGS[zoneRef.current];
+      trailRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const histIdx = (i + 1) * 3;
+        const hist = trailHistory.current[histIdx];
+        if (hist) {
+          const age = (timestamp - hist.t) / 1000;
+          const alpha = Math.max(0, 0.45 - i * 0.09 - age * 2);
+          el.style.transform = `translate(${hist.x - 5}px, ${pY - 5}px)`;
+          el.style.opacity = String(alpha);
+          el.style.background = trailCfg.trailColor;
+          el.style.boxShadow = `0 0 ${8 + i * 3}px ${trailCfg.trailColor}`;
+        } else {
+          el.style.opacity = "0";
+        }
+      });
+
+      /* ══════════ Fair Spawn System ══════════
+       *  Single unified spawner. When switching lanes, enforces a physics-
+       *  based minimum gap so the player always has enough frames to react.
+       *  Gap shrinks continuously with score, but NEVER below
+       *  MIN_REACTION_BUFFER + clearance time.
+       */
       gameTimeRef.current += dt;
       spawnTimerRef.current -= dt * 1000;
 
       if (spawnTimerRef.current <= 0) {
-        const currentSpeed = BASE_SPEED * speedMultRef.current;
+        const currentSpeed = BASE_SPEED * currentSpeedMult;
         const obsH = 60 + Math.random() * 40; // 60-100px
 
-        // How long since the last obstacle was spawned?
         const timeSinceLast = gameTimeRef.current - lastSpawnTimeRef.current;
-
-        // Minimum time required before we can safely place an obstacle
-        // on the OPPOSITE lane (derived from physics + reaction buffer).
+        const reactionBuf = getReactionBuffer(currentScore);
         const minLaneChangeTime =
-          REACTION_BUFFER +
-          (PLAYER_SIZE + lastSpawnHeightRef.current) / currentSpeed;
+          reactionBuf + (PLAYER_SIZE + lastSpawnHeightRef.current) / currentSpeed;
 
         const canChangeLane =
           lastSpawnLaneRef.current === 0 || timeSinceLast >= minLaneChangeTime;
 
-        // Decide intent: does the spawner WANT to switch lanes?
+        const laneChangeProb = getLaneChangeProb(currentScore);
         const wantsChange =
-          lastSpawnLaneRef.current !== 0 &&
-          Math.random() < LANE_CHANGE_PROB[zoneRef.current];
+          lastSpawnLaneRef.current !== 0 && Math.random() < laneChangeProb;
 
         let lane;
 
@@ -316,19 +435,18 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
           // Safe to switch → opposite lane
           lane = -lastSpawnLaneRef.current;
         } else if (wantsChange && !canChangeLane) {
-          // WANT to switch but not safe yet → delay this spawn
+          // Delay until safe
           const remainingMs = Math.max(
             16,
             (minLaneChangeTime - timeSinceLast) * 1000
           );
           spawnTimerRef.current = remainingMs;
-          // Skip spawn this frame; the loop continues with movement & collisions
         } else {
-          // Stay on the same lane (no danger, player stays on the other side)
+          // Stay on the same lane
           lane = lastSpawnLaneRef.current;
         }
 
-        // Only spawn if we resolved a lane (not deferred)
+        // Spawn if lane resolved (skip if deferred)
         if (lane) {
           const obs = {
             id: obstacleIdRef.current++,
@@ -338,26 +456,23 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
           };
           obstaclesRef.current.push(obs);
 
-          // Create DOM element
           const el = createObstacleDom(zoneRef.current);
           el.style.height = `${obsH}px`;
           el.dataset.obsId = obs.id;
           container.appendChild(el);
           obstaclePoolRef.current.push(el);
 
-          // Update tracking
           lastSpawnLaneRef.current = lane;
           lastSpawnTimeRef.current = gameTimeRef.current;
           lastSpawnHeightRef.current = obsH;
 
-          // Schedule next spawn (with some randomness)
-          spawnTimerRef.current =
-            spawnIntervalRef.current * (0.8 + Math.random() * 0.4);
+          const interval = getSpawnInterval(currentScore);
+          spawnTimerRef.current = interval * (0.8 + Math.random() * 0.4);
         }
       }
 
-      // ── Move obstacles & check collisions ──
-      const speed = BASE_SPEED * speedMultRef.current;
+      /* ── Move obstacles & collisions ── */
+      const speed = BASE_SPEED * currentSpeedMult;
       const playerLane = playerLaneRef.current;
       const obstacles = obstaclesRef.current;
       const toRemove = [];
@@ -366,42 +481,36 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
         const obs = obstacles[i];
         obs.y += speed * dt;
 
-        // Position DOM element
         const el = obstaclePoolRef.current.find(
           (e) => e && e.dataset.obsId === String(obs.id)
         );
         if (el) {
-          const obsX = obs.lane === -1
-            ? cx - LANE_OFFSET - OBS_WIDTH / 2
-            : cx + LANE_OFFSET - OBS_WIDTH / 2;
+          const obsX =
+            obs.lane === -1
+              ? cx - LANE_OFFSET - OBS_WIDTH / 2
+              : cx + LANE_OFFSET - OBS_WIDTH / 2;
           el.style.transform = `translate(${obsX}px, ${obs.y}px)`;
         }
 
-        // Off-screen removal
         if (obs.y > containerH + 20) {
           toRemove.push(i);
           continue;
         }
 
-        // ── Collision check ──
-        // Same lane AND vertical overlap with player
+        // Collision
         if (obs.lane === playerLane) {
-          const obsTop = obs.y;
           const obsBottom = obs.y + obs.height;
           const playerTop = pY - PLAYER_SIZE / 2;
           const playerBottom = pY + PLAYER_SIZE / 2;
 
-          if (obsBottom > playerTop && obsTop < playerBottom) {
-            // GAME OVER
-            gameStateRef.current = STATES.ENDED;
-            const finalScore = Math.floor(scoreRef.current);
-            setGameState(STATES.ENDED);
-            return;
+          if (obsBottom > playerTop && obs.y < playerBottom) {
+            triggerCrash();
+            return; // stop loop
           }
         }
       }
 
-      // ── Clean up off-screen obstacles ──
+      // Cleanup off-screen
       for (const idx of toRemove) {
         const removed = obstacles.splice(idx, 1)[0];
         const poolIdx = obstaclePoolRef.current.findIndex(
@@ -422,29 +531,33 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [gameState, isActive, createObstacleDom]);
+  }, [gameState, isActive, createObstacleDom, triggerCrash]);
 
   /* ── Cleanup on unmount ── */
   useEffect(() => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       clearTimeout(flashTimeoutRef.current);
+      clearTimeout(crashTimeoutRef.current);
       obstaclePoolRef.current.forEach((el) => {
         if (el && el.parentNode) el.parentNode.removeChild(el);
       });
     };
   }, []);
 
-  /* ── Derived ── */
+  /* ══════════ Derived ══════════ */
   const isPlaying = gameState === STATES.PLAYING;
+  const isCrashing = gameState === STATES.CRASHING;
   const isEnded = gameState === STATES.ENDED;
   const finalScore = Math.floor(scoreRef.current);
   const zone = ZONE_CONFIGS[currentZone];
 
-  const { submit, loading: isSubmittingScore, xpGained, gameId } = useSubmitScore(
-    userId,
-    GAME_IDS.CoreEscapeGame
-  );
+  const {
+    submit,
+    loading: isSubmittingScore,
+    xpGained,
+    gameId,
+  } = useSubmitScore(userId, GAME_IDS.CoreEscapeGame);
 
   // Submit score on game end
   useEffect(() => {
@@ -466,72 +579,152 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
     }
   }, [isEnded, finalScore, submit, gameState, t]);
 
+  /* ══════════ RENDER ══════════ */
   return (
     <div
       ref={containerRef}
       className="relative w-full h-full overflow-hidden bg-black touch-none select-none"
       onPointerDown={isPlaying ? handleTap : undefined}
     >
-      {/* ── Overlay gradients for feed UI ── */}
-      <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-[5]" />
-      <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/30 to-transparent pointer-events-none z-[5]" />
-      <div className="absolute right-0 top-0 bottom-0 w-20 bg-linear-to-l from-black/15 to-transparent pointer-events-none z-[5]" />
+      {/* ── Scoped CSS keyframes ── */}
+      <style>{`
+        @keyframes ce-screen-shake {
+          0%, 100% { transform: translate(0, 0); }
+          10% { transform: translate(-6px, 3px); }
+          20% { transform: translate(5px, -4px); }
+          30% { transform: translate(-4px, 5px); }
+          40% { transform: translate(6px, -2px); }
+          50% { transform: translate(-3px, 4px); }
+          60% { transform: translate(4px, -3px); }
+          70% { transform: translate(-5px, 2px); }
+          80% { transform: translate(3px, -4px); }
+          90% { transform: translate(-2px, 3px); }
+        }
+        .ce-shake { animation: ce-screen-shake 0.5s ease-out; }
+        @keyframes ce-fadeOut { to { opacity: 0; } }
+        @keyframes ce-zoneFlash {
+          0%   { opacity: 0.4; }
+          50%  { opacity: 0.15; }
+          100% { opacity: 0; }
+        }
+      `}</style>
 
-      {/* ── Zone transition flash ── */}
+      {/* ── Feed overlay gradients ── */}
+      <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-5" />
+      <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/30 to-transparent pointer-events-none z-5" />
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-linear-to-l from-black/15 to-transparent pointer-events-none z-5" />
+
+      {/* ── Zone transition flash (radial colored glow, 350ms) ── */}
       {flash && (
-        <div className="absolute inset-0 bg-white/30 z-[50] pointer-events-none animate-[fadeOut_0.2s_ease-out_forwards]" />
+        <div
+          className="absolute inset-0 z-50 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at 50% 40%, ${zone.particleColor}50, transparent 70%)`,
+            animation: "ce-zoneFlash 0.35s ease-out forwards",
+          }}
+        />
+      )}
+
+      {/* ── Crash white flash overlay ── */}
+      {isCrashing && (
+        <div
+          className="absolute inset-0 z-45 pointer-events-none"
+          style={{
+            background: "rgba(255,255,255,0.3)",
+            animation: "ce-fadeOut 0.6s ease-out forwards",
+          }}
+        />
       )}
 
       {/* ── Background score (giant, low opacity) ── */}
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
         <span
           ref={scoreBgRef}
-          className="text-white/[0.06] text-[10rem] sm:text-[14rem] font-black tabular-nums leading-none select-none"
+          className="text-white/6 text-[10rem] sm:text-[14rem] font-black tabular-nums leading-none select-none"
           style={{ fontFeatureSettings: "'tnum'" }}
         >
           0
         </span>
       </div>
 
-      {/* ── Central fiber trunk (vertical line) ── */}
+      {/* ── Central fiber trunk ── */}
       <div
         ref={lineRef}
-        className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[3px] z-[1] transition-colors duration-500 ${zone.lineClass}`}
+        className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.75 z-1 transition-colors duration-500 ${zone.lineClass}`}
       />
 
-      {/* ── Decorative grid lines (depth illusion) ── */}
-      {isPlaying && (
+      {/* ── Decorative grid lines (dynamic opacity per zone) ── */}
+      {(isPlaying || isCrashing) && (
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           {[0.15, 0.3, 0.45, 0.6, 0.75, 0.9].map((ratio) => (
             <div
               key={ratio}
-              className="absolute left-0 right-0 h-px bg-white/[0.03]"
-              style={{ top: `${ratio * 100}%` }}
+              className="absolute left-0 right-0 h-px transition-opacity duration-700"
+              style={{
+                top: `${ratio * 100}%`,
+                backgroundColor: `rgba(255,255,255,${zone.gridOpacity ?? 0.03})`,
+              }}
             />
           ))}
         </div>
       )}
 
+      {/* ── Trail elements (4 ghost divs, positioned by game loop) ── */}
+      {Array.from({ length: TRAIL_COUNT }).map((_, i) => (
+        <div
+          key={`trail-${i}`}
+          ref={(el) => (trailRefs.current[i] = el)}
+          className="absolute z-14 rounded-full pointer-events-none"
+          style={{
+            width: 10,
+            height: 10,
+            opacity: 0,
+            willChange: "transform, opacity",
+            filter: `blur(${2 + i}px)`,
+          }}
+        />
+      ))}
+
       {/* ── Player (data spark) ── */}
       <div
         ref={playerRef}
-        className={`absolute z-[15] rounded-full transition-[background-color,box-shadow] duration-500 ${zone.playerClass}`}
+        className={`absolute z-15 rounded-full ${zone.playerClass}`}
         style={{
           width: PLAYER_SIZE,
           height: PLAYER_SIZE,
           top: `${PLAYER_Y_RATIO * 100}%`,
           marginTop: -PLAYER_SIZE / 2,
-          opacity: isPlaying ? 1 : 0,
+          opacity: isPlaying || isCrashing ? 1 : 0,
           willChange: "transform",
+          boxShadow: zone.playerGlow,
+          transition: isCrashing
+            ? "transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease-out, box-shadow 0.15s"
+            : "background-color 0.5s, box-shadow 0.5s",
         }}
       >
         {/* Inner glow core */}
-        <div className="absolute inset-[3px] rounded-full bg-white/70" />
+        <div className="absolute inset-0.75 rounded-full bg-white/70" />
       </div>
 
-      {/* ── HUD: Score display ── */}
+      {/* ── HUD: Zone badge (pill) + Score (separated, no overlap) ── */}
       {gameState !== STATES.IDLE && (
-        <div className="absolute top-22 left-0 right-0 flex justify-center z-[20] pointer-events-none">
+        <div className="absolute top-14 left-0 right-0 flex flex-col items-center z-20 pointer-events-none gap-1.5">
+          {/* Zone badge — compact pill ABOVE score */}
+          {(isPlaying || isCrashing) && (
+            <span
+              className={`text-[10px] font-black uppercase tracking-[0.4em] px-3 py-0.5 rounded-full border transition-colors duration-500 ${
+                currentZone === 0
+                  ? "text-cyan-400/80 border-cyan-400/20 bg-cyan-950/40"
+                  : currentZone === 1
+                  ? "text-orange-400/80 border-orange-400/20 bg-orange-950/40"
+                  : "text-red-500/80 border-red-500/20 bg-red-950/40"
+              }`}
+            >
+              SECTOR {currentZone + 1}
+            </span>
+          )}
+
+          {/* Score */}
           <span
             ref={scoreDisplayRef}
             className="text-3xl sm:text-4xl font-black text-white/90 tabular-nums tracking-tight"
@@ -545,65 +738,31 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
         </div>
       )}
 
-      {/* ── HUD: Zone indicator ── */}
-      {isPlaying && (
-        <div className="absolute top-28 left-0 right-0 flex justify-center z-[20] pointer-events-none">
-          <span
-            className={`text-xs font-bold uppercase tracking-[0.3em] ${
-              currentZone === 0
-                ? "text-cyan-400/60"
-                : currentZone === 1
-                ? "text-orange-400/60"
-                : "text-red-500/60"
-            }`}
-          >
-            {currentZone === 0 && "SECTOR 1"}
-            {currentZone === 1 && "SECTOR 2"}
-            {currentZone === 2 && "SECTOR 3"}
-          </span>
-        </div>
-      )}
-
-      {/* ── Lane guides (subtle dotted lines) ── */}
-      {isPlaying && (
+      {/* ── Lane guides ── */}
+      {(isPlaying || isCrashing) && (
         <>
           <div
             className="absolute top-0 bottom-0 w-px z-0 pointer-events-none"
             style={{
               left: `calc(50% - ${LANE_OFFSET}px)`,
-              background: "repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(255,255,255,0.04) 8px, rgba(255,255,255,0.04) 16px)",
+              background:
+                "repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(255,255,255,0.04) 8px, rgba(255,255,255,0.04) 16px)",
             }}
           />
           <div
             className="absolute top-0 bottom-0 w-px z-0 pointer-events-none"
             style={{
               left: `calc(50% + ${LANE_OFFSET}px)`,
-              background: "repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(255,255,255,0.04) 8px, rgba(255,255,255,0.04) 16px)",
+              background:
+                "repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(255,255,255,0.04) 8px, rgba(255,255,255,0.04) 16px)",
             }}
           />
         </>
       )}
 
-      {/* ── Game Over ── */}
-      {isEnded && (
-        <div className="absolute inset-0 z-[30] flex flex-col items-center justify-center pointer-events-none">
-          {/* Score display */}
-          <div className="flex flex-col items-center gap-2 mb-4">
-            <span
-              className="text-7xl sm:text-8xl font-black text-white tabular-nums"
-              style={{ fontFeatureSettings: "'tnum'" }}
-            >
-              {finalScore}
-            </span>
-            <span className="text-lg text-white/50 font-semibold">
-              {t("coreescape.unit")}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {isEnded && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-[35]">
+      {/* ── Game Over (delayed via showGameOver after crash animation) ── */}
+      {showGameOver && isEnded && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-35">
           <GameOverPanel
             title="Game Over"
             score={`${finalScore} MB`}
