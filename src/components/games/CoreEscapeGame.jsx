@@ -708,7 +708,7 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       {/* ── HUD: Zone badge (pill) + Score (separated, no overlap) ── */}
       {gameState !== STATES.IDLE && (
-        <div className="absolute top-14 left-0 right-0 flex flex-col items-center z-20 pointer-events-none gap-1.5">
+        <div className="absolute top-24 left-0 right-0 flex flex-col items-center z-20 pointer-events-none gap-1.5">
           {/* Zone badge — compact pill ABOVE score */}
           {(isPlaying || isCrashing) && (
             <span
