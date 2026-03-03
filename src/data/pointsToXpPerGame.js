@@ -229,6 +229,11 @@ export const calculateGameXP = (gameId, score) => {
       if (score < 50) return 0; // Suelo: Mínimo 50 MB
       return Math.min(Math.floor(score / 15), 100);
 
+    // ⏱️ 32. NEON CHRONO (10 XP por ronda superada, bonus por perfects implícito)
+    case 'neon-chrono':
+      if (score < 2) return 0; // Suelo: Mínimo 2 rondas
+      return Math.min(score * 10, 100);
+
     default:
       // Si añades un juego nuevo y se te olvida ponerlo aquí, te avisa en consola
       console.warn(`No se ha definido lógica de XP para el juego: ${gameId}`);

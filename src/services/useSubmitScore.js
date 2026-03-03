@@ -115,4 +115,5 @@ export const GAME_IDS = {
   PerfectCircleGame: 'perfect-circle',
   MemorySequenceGame: 'memory-sequence',
   CoreEscapeGame: 'core-escape',
+  NeonChronoGame: 'neon-chrono',
 };

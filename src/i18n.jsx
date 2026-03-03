@@ -147,6 +147,7 @@ const translations = {
     "desc.perfect-circle":  "El trazo definitivo. Mantén el pulso firme y dibuja un círculo perfecto de un solo movimiento continuo.",
     "desc.memory-sequence":  "La prueba definitiva de retención. Memoriza la posición de los números y tócalos en orden consecutivo cuando se oculten al pulsar el primero.",
     "desc.core-escape":       "Esquiva los cortafuegos a toda velocidad. Toca la pantalla para cambiar de carril y extrae los datos antes de que te atrapen.",
+    "desc.neon-chrono":       "Pon a prueba tu reloj interno. Mantén pulsado, el cronómetro se apagará a ciegas y deberás soltar en el momento exacto.",
 
     // ── MemorySequence ────────────────────────────
     "memseq.round":       "Ronda",
@@ -156,6 +157,26 @@ const translations = {
     // ── CoreEscape ───────────────────────────────
     "coreescape.unit":     "MB extraídos",
     "coreescape.subtitle": "datos extraídos",
+
+    // ── NeonChrono ───────────────────────────────
+    "neonchrono.round":            "Ronda",
+    "neonchrono.target":           "Objetivo",
+    "neonchrono.seconds":          "segundos",
+    "neonchrono.hold_instruction": "Mantén pulsado",
+    "neonchrono.ready":            "Ready...",
+    "neonchrono.go":               "¡GO!",
+    "neonchrono.blind":            "A ciegas",
+    "neonchrono.perfect":          "¡PERFECTO!",
+    "neonchrono.pass":             "¡Pasas!",
+    "neonchrono.fail":             "¡FALLASTE!",
+    "neonchrono.off_by":           "Diferencia",
+    "neonchrono.your_time":        "Tu tiempo",
+    "neonchrono.next_round":       "Siguiente ronda...",
+    "neonchrono.score_label":      "Rondas",
+    "neonchrono.subtitle":         "rondas superadas",
+    "neonchrono.instruction":      "Adivina el tiempo a ciegas",
+    "neonchrono.title_great":      "¡Genial!",
+    "neonchrono.title_legendary":  "¡Legendario!",
 
     // ── PerfectCircle ─────────────────────────────
     "perfectcircle.instruction": "Dibuja un círculo de un solo trazo",
@@ -579,6 +600,7 @@ const translations = {
     "desc.perfect-circle":  "The ultimate stroke. Keep a steady hand and draw a perfect circle in one continuous motion.",
     "desc.memory-sequence":  "The ultimate retention test. Memorize the position of the numbers and tap them in consecutive order when they hide after pressing one.",
     "desc.core-escape":       "Dodge the firewalls at full speed. Tap the screen to switch lanes and extract the data before they catch you.",
+    "desc.neon-chrono":       "Test your internal clock. Hold down, the timer will go dark and you must release at the exact moment.",
 
     // ── MemorySequence ────────────────────────────
     "memseq.round":       "Round",
@@ -588,6 +610,26 @@ const translations = {
     // ── CoreEscape ───────────────────────────────
     "coreescape.unit":     "MB extracted",
     "coreescape.subtitle": "data extracted",
+
+    // ── NeonChrono ───────────────────────────────
+    "neonchrono.round":            "Round",
+    "neonchrono.target":           "Target",
+    "neonchrono.seconds":          "seconds",
+    "neonchrono.hold_instruction": "Hold down",
+    "neonchrono.ready":            "Ready...",
+    "neonchrono.go":               "GO!",
+    "neonchrono.blind":            "Blind",
+    "neonchrono.perfect":          "PERFECT!",
+    "neonchrono.pass":             "Passed!",
+    "neonchrono.fail":             "MISSED!",
+    "neonchrono.off_by":           "Off by",
+    "neonchrono.your_time":        "Your time",
+    "neonchrono.next_round":       "Next round...",
+    "neonchrono.score_label":      "Rounds",
+    "neonchrono.subtitle":         "rounds completed",
+    "neonchrono.instruction":      "Guess the time blindfolded",
+    "neonchrono.title_great":      "Great!",
+    "neonchrono.title_legendary":  "Legendary!",
 
     // ── PerfectCircle ─────────────────────────────
     "perfectcircle.instruction": "Draw a circle in a single stroke",

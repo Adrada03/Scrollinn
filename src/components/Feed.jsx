@@ -55,6 +55,7 @@ import MentalMathGame from "./games/MentalMathGame";
 import PerfectCircleGame from "./games/PerfectCircleGame";
 import MemorySequenceGame from "./games/MemorySequenceGame";
 import CoreEscapeGame from "./games/CoreEscapeGame";
+import NeonChronoGame from "./games/NeonChronoGame";
 
 /** Registro de componentes reales de juego */
 const GAME_COMPONENTS = {
@@ -89,6 +90,7 @@ const GAME_COMPONENTS = {
   PerfectCircle: PerfectCircleGame,
   MemorySequence: MemorySequenceGame,
   CoreEscape: CoreEscapeGame,
+  NeonChrono: NeonChronoGame,
 };
 
 /* ================================================================

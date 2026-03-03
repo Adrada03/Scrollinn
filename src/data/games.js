@@ -308,6 +308,16 @@ const GAMES = [
     gameComponent: "CoreEscape",
     requiresScrollLock: true,
   },
+  {
+    id: "neon-chrono",
+    title: "Neon Chrono",
+    description: "Adivina el tiempo a ciegas manteniendo pulsado",
+    color: "bg-violet-950",
+    emoji: "⏱️",
+    logo: "/logo-neonchrono.png",
+    gameComponent: "NeonChrono",
+    requiresScrollLock: true,
+  },
 ];
 
 export default GAMES;
