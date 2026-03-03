@@ -22,7 +22,6 @@ const TopNav = ({
   onTabChange,
   userLikesCount,
   onSearchClick,
-  activeGameName,
 }) => {
   const { t } = useLanguage();
   const { playNavigation } = useSoundEffect();
@@ -40,12 +39,10 @@ const TopNav = ({
     <nav className="fixed top-0 left-0 w-full z-70 pointer-events-none"
          style={{ paddingTop: 'var(--sat)', paddingLeft: 'var(--sal)', paddingRight: 'var(--sar)' }}>
       {/* Degradado para legibilidad */}
-      <div className="absolute inset-0 h-24 bg-linear-to-b from-black/60 to-transparent" />
+      <div className="absolute inset-0 h-20 bg-linear-to-b from-black/60 to-transparent" />
 
       {/* Contenido: Pestañas centradas + lupa a la derecha */}
-      <div className="relative flex flex-col items-center px-4 pt-4 pb-2">
-        {/* ── Fila: Pestañas + Lupa ── */}
-        <div className="flex items-center justify-center w-full relative">
+      <div className="relative flex items-center justify-center px-4 pt-4 pb-3">
           {/* ── Centro: Pestañas Todos | Favoritos ── */}
           <div className="pointer-events-auto flex items-center gap-8">
             {TABS.map(({ key, i18nKey }) => {
@@ -91,7 +88,7 @@ const TopNav = ({
           {onSearchClick && (
             <button
               onClick={onSearchClick}
-              className="pointer-events-auto absolute right-0 top-1/2 -translate-y-1/2 p-1.5 text-white/70 hover:text-white active:scale-90 transition-all cursor-pointer"
+              className="pointer-events-auto absolute right-4 top-1/2 -translate-y-1/2 p-1.5 text-white/70 hover:text-white active:scale-90 transition-all cursor-pointer"
               aria-label={t("gallery.search_game")}
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -100,14 +97,6 @@ const TopNav = ({
               </svg>
             </button>
           )}
-        </div>
-
-        {/* ── Subtítulo: nombre del juego activo ── */}
-        {activeGameName && (
-          <span className="text-[10px] sm:text-xs font-bold tracking-widest text-cyan-400 uppercase drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] mt-1.5 select-none">
-            {activeGameName}
-          </span>
-        )}
       </div>
     </nav>
   );

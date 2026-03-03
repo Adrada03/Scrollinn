@@ -2,15 +2,13 @@
  * GameInterface.jsx — Capa de UI flotante sobre el juego
  *
  * Contiene:
- *  - ActionBar lateral derecha (like, gallery)
- *  - Info inferior izquierda (título + descripción)
- *  - Cuenta atrás para placeholders / nada para juegos reales
+ *  - ActionBar lateral derecha (like, retos)
+ *  - Modal de Retos Diarios
  *
  * Nota: el header (logo, idioma, login) ahora vive en <TopNav />
  */
 
 import { useCallback, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import ActionBar from "./ActionBar";
 import DailyChallengesModal from "./DailyChallengesModal";
 import { useLanguage } from "../i18n";
@@ -29,8 +27,6 @@ const GameInterface = ({
   hasRealGame,
   isChallengesOpen = false,
   onChallengesOpenChange,
-  isInfoOpen = false,
-  onInfoOpenChange,
   onNavigateToGame,
 }) => {
   const { t } = useLanguage();
@@ -81,94 +77,6 @@ const GameInterface = ({
       </div>
 
 
-
-      {/* ========== MODAL INFO / CONTROLES DEL JUEGO ========== */}
-      <AnimatePresence>
-        {isInfoOpen && (
-          <div className="pointer-events-auto">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm"
-              onClick={() => onInfoOpenChange?.(false)}
-            />
-
-            {/* Panel */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 40 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 40 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[71] max-w-sm mx-auto
-                         bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-3xl
-                         p-6 shadow-[0_8px_60px_rgba(0,0,0,0.6)]"
-            >
-              {/* Close button */}
-              <button
-                type="button"
-                onClick={() => onInfoOpenChange?.(false)}
-                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
-              {/* Logo + Title */}
-              <div className="flex items-center gap-4 mb-5">
-                {game.logo ? (
-                  <img
-                    src={game.logo}
-                    alt=""
-                    className="w-16 h-16 object-contain rounded-2xl drop-shadow-lg"
-                    style={game.logoScale ? { transform: `scale(${game.logoScale})`, transformOrigin: 'center' } : undefined}
-                    draggable={false}
-                  />
-                ) : (
-                  <span className="w-16 h-16 flex items-center justify-center text-4xl rounded-2xl bg-white/5">
-                    {game.emoji}
-                  </span>
-                )}
-                <h3
-                  className="text-white text-2xl font-extrabold tracking-tight"
-                  style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
-                >
-                  {game.title}
-                </h3>
-              </div>
-
-              {/* Divider */}
-              <div className="w-full h-px bg-white/10 mb-5" />
-
-              {/* Instructions */}
-              <div className="mb-5">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/40 mb-2">
-                  {t("ui.how_to_play") || "Cómo jugar"}
-                </p>
-                <p
-                  className="text-white/80 text-sm md:text-base leading-relaxed"
-                  style={{ textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
-                >
-                  {t(`desc.${game.id}`)}
-                </p>
-              </div>
-
-              {/* Resume button */}
-              <button
-                type="button"
-                onClick={() => onInfoOpenChange?.(false)}
-                className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20
-                           text-white font-semibold text-sm tracking-wide transition-all duration-200 active:scale-95"
-              >
-                {t("ui.resume") || "Continuar"}
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* ========== CUENTA ATRÁS (gestionada por Feed.jsx) ========== */}
     </div>

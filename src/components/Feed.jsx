@@ -151,13 +151,11 @@ const GameFeed = ({
   pendingGameIdToLaunch,
   setPendingGameIdToLaunch,
   handleSelectGame,
-  onActiveGameChange,
 }) => {
   /* ── Hook de scroll snap + IntersectionObserver ── */
   const { containerRef, activeIndex, scrollToSlide } = useActiveSlide(0);
   const scrollLockedRef = useRef(false);
   const [isChallengesOpen, setIsChallengesOpen] = useState(false);
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   // Efecto: Si hay pendingGameIdToLaunch y estamos en la pestaña correcta, lanzar el juego y limpiar el estado
   useEffect(() => {
@@ -182,7 +180,7 @@ const GameFeed = ({
     <ClearModeWrapper
       activeIndex={activeIndex}
       scrollLockedRef={scrollLockedRef}
-      disabled={disabled || isChallengesOpen || isInfoOpen}
+      disabled={disabled || isChallengesOpen}
     >
       <GameFeedContent
         games={games}
@@ -199,9 +197,6 @@ const GameFeed = ({
         scrollLockedRef={scrollLockedRef}
         isChallengesOpen={isChallengesOpen}
         onChallengesOpenChange={setIsChallengesOpen}
-        isInfoOpen={isInfoOpen}
-        onInfoOpenChange={setIsInfoOpen}
-        onActiveGameChange={onActiveGameChange}
       />
     </ClearModeWrapper>
   );
@@ -225,9 +220,6 @@ const GameFeedContent = ({
   scrollLockedRef,
   isChallengesOpen = false,
   onChallengesOpenChange,
-  isInfoOpen = false,
-  onInfoOpenChange,
-  onActiveGameChange,
 }) => {
   const { t } = useLanguage();
 
@@ -260,14 +252,6 @@ const GameFeedContent = ({
     window.addEventListener("challenges-updated", handler);
     return () => window.removeEventListener("challenges-updated", handler);
   }, [refreshChallengeStatus]);
-
-  /* ── Notificar al padre el juego activo ── */
-  useEffect(() => {
-    const activeGame = playlist[activeIndex]?.game;
-    if (onActiveGameChange && activeGame) {
-      onActiveGameChange(activeGame.title);
-    }
-  }, [activeIndex, playlist, onActiveGameChange]);
 
   /* ── Refs ── */
   const prevActiveRef = useRef(null);
@@ -451,7 +435,7 @@ const GameFeedContent = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const effectiveDisabled = disabled || isChallengesOpen || isInfoOpen;
+    const effectiveDisabled = disabled || isChallengesOpen;
     const activeGame = playlistRef.current[activeIndex]?.game;
     const shouldLock =
       slidePhase === "playing" &&
@@ -460,7 +444,7 @@ const GameFeedContent = ({
 
     scrollLockedRef.current = shouldLock;
     container.style.overflowY = shouldLock || effectiveDisabled ? "hidden" : "scroll";
-  }, [slidePhase, activeIndex, disabled, isChallengesOpen, isInfoOpen, containerRef]);
+  }, [slidePhase, activeIndex, disabled, isChallengesOpen, containerRef]);
 
   /* Fallback: juegos sin requiresScrollLock que usan onScrollLock manualmente */
   const handleScrollLock = useCallback(
@@ -555,7 +539,7 @@ const GameFeedContent = ({
             GAME_COMPONENTS[game.gameComponent] &&
             game.skipCountdown
           );
-          const isPlayable = isActive && !isReady && !isCountingDown && !disabled && !isChallengesOpen && !isInfoOpen;
+          const isPlayable = isActive && !isReady && !isCountingDown && !disabled && !isChallengesOpen;
           const replayKey = replayKeys[uid] || 0;
 
           /* ── LEY 1: touch-action dinámico en el wrapper del juego ──
@@ -621,11 +605,19 @@ const GameFeedContent = ({
                   {isNearby && !isUiHidden && (
                     <motion.div
                       key="ui-overlay"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.25 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                     >
+                      {/* ── Nombre del juego (arriba centrado, se scrollea con el slide) ── */}
+                      <div className="absolute top-0 left-0 right-0 z-[61] flex justify-center pointer-events-none"
+                           style={{ paddingTop: 'calc(2.75rem + var(--sat, 0px))' }}>
+                        <span className="text-[10px] sm:text-xs font-bold tracking-widest text-cyan-400 uppercase drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] select-none">
+                          {game.title}
+                        </span>
+                      </div>
+
                       <GameInterface
                         game={game}
                         gameId={`${uid}-${replayKey}`}
@@ -640,8 +632,6 @@ const GameFeedContent = ({
                         hasRealGame={shouldSkipCountdown}
                         isChallengesOpen={isChallengesOpen}
                         onChallengesOpenChange={onChallengesOpenChange}
-                        isInfoOpen={isActive && isInfoOpen}
-                        onInfoOpenChange={isActive ? onInfoOpenChange : undefined}
                         onNavigateToGame={(targetGameId) => {
                           const targetGame = games.find(
                             (g) => g.id === targetGameId
@@ -666,7 +656,7 @@ const GameFeedContent = ({
 
                 {/* ── ReadyScreen: pantalla de atracción ── */}
                 <AnimatePresence>
-                  {isActive && isReady && !isInfoOpen && (
+                  {isActive && isReady && (
                     <ReadyScreen
                       key={`ready-${uid}-${replayKey}`}
                       logo={game.logo}
@@ -691,7 +681,7 @@ const GameFeedContent = ({
                 </AnimatePresence>
 
                 {/* ── CountdownOverlay: 3, 2, 1, GO! flotante sobre el tablero ── */}
-                {isActive && isCountingDown && !shouldSkipCountdown && !disabled && !isChallengesOpen && !isInfoOpen && (
+                {isActive && isCountingDown && !shouldSkipCountdown && !disabled && !isChallengesOpen && (
                   <CountdownOverlay
                     gameId={`${uid}-${replayKey}`}
                     onComplete={() => setIsCountingDown(false)}
