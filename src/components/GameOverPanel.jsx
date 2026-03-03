@@ -162,6 +162,7 @@ const GameOverPanel = ({
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [profileUserId, setProfileUserId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(true);
+  const [buttonsReady, setButtonsReady] = useState(false);
 
   /* Resultado de la partida (datos reales desde Supabase) */
   const [resultData, setResultData] = useState({
@@ -202,6 +203,13 @@ const GameOverPanel = ({
   /* ── Desbloquear scroll del Feed al montar ── */
   useEffect(() => {
     window.dispatchEvent(new Event(SCROLL_UNLOCK_EVENT));
+  }, []);
+
+  /* ── Protección anti-clic accidental: 500ms de gracia ── */
+  useEffect(() => {
+    setButtonsReady(false);
+    const timer = setTimeout(() => setButtonsReady(true), 500);
+    return () => clearTimeout(timer);
   }, []);
 
   /* ── Sonido al montar: récord o derrota ── */
@@ -529,14 +537,16 @@ const GameOverPanel = ({
               ════════════════════════════════════ */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: buttonsReady ? 1 : 0.4, y: 0 }}
             transition={{ duration: 0.4, delay: 0.35, ease: snappy }}
-            className="flex flex-col items-center gap-3 w-full"
+            className={`flex flex-col items-center gap-3 w-full transition-opacity duration-300 ${
+              buttonsReady ? 'pointer-events-auto' : 'pointer-events-none'
+            }`}
           >
             {/* Botón principal: JUGAR DE NUEVO (píldora verde neón) */}
             {onReplay && (
               <button
-                onClick={onReplay}
+                onClick={buttonsReady ? onReplay : undefined}
                 className="w-full py-4 rounded-full font-black text-xl tracking-wide text-white
                            bg-emerald-500 hover:bg-emerald-400
                            active:scale-95 transition-all duration-150
@@ -550,10 +560,10 @@ const GameOverPanel = ({
 
             {/* VER TOP 5 — Ghost Button */}
             <button
-              onClick={() => {
+              onClick={buttonsReady ? () => {
                 setShowLeaderboard(true);
                 if (top5Data.length === 0) fetchTop5();
-              }}
+              } : undefined}
               className="px-6 py-2 mt-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10
                          active:scale-95 transition-all text-sm font-bold tracking-wider text-white cursor-pointer"
             >

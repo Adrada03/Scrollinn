@@ -43,6 +43,8 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
   const scrollLockTORef = useRef(null);
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
+  const progressBarRef = useRef(null);
+  const rafBarRef = useRef(null);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
@@ -107,12 +109,30 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
     }
   }, [isActive]);
 
+  /* ── RAF bar sync (60 fps direct DOM) ── */
+  useEffect(() => {
+    if (gameState !== STATES.PLAYING || !isActive) {
+      cancelAnimationFrame(rafBarRef.current);
+      return;
+    }
+    const syncBar = () => {
+      if (progressBarRef.current) {
+        const pct = Math.max(0, timeRef.current / GAME_DURATION);
+        progressBarRef.current.style.transform = `scaleX(${pct})`;
+      }
+      rafBarRef.current = requestAnimationFrame(syncBar);
+    };
+    rafBarRef.current = requestAnimationFrame(syncBar);
+    return () => cancelAnimationFrame(rafBarRef.current);
+  }, [gameState, isActive]);
+
   /* ── Cleanup ── */
   useEffect(() => {
     return () => {
       clearInterval(timerRef.current);
       clearTimeout(shakeTORef.current);
       clearTimeout(scrollLockTORef.current);
+      cancelAnimationFrame(rafBarRef.current);
       onScrollLock?.(false);
     };
   }, []);
@@ -189,12 +209,14 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
 
       {/* ── Barra de progreso (top) ── */}
       {gameState !== STATES.IDLE && (
-        <div className="absolute top-14 left-6 right-6 z-3">
+        <div className="absolute top-20 left-6 right-6 z-3">
           <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-100"
+              ref={progressBarRef}
+              className="h-full rounded-full"
               style={{
-                width: `${progress * 100}%`,
+                transformOrigin: "left",
+                willChange: "transform",
                 backgroundColor: `rgb(${btnR}, ${btnG}, ${btnB})`,
                 boxShadow: `0 0 12px ${btnGlow}`,
               }}

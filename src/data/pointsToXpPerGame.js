@@ -224,6 +224,11 @@ export const calculateGameXP = (gameId, score) => {
       if (score < 3) return 0; // Suelo: Mínimo 3 rondas
       return Math.min(Math.floor(score * 12), 100);
 
+    // ⚡ 31. CORE ESCAPE (Supervivencia MB: 1 XP cada 15 MB)
+    case 'core-escape':
+      if (score < 50) return 0; // Suelo: Mínimo 50 MB
+      return Math.min(Math.floor(score / 15), 100);
+
     default:
       // Si añades un juego nuevo y se te olvida ponerlo aquí, te avisa en consola
       console.warn(`No se ha definido lógica de XP para el juego: ${gameId}`);

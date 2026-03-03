@@ -447,7 +447,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
 
       {/* ── HUD: Score ── */}
       {phase !== PHASE.IDLE && (
-        <div className="absolute top-16 left-0 right-0 flex items-center justify-center z-3">
+        <div className="absolute top-22 left-0 right-0 flex items-center justify-center z-3">
           <span
             className="text-4xl font-black text-white tabular-nums drop-shadow-lg"
             style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 20px rgba(96,165,250,0.4)" }}

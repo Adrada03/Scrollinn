@@ -298,6 +298,16 @@ const GAMES = [
     logo: "/logo-memorysequence.png",
     gameComponent: "MemorySequence",
   },
+  {
+    id: "core-escape",
+    title: "Core Escape",
+    description: "Esquiva los cortafuegos cambiando de carril",
+    color: "bg-cyan-900",
+    emoji: "⚡",
+    logo: "/logo-coreescape.png",
+    gameComponent: "CoreEscape",
+    requiresScrollLock: true,
+  },
 ];
 
 export default GAMES;

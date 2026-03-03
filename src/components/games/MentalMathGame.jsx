@@ -239,7 +239,7 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
       : 0;
 
     if (barFillRef.current) {
-      barFillRef.current.style.width = `${pct * 100}%`;
+      barFillRef.current.style.transform = `scaleX(${pct})`;
 
       // Color transitions: blue → amber → red
       const bg =
@@ -475,7 +475,9 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
                       height: "100%",
                       borderRadius: "6px",
                       backgroundColor: "#3b82f6",
-                      transition: "background-color 0.3s",
+                      transformOrigin: "left",
+                      willChange: "transform",
+                      transform: "scaleX(1)",
                     }}
                   />
                 </div>

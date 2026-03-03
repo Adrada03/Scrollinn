@@ -92,6 +92,8 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
   const tapPulseRef = useRef(null);
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
+  const progressBarRef = useRef(null);
+  const rafBarRef = useRef(null);
 
   /* ── Start a new round ── */
   const startRound = useCallback((currentScore) => {
@@ -213,12 +215,47 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
     }
   }, [isActive, endGame, winRound]);
 
+  /* ── RAF bar sync (60 fps direct DOM) ── */
+  useEffect(() => {
+    if (gameState !== STATES.PLAYING || !isActive) {
+      cancelAnimationFrame(rafBarRef.current);
+      return;
+    }
+    const syncBar = () => {
+      if (progressBarRef.current && roundTimeRef.current > 0) {
+        const pct = Math.max(0, timeLeftRef.current / roundTimeRef.current);
+        progressBarRef.current.style.transform = `scaleX(${pct})`;
+        // Heat color based on tap ratio (cyan → amber → red)
+        const ratio = targetTapsRef.current > 0 ? currentTapsRef.current / targetTapsRef.current : 0;
+        let hR, hG, hB;
+        if (ratio < 0.5) {
+          const t2 = ratio / 0.5;
+          hR = Math.round(56 + t2 * (245 - 56));
+          hG = Math.round(189 + t2 * (158 - 189));
+          hB = Math.round(248 + t2 * (11 - 248));
+        } else {
+          const t2 = (ratio - 0.5) / 0.5;
+          hR = Math.round(245 + t2 * (239 - 245));
+          hG = Math.round(158 - t2 * 120);
+          hB = Math.round(11 - t2 * 7);
+        }
+        const color = `rgb(${hR}, ${hG}, ${hB})`;
+        progressBarRef.current.style.backgroundColor = color;
+        progressBarRef.current.style.boxShadow = `0 0 14px rgba(${hR}, ${hG}, ${hB}, 0.4)`;
+      }
+      rafBarRef.current = requestAnimationFrame(syncBar);
+    };
+    rafBarRef.current = requestAnimationFrame(syncBar);
+    return () => cancelAnimationFrame(rafBarRef.current);
+  }, [gameState, isActive]);
+
   /* ── Cleanup ── */
   useEffect(() => {
     return () => {
       clearInterval(timerRef.current);
       clearTimeout(flashTimeoutRef.current);
       clearTimeout(tapPulseRef.current);
+      cancelAnimationFrame(rafBarRef.current);
     };
   }, []);
 
@@ -375,15 +412,14 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
 
       {/* ── Progress bar (top) ── */}
       {gameState !== STATES.IDLE && !isEnded && (
-        <div className="absolute top-14 left-6 right-6 z-3">
+        <div className="absolute top-20 left-6 right-6 z-3">
           <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden backdrop-blur-sm">
             <div
+              ref={progressBarRef}
               className="h-full rounded-full"
               style={{
-                width: `${Math.max(0, progress * 100)}%`,
-                backgroundColor: heatColor,
-                boxShadow: `0 0 14px ${heatGlow}`,
-                transition: "width 0.02s linear",
+                transformOrigin: "left",
+                willChange: "transform",
               }}
             />
           </div>

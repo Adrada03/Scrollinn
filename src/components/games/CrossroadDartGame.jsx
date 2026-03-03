@@ -1081,7 +1081,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
       <div className="relative w-full h-full z-2 pointer-events-none">
         {/* Live score */}
         {phase === "playing" && (
-          <div className="absolute top-16 left-0 right-0 flex items-center justify-center">
+          <div className="absolute top-22 left-0 right-0 flex items-center justify-center">
             <span
               className="text-5xl font-black italic tabular-nums"
               style={{ fontFeatureSettings: "'tnum'", color: "#fff",

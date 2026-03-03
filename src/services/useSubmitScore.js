@@ -114,4 +114,5 @@ export const GAME_IDS = {
   MentalMathGame: 'mental-math',
   PerfectCircleGame: 'perfect-circle',
   MemorySequenceGame: 'memory-sequence',
+  CoreEscapeGame: 'core-escape',
 };

@@ -392,7 +392,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
 
       {/* HUD: Score + Vidas */}
       {gameState !== GAME_STATES.IDLE && (
-        <div className="absolute top-16 inset-x-0 flex items-center justify-center gap-6 pointer-events-none z-[3]">
+        <div className="absolute top-22 inset-x-0 flex items-center justify-center gap-6 pointer-events-none z-[3]">
           <span
             className="text-white/80 text-2xl font-black tabular-nums"
             style={{ fontFeatureSettings: "'tnum'" }}

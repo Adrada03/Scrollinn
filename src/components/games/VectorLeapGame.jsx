@@ -456,7 +456,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
 
       {/* ── HUD: Score ── */}
       {phase !== PHASE.IDLE && (
-        <div className="absolute top-16 left-0 right-0 flex justify-center z-10 pointer-events-none">
+        <div className="absolute top-22 left-0 right-0 flex justify-center z-10 pointer-events-none">
           <span
             className="text-5xl font-black text-white/80 tabular-nums"
             style={{ fontFeatureSettings: "'tnum'" }}

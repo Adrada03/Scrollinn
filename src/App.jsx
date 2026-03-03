@@ -132,6 +132,7 @@ function App() {
   const [likesMap, setLikesMap] = useState(emptyLikesMap);
   const [gameEpoch, setGameEpoch] = useState(0);
   const likesLoaded = useRef(false);
+  const [activeGameName, setActiveGameName] = useState("");
 
   // ── Bottom Navigation Tab system ──
   const [mainTab, setMainTab] = useState("jugar"); // 'tienda' | 'jugar' | 'perfil'
@@ -401,6 +402,7 @@ function App() {
                 onTabChange={handleTabChange}
                 userLikesCount={userLikesCount}
                 onSearchClick={() => setIsGameSelectorOpen(true)}
+                activeGameName={activeGameName}
               />
 
               {/* Sub-contenido con transición slide */}
@@ -440,6 +442,7 @@ function App() {
                       onToggleLike={handleToggleLike}
                       onOpenGallery={() => setIsGameSelectorOpen(true)}
                       currentUser={currentUser}
+                      onActiveGameChange={setActiveGameName}
                     />
                   )}
                 </motion.div>

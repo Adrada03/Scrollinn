@@ -55,6 +55,8 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
   const exitTORef     = useRef(null);
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
+  const progressBarRef = useRef(null);
+  const rafBarRef = useRef(null);
 
   const [ranking, setRanking] = useState([]);
   const [scoreMessage, setScoreMessage] = useState("");
@@ -166,11 +168,33 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
     }
   }, [isActive, endGame]);
 
+  /* ── RAF bar sync (60 fps direct DOM) ── */
+  useEffect(() => {
+    if (gameState !== STATES.PLAYING || !isActive) {
+      cancelAnimationFrame(rafBarRef.current);
+      return;
+    }
+    const syncBar = () => {
+      if (progressBarRef.current) {
+        const pct = Math.max(0, timeRef.current / GLOBAL_TIME);
+        const hue = 120 * pct;
+        const color = pct > 0.5 ? `hsl(${hue},70%,50%)` : `hsl(${hue},80%,50%)`;
+        progressBarRef.current.style.transform = `scaleX(${pct})`;
+        progressBarRef.current.style.backgroundColor = color;
+        progressBarRef.current.style.boxShadow = `0 0 8px ${color}`;
+      }
+      rafBarRef.current = requestAnimationFrame(syncBar);
+    };
+    rafBarRef.current = requestAnimationFrame(syncBar);
+    return () => cancelAnimationFrame(rafBarRef.current);
+  }, [gameState, isActive]);
+
   /* ── Cleanup ── */
   useEffect(() => {
     return () => {
       clearInterval(timerRef.current);
       clearTimeout(exitTORef.current);
+      cancelAnimationFrame(rafBarRef.current);
     };
   }, []);
 
@@ -285,15 +309,14 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
 
       {/* ── Barra de tiempo ── */}
       {gameState !== STATES.IDLE && !isEnded && (
-        <div className="absolute top-14 left-6 right-6 z-3">
+        <div className="absolute top-20 left-6 right-6 z-3">
           <div className="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
             <div
+              ref={progressBarRef}
               className="h-full rounded-full"
               style={{
-                width: `${progress * 100}%`,
-                backgroundColor: barColor,
-                boxShadow: `0 0 8px ${barColor}`,
-                transition: `width ${TICK_MS}ms linear`,
+                transformOrigin: "left",
+                willChange: "transform",
               }}
             />
           </div>

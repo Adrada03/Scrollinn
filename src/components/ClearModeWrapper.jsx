@@ -39,6 +39,8 @@ import ClearModeContext from "../context/ClearModeContext";
 
 /* ── Constantes ── */
 const CLEAR_THRESHOLD = 1.2;        // escala mínima para activar modo limpio
+const PINCH_IN_SCALE_MIN = 0.85;    // escala mínima visual durante pinch-in
+const PINCH_IN_SCALE_TRIGGER = 0.92; // escala a la que se confirma el unzoom
 const SPRING_CONFIG = { type: "spring", stiffness: 300, damping: 25 };
 const POST_PINCH_COOLDOWN = 200;    // ms bloqueando touches post-pinch
 
@@ -56,6 +58,10 @@ export default function ClearModeWrapper({
   const [isZooming, setIsZooming] = useState(false);
   const [isUiHidden, setIsUiHidden] = useState(false);
 
+  // Ref reactivo para leer isUiHidden dentro de los listeners nativos
+  const isUiHiddenRef = useRef(false);
+  isUiHiddenRef.current = isUiHidden;
+
   // Refs reactivos para lectura dentro de listeners nativos
   const disabledRef = useRef(disabled);
   disabledRef.current = disabled;
@@ -63,6 +69,7 @@ export default function ClearModeWrapper({
   // Pinch state refs
   const initialDistRef = useRef(null);
   const didExceedRef = useRef(false);
+  const didShrinkRef = useRef(false);   // pinch-in superó umbral
   const isPinchingRef = useRef(false);
 
   // Cooldown post-pinch
@@ -104,6 +111,7 @@ export default function ClearModeWrapper({
     scale.jump(1);
     initialDistRef.current = null;
     didExceedRef.current = false;
+    didShrinkRef.current = false;
     isPinchingRef.current = false;
     clearTimeout(cooldownTimerRef.current);
     cooldownRef.current = false;
@@ -178,13 +186,27 @@ export default function ClearModeWrapper({
       e.preventDefault(); // bloquear zoom nativo del navegador
 
       const currentDist = getDistance(e.touches[0], e.touches[1]);
-      const ratio = currentDist / initialDistRef.current;
-      const clamped = Math.max(1, ratio);
 
-      scale.set(clamped);
+      if (isUiHiddenRef.current) {
+        // ── PINCH-IN: escalar hacia abajo + detectar umbral ──
+        const ratio = currentDist / initialDistRef.current;
+        // Clamp entre PINCH_IN_SCALE_MIN y 1 para feedback visual suave
+        const clamped = Math.min(1, Math.max(PINCH_IN_SCALE_MIN, ratio));
+        scale.set(clamped);
 
-      if (clamped >= CLEAR_THRESHOLD) {
-        didExceedRef.current = true;
+        if (clamped <= PINCH_IN_SCALE_TRIGGER) {
+          didShrinkRef.current = true;
+        }
+      } else {
+        // ── PINCH-OUT: zoom para ocultar UI (comportamiento existente) ──
+        const ratio = currentDist / initialDistRef.current;
+        const clamped = Math.max(1, ratio);
+
+        scale.set(clamped);
+
+        if (clamped >= CLEAR_THRESHOLD) {
+          didExceedRef.current = true;
+        }
       }
     };
 
@@ -210,12 +232,15 @@ export default function ClearModeWrapper({
         // Animar la escala de vuelta a 1 con spring
         animate(scale, 1, SPRING_CONFIG);
 
-        if (didExceedRef.current) {
+        if (didExceedRef.current && !isUiHiddenRef.current) {
           setIsUiHidden(true);
+        } else if (didShrinkRef.current && isUiHiddenRef.current) {
+          setIsUiHidden(false);
         }
 
         initialDistRef.current = null;
         didExceedRef.current = false;
+        didShrinkRef.current = false;
 
         // Cooldown para bloquear el "falso tap" del dedo restante
         startCooldown();
@@ -247,6 +272,7 @@ export default function ClearModeWrapper({
       clearTimeout(cooldownTimerRef.current);
       cooldownRef.current = false;
       isPinchingRef.current = false;
+      didShrinkRef.current = false;
     };
     // SIN activeIndex en deps → listeners estables en un nodo DOM que no cambia.
     // eslint-disable-next-line react-hooks/exhaustive-deps

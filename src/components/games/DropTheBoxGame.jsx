@@ -366,7 +366,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
 
       {/* ── HUD: Score ── */}
       {gameState !== STATES.IDLE && (
-        <div className="absolute top-16 left-0 right-0 flex justify-center z-10 pointer-events-none">
+        <div className="absolute top-22 left-0 right-0 flex justify-center z-10 pointer-events-none">
           <span
             className="text-5xl font-black text-white/80 tabular-nums"
             style={{ fontFeatureSettings: "'tnum'" }}
@@ -431,9 +431,10 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
                 <div
                   className="h-full rounded-full"
                   style={{
-                    width: `${cooldownProgress * 100}%`,
+                    transform: `scaleX(${cooldownProgress})`,
+                    transformOrigin: "left",
+                    willChange: "transform",
                     background: "linear-gradient(90deg, #f87171, #22d3ee)",
-                    transition: "width 0.05s linear",
                   }}
                 />
               </div>

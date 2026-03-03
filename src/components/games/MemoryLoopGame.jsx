@@ -70,6 +70,8 @@ const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const timerTotalRef  = useRef(0);
   const rafRef         = useRef(null);
   const pausedAtRef     = useRef(null);
+  const progressBarRef  = useRef(null);
+  const prevSecondsRef  = useRef(0);
 
   /* ── Ranking / score ── */
   const [ranking, setRanking]             = useState([]);
@@ -203,10 +205,25 @@ const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       if (remaining <= 0) {
         setTimeLeft(0);
+        if (progressBarRef.current) {
+          progressBarRef.current.style.transform = "scaleX(0)";
+        }
         endGame();
         return;
       }
-      setTimeLeft(remaining);
+
+      // Direct DOM bar update — 60 fps
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${remaining / timerTotalRef.current})`;
+      }
+
+      // Sync React state only when displayed seconds change
+      const sec = Math.ceil(remaining / 1000);
+      if (sec !== prevSecondsRef.current) {
+        prevSecondsRef.current = sec;
+        setTimeLeft(remaining);
+      }
+
       rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -319,10 +336,14 @@ const MemoryLoopGame = ({ isActive, onNextGame, onReplay, userId }) => {
             {/* Barra de tiempo */}
             <div className="w-full max-w-[320px] h-2 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-[width] duration-100 ease-linear ${
+                ref={progressBarRef}
+                className={`h-full rounded-full ${
                   isLowTime ? "bg-red-500 animate-pulse" : "bg-violet-400"
                 }`}
-                style={{ width: `${timerPct}%` }}
+                style={{
+                  transformOrigin: "left",
+                  willChange: "transform",
+                }}
               />
             </div>
 

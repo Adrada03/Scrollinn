@@ -83,6 +83,11 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   const timerRef = useRef(null);
   const hasStartedRef = useRef(false);
+  const progressBarRef = useRef(null);
+  const timeRef = useRef(INITIAL_TIME);
+  const lastFrameRef = useRef(null);
+  const rafBarRef = useRef(null);
+  const prevSecondsRef = useRef(INITIAL_TIME);
 
   /* ── Arrancar cuando la cuenta atrás del feed termina ── */
   useEffect(() => {
@@ -92,29 +97,52 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
     }
   }, [isActive, gameState]);
 
-  /* ── Temporizador (cada 1 s, se pausa si isActive=false) ── */
+  /* ── Temporizador RAF (60 fps, direct DOM bar) ── */
   useEffect(() => {
     if (gameState !== GAME_STATES.PLAYING || !isActive) {
-      clearInterval(timerRef.current);
+      cancelAnimationFrame(rafBarRef.current);
+      lastFrameRef.current = null;
       return;
     }
 
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current);
-          setGameState(GAME_STATES.ENDED);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    const tick = (now) => {
+      if (!lastFrameRef.current) lastFrameRef.current = now;
+      const dt = (now - lastFrameRef.current) / 1000;
+      lastFrameRef.current = now;
 
-    return () => clearInterval(timerRef.current);
+      timeRef.current -= dt;
+
+      if (timeRef.current <= 0) {
+        timeRef.current = 0;
+        setTimeLeft(0);
+        setGameState(GAME_STATES.ENDED);
+        if (progressBarRef.current) {
+          progressBarRef.current.style.transform = "scaleX(0)";
+        }
+        return;
+      }
+
+      // Direct DOM bar update — 60 fps
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${timeRef.current / INITIAL_TIME})`;
+      }
+
+      // Sync React state only when displayed seconds change
+      const sec = Math.ceil(timeRef.current);
+      if (sec !== prevSecondsRef.current) {
+        prevSecondsRef.current = sec;
+        setTimeLeft(sec);
+      }
+
+      rafBarRef.current = requestAnimationFrame(tick);
+    };
+
+    rafBarRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafBarRef.current);
   }, [gameState, isActive]);
 
   /* ── Cleanup general ── */
-  useEffect(() => () => clearInterval(timerRef.current), []);
+  useEffect(() => () => { clearInterval(timerRef.current); cancelAnimationFrame(rafBarRef.current); }, []);
 
   /* ── Click en celda ── */
   const handleCellClick = useCallback(
@@ -131,14 +159,14 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
         setTimeout(() => setFlashCorrect(false), 300);
       } else {
         /* ❌ Fallo */
-        setTimeLeft((t) => {
-          const next = t - TIME_PENALTY;
-          if (next <= 0) {
-            setGameState(GAME_STATES.ENDED);
-            return 0;
-          }
-          return next;
-        });
+        timeRef.current = Math.max(0, timeRef.current - TIME_PENALTY);
+        if (timeRef.current <= 0) {
+          setTimeLeft(0);
+          setGameState(GAME_STATES.ENDED);
+        } else {
+          prevSecondsRef.current = Math.ceil(timeRef.current);
+          setTimeLeft(prevSecondsRef.current);
+        }
         setShaking(true);
         setPenaltyFlash(true);
         setTimeout(() => setShaking(false), 500);
@@ -154,6 +182,9 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
     setLevel(1);
     setScore(0);
     setTimeLeft(INITIAL_TIME);
+    timeRef.current = INITIAL_TIME;
+    lastFrameRef.current = null;
+    prevSecondsRef.current = INITIAL_TIME;
     setGrid(generateGrid(1));
     setGameState(GAME_STATES.PLAYING);
     setShaking(false);
@@ -232,10 +263,14 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
             {/* Barra de progreso */}
             <div className="w-full max-w-[320px] h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+                ref={progressBarRef}
+                className={`h-full rounded-full ${
                   isLowTime ? "bg-red-500" : "bg-emerald-400"
                 }`}
-                style={{ width: `${timerPercent}%` }}
+                style={{
+                  transformOrigin: "left",
+                  willChange: "transform",
+                }}
               />
             </div>
             {/* Stats row */}

@@ -355,7 +355,7 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
 
       {/* ── Score (arriba) ── */}
       {gameState !== STATES.IDLE && (
-        <div className="absolute top-16 left-0 right-0 z-3 flex flex-col items-center">
+        <div className="absolute top-22 left-0 right-0 z-3 flex flex-col items-center">
           <span
             className="text-4xl font-black text-white tabular-nums drop-shadow-lg"
             style={{ fontFeatureSettings: "'tnum'" }}

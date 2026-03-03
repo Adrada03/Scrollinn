@@ -104,7 +104,7 @@ const GameSelectorSheet = ({ isOpen, onClose, games, onSelectGame, selectedGameI
                     <p className="text-sm font-medium">{t("gallery.noResults")}</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 pb-8">
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 pb-8">
                   {filtered.map((game) => {
                     const isActive = selectedGameId === game.id;
                     return (
@@ -132,12 +132,7 @@ const GameSelectorSheet = ({ isOpen, onClose, games, onSelectGame, selectedGameI
                               {game.emoji}
                             </span>
                           )}
-                          {/* Badge Jugando */}
-                          {isActive && (
-                            <span className="absolute top-2 right-2 bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">
-                              {t("gallery.playing")}
-                            </span>
-                          )}
+
                         </div>
                         {/* Título */}
                         <div className="px-2 py-2 text-center border-t border-white/5 bg-black/40">

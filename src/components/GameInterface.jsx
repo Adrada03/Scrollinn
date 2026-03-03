@@ -80,45 +80,7 @@ const GameInterface = ({
         />
       </div>
 
-      {/* ========== INFO INFERIOR — Cápsula Glassmorphism ========== */}
-      <div className="absolute z-40 pointer-events-auto"
-           style={{ bottom: 'calc(1.5rem + var(--sab))', left: 'calc(1rem + var(--sal))' }}>
-        <button
-          type="button"
-          onClick={() => onInfoOpenChange?.(true)}
-          className="flex items-center bg-slate-900/40 backdrop-blur-md border border-white/10 rounded-2xl p-2 pr-4 gap-3 shadow-lg
-                     transition-all duration-200 hover:bg-slate-900/60 hover:border-white/20 hover:shadow-xl
-                     active:scale-95 cursor-pointer"
-        >
-          {/* Logo / Emoji */}
-          {game.logo ? (
-            <img
-              src={game.logo}
-              alt=""
-              className="w-10 h-10 object-contain rounded-xl drop-shadow-md"
-              style={game.logoScale ? { transform: `scale(${game.logoScale})`, transformOrigin: 'center' } : undefined}
-              draggable={false}
-            />
-          ) : (
-            <span className="w-10 h-10 flex items-center justify-center text-2xl rounded-xl bg-white/5">
-              {game.emoji}
-            </span>
-          )}
 
-          {/* Título */}
-          <span
-            className="text-white text-base md:text-lg font-bold leading-tight tracking-tight"
-            style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}
-          >
-            {game.title}
-          </span>
-
-          {/* Info icon */}
-          <span className="w-5 h-5 flex items-center justify-center rounded-full bg-white/10 border border-white/15 text-white/50 text-[10px] font-bold ml-1 shrink-0">
-            i
-          </span>
-        </button>
-      </div>
 
       {/* ========== MODAL INFO / CONTROLES DEL JUEGO ========== */}
       <AnimatePresence>

@@ -599,7 +599,7 @@ const TowerBlocksGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       {/* Score */}
       {(isPlaying || isEnded || status === GAME_STATES.RESETTING) && (
-        <div className="absolute inset-x-0 top-16 text-center pointer-events-none z-[2]">
+        <div className="absolute inset-x-0 top-22 text-center pointer-events-none z-[2]">
           <span
             className="text-[12vh] font-black leading-none text-[#333344] opacity-70 drop-shadow-sm"
             style={{ fontFeatureSettings: "'tnum'" }}

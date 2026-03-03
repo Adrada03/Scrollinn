@@ -54,6 +54,7 @@ import CrossroadDartGame from "./games/CrossroadDartGame";
 import MentalMathGame from "./games/MentalMathGame";
 import PerfectCircleGame from "./games/PerfectCircleGame";
 import MemorySequenceGame from "./games/MemorySequenceGame";
+import CoreEscapeGame from "./games/CoreEscapeGame";
 
 /** Registro de componentes reales de juego */
 const GAME_COMPONENTS = {
@@ -87,6 +88,7 @@ const GAME_COMPONENTS = {
   MentalMath: MentalMathGame,
   PerfectCircle: PerfectCircleGame,
   MemorySequence: MemorySequenceGame,
+  CoreEscape: CoreEscapeGame,
 };
 
 /* ================================================================
@@ -149,6 +151,7 @@ const GameFeed = ({
   pendingGameIdToLaunch,
   setPendingGameIdToLaunch,
   handleSelectGame,
+  onActiveGameChange,
 }) => {
   /* ── Hook de scroll snap + IntersectionObserver ── */
   const { containerRef, activeIndex, scrollToSlide } = useActiveSlide(0);
@@ -198,6 +201,7 @@ const GameFeed = ({
         onChallengesOpenChange={setIsChallengesOpen}
         isInfoOpen={isInfoOpen}
         onInfoOpenChange={setIsInfoOpen}
+        onActiveGameChange={onActiveGameChange}
       />
     </ClearModeWrapper>
   );
@@ -223,6 +227,7 @@ const GameFeedContent = ({
   onChallengesOpenChange,
   isInfoOpen = false,
   onInfoOpenChange,
+  onActiveGameChange,
 }) => {
   const { t } = useLanguage();
 
@@ -255,6 +260,14 @@ const GameFeedContent = ({
     window.addEventListener("challenges-updated", handler);
     return () => window.removeEventListener("challenges-updated", handler);
   }, [refreshChallengeStatus]);
+
+  /* ── Notificar al padre el juego activo ── */
+  useEffect(() => {
+    const activeGame = playlist[activeIndex]?.game;
+    if (onActiveGameChange && activeGame) {
+      onActiveGameChange(activeGame.title);
+    }
+  }, [activeIndex, playlist, onActiveGameChange]);
 
   /* ── Refs ── */
   const prevActiveRef = useRef(null);
@@ -608,7 +621,7 @@ const GameFeedContent = ({
                   {isNearby && !isUiHidden && (
                     <motion.div
                       key="ui-overlay"
-                      initial={{ opacity: 1 }}
+                      initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.25 }}

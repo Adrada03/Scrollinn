@@ -23,8 +23,9 @@ const CELLS = GRID * GRID;
 const GAME_DURATION = 30; // segundos
 
 const INITIAL_INTERVAL = 800; // ms entre cambios automáticos
-const ACCEL = 20;             // ms que se resta por acierto
-const MIN_INTERVAL = 300;     // velocidad mínima
+const ACCEL = 12;             // ms que se resta por acierto
+const MIN_INTERVAL = 400;     // velocidad mínima
+const TIME_PENALTY = 1;       // segundos restados por fallo
 
 /* Colores neón rotativos para el objetivo */
 const NEON_PALETTE = [
@@ -47,6 +48,22 @@ function pickNeon(prevIdx) {
   return next;
 }
 
+/**
+ * Intervalo efectivo: combina la reducción por aciertos (intervalRef)
+ * con un factor temporal suave que encoge el intervalo conforme avanza la partida.
+ * Al inicio multiplica ×1, al final ×0.75 (25% más rápido).
+ * Después aplica aleatorización ±20% para evitar patrones predecibles.
+ */
+function getEffectiveInterval(hitBase, timeRemaining) {
+  const elapsed = GAME_DURATION - timeRemaining;
+  const timeFactor = 1 - (elapsed / GAME_DURATION) * 0.25; // 1.0 → 0.75
+  const effective = Math.max(MIN_INTERVAL, hitBase * timeFactor);
+  // Aleatorización ±20%
+  const lo = Math.max(MIN_INTERVAL, effective * 0.80);
+  const hi = effective * 1.20;
+  return lo + Math.random() * (hi - lo);
+}
+
 /* ═══════════════════ COMPONENT ═══════════════════ */
 const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { t } = useLanguage();
@@ -58,6 +75,8 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const [errorCell, setErrorCell] = useState(-1);         // flash rojo
   const [hitCell, setHitCell]     = useState(-1);         // flash acierto
   const [combo, setCombo]         = useState(0);          // aciertos seguidos
+  const [penaltyFlash, setPenaltyFlash] = useState(false);
+  const [shaking, setShaking]     = useState(false);
   const [ranking, setRanking] = useState([]);
   const [scoreMessage, setScoreMessage] = useState("");
   const [isRankingLoading, setIsRankingLoading] = useState(false);
@@ -66,17 +85,29 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const { submit, loading: isSubmittingScore, error: submitError, lastResult, xpGained, gameId } = useSubmitScore(userId, GAME_IDS.NeonTapGame);
 
   const intervalRef = useRef(INITIAL_INTERVAL);
-  const timerIdRef  = useRef(null);
-  const tickIdRef   = useRef(null);
+  const lastChangeTimeRef = useRef(0);        // timestamp del último cambio de objetivo
+  const currentIntervalRef = useRef(INITIAL_INTERVAL); // duración aleatoria del objetivo actual
   const errorTORef  = useRef(null);
   const hitTORef    = useRef(null);
+  const progressBarRef = useRef(null);
+  const timeRef = useRef(GAME_DURATION);
+  const lastFrameRef = useRef(null);
+  const rafBarRef = useRef(null);
+  const prevSecondsRef = useRef(GAME_DURATION);
 
   /* ── Arrancar partida ── */
   const startGame = useCallback(() => {
     setScore(0);
     setTimeLeft(GAME_DURATION);
+    timeRef.current = GAME_DURATION;
+    lastFrameRef.current = null;
+    prevSecondsRef.current = GAME_DURATION;
     setCombo(0);
+    setPenaltyFlash(false);
+    setShaking(false);
     intervalRef.current = INITIAL_INTERVAL;
+    currentIntervalRef.current = getEffectiveInterval(INITIAL_INTERVAL, GAME_DURATION);
+    lastChangeTimeRef.current = performance.now();
     const t = pickTarget(-1);
     const n = pickNeon(-1);
     setTarget(t);
@@ -91,40 +122,61 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
 
-  /* ── Temporizador de 30 s (se pausa si isActive=false) ── */
+  /* ── Temporizador RAF (60 fps, direct DOM bar) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING || !isActive) return;
-    tickIdRef.current = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          setGameState(STATES.ENDED);
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(tickIdRef.current);
-  }, [gameState, isActive]);
+    if (gameState !== STATES.PLAYING || !isActive) {
+      cancelAnimationFrame(rafBarRef.current);
+      lastFrameRef.current = null;
+      return;
+    }
 
-  /* ── Cambio automático de objetivo (se pausa si isActive=false) ── */
-  useEffect(() => {
-    if (gameState !== STATES.PLAYING || !isActive) return;
-    const scheduleNext = () => {
-      timerIdRef.current = setTimeout(() => {
+    const tick = (now) => {
+      if (!lastFrameRef.current) lastFrameRef.current = now;
+      const dt = (now - lastFrameRef.current) / 1000;
+      lastFrameRef.current = now;
+
+      timeRef.current -= dt;
+
+      if (timeRef.current <= 0) {
+        timeRef.current = 0;
+        setTimeLeft(0);
+        setGameState(STATES.ENDED);
+        if (progressBarRef.current) {
+          progressBarRef.current.style.transform = "scaleX(0)";
+        }
+        return;
+      }
+
+      // Direct DOM bar update — 60 fps
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${timeRef.current / GAME_DURATION})`;
+      }
+
+      // Sync React state only when displayed seconds change
+      const sec = Math.ceil(timeRef.current);
+      if (sec !== prevSecondsRef.current) {
+        prevSecondsRef.current = sec;
+        setTimeLeft(sec);
+      }
+
+      // Auto-change target when interval expires (random duration, scales with time)
+      if (now - lastChangeTimeRef.current >= currentIntervalRef.current) {
         setTarget((prev) => pickTarget(prev));
         setNeonIdx((prev) => pickNeon(prev));
-        scheduleNext();
-      }, intervalRef.current);
+        lastChangeTimeRef.current = now;
+        currentIntervalRef.current = getEffectiveInterval(intervalRef.current, timeRef.current);
+      }
+
+      rafBarRef.current = requestAnimationFrame(tick);
     };
-    scheduleNext();
-    return () => clearTimeout(timerIdRef.current);
+
+    rafBarRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafBarRef.current);
   }, [gameState, isActive]);
 
   /* ── Limpiar al terminar ── */
   useEffect(() => {
     if (gameState === STATES.ENDED) {
-      clearInterval(tickIdRef.current);
-      clearTimeout(timerIdRef.current);
       setTarget(-1);
     }
   }, [gameState]);
@@ -144,27 +196,34 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
         clearTimeout(hitTORef.current);
         hitTORef.current = setTimeout(() => setHitCell(-1), 150);
 
-        /* Acelerar intervalo */
+        /* Acelerar intervalo base */
         intervalRef.current = Math.max(MIN_INTERVAL, intervalRef.current - ACCEL);
 
-        /* Mover objetivo inmediatamente */
-        clearTimeout(timerIdRef.current);
+        /* Mover objetivo inmediatamente + nuevo intervalo aleatorio */
         const next = pickTarget(idx);
         setTarget(next);
         setNeonIdx((prev) => pickNeon(prev));
-
-        /* Re-programar auto-change */
-        timerIdRef.current = setTimeout(() => {
-          setTarget((prev) => pickTarget(prev));
-          setNeonIdx((prev) => pickNeon(prev));
-        }, intervalRef.current);
+        lastChangeTimeRef.current = performance.now();
+        currentIntervalRef.current = getEffectiveInterval(intervalRef.current, timeRef.current);
       } else {
-        /* ❌ FALLO */
-        setScore((s) => s - 1);
+        /* ❌ FALLO — penalización de tiempo */
         setCombo(0);
+        timeRef.current = Math.max(0, timeRef.current - TIME_PENALTY);
+        if (timeRef.current <= 0) {
+          setTimeLeft(0);
+          setGameState(STATES.ENDED);
+        } else {
+          prevSecondsRef.current = Math.ceil(timeRef.current);
+          setTimeLeft(prevSecondsRef.current);
+        }
         setErrorCell(idx);
         clearTimeout(errorTORef.current);
         errorTORef.current = setTimeout(() => setErrorCell(-1), 250);
+        setPenaltyFlash(true);
+        setShaking(true);
+        setTimeout(() => setPenaltyFlash(false), 400);
+        setTimeout(() => setShaking(false), 500);
+        if (navigator.vibrate) navigator.vibrate(100);
       }
     },
     [gameState, target],
@@ -173,10 +232,9 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
   /* ── Cleanup timers ── */
   useEffect(() => {
     return () => {
-      clearInterval(tickIdRef.current);
-      clearTimeout(timerIdRef.current);
       clearTimeout(errorTORef.current);
       clearTimeout(hitTORef.current);
+      cancelAnimationFrame(rafBarRef.current);
     };
   }, []);
 
@@ -214,6 +272,22 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-[#0a0e17]">
+      {/* Keyframes para shake */}
+      <style>{`
+        @keyframes neonShake {
+          0%,100%{transform:translateX(0)}
+          20%{transform:translateX(-6px)}
+          40%{transform:translateX(6px)}
+          60%{transform:translateX(-4px)}
+          80%{transform:translateX(4px)}
+        }
+      `}</style>
+
+      {/* Flash de penalización (rojo) */}
+      {penaltyFlash && (
+        <div className="absolute inset-0 bg-red-500/15 z-4 pointer-events-none" />
+      )}
+
       {/* ── Glow decorativo ── */}
       <div
         className="absolute w-[50vw] h-[50vw] rounded-full opacity-[0.07] blur-3xl pointer-events-none"
@@ -234,10 +308,14 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
             {/* Barra de tiempo */}
             <div className="w-full max-w-[320px] h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+                ref={progressBarRef}
+                className={`h-full rounded-full ${
                   isLowTime ? "bg-red-500" : "bg-cyan-400"
                 }`}
-                style={{ width: `${timerPct}%` }}
+                style={{
+                  transformOrigin: "left",
+                  willChange: "transform",
+                }}
               />
             </div>
             {/* Stats */}
@@ -260,7 +338,7 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
         )}
 
         {/* ══════════ GRID 4×4 ══════════ */}
-        <div className="px-6">
+        <div className="px-6" style={{ animation: shaking ? "neonShake 0.5s ease-in-out" : "none" }}>
           <div
             className="aspect-square"
             style={{

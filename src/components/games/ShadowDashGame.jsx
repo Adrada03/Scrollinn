@@ -94,6 +94,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
   const deathTimerRef = useRef(null);
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
+  const progressBarRef = useRef(null);
   // No drenar pánico hasta que el jugador corra por primera vez
   const hasStartedRunningRef = useRef(false);
 
@@ -211,6 +212,24 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
     setScore(Math.floor(scoreRef.current));
     setPanic(panicRef.current);
     setBgOffset(bgOffsetRef.current);
+
+    // ── 6. Actualizar barra pánico directamente (60 fps DOM) ──
+    const barEl = progressBarRef.current;
+    if (barEl) {
+      const pct = panicRef.current / PANIC_MAX;
+      barEl.style.transform = `scaleX(${pct})`;
+      if (pct > 0.5) {
+        barEl.style.background = "linear-gradient(90deg, #06b6d4, #22d3ee)";
+        barEl.style.boxShadow = "0 0 12px rgba(34,211,238,0.5), 0 0 24px rgba(34,211,238,0.25)";
+      } else if (pct > 0.25) {
+        barEl.style.background = "linear-gradient(90deg, #f59e0b, #fbbf24)";
+        barEl.style.boxShadow = "0 0 12px rgba(251,191,36,0.4), 0 0 24px rgba(251,191,36,0.2)";
+      } else {
+        barEl.style.background = "linear-gradient(90deg, #ef4444, #f87171)";
+        barEl.style.boxShadow = "0 0 12px rgba(239,68,68,0.6), 0 0 24px rgba(239,68,68,0.3)";
+      }
+      barEl.style.animation = pct < 0.2 ? "sd-bar-blink 0.3s ease-in-out infinite" : "none";
+    }
 
     rafRef.current = requestAnimationFrame(gameLoop);
   }, [getDifficulty, nextGuardPhase, endGame]);
@@ -448,7 +467,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
             HUD — CYBERPUNK TENSION UI
             ═══════════════════════════════════════════ */}
         {gameState !== STATES.IDLE && (
-          <div className="absolute top-13 left-4 right-4 z-10 flex flex-col items-center gap-2.5">
+          <div className="absolute top-20 left-4 right-4 z-10 flex flex-col items-center gap-2.5">
             {/* Score */}
             <div className="flex items-baseline gap-1.5">
               <span
@@ -504,13 +523,12 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
               >
                 {/* Fill bar */}
                 <div
-                  className="absolute top-0 left-0 bottom-0"
+                  ref={progressBarRef}
+                  className="absolute top-0 left-0 bottom-0 w-full"
                   style={{
-                    width: `${panicPct * 100}%`,
-                    background: barGrad,
-                    boxShadow: barGlow,
+                    transformOrigin: "left",
+                    willChange: "transform",
                     borderRadius: "3px",
-                    animation: panicLow ? "sd-bar-blink 0.3s ease-in-out infinite" : "none",
                   }}
                 />
                 {/* Segmented notches (10 segments) */}

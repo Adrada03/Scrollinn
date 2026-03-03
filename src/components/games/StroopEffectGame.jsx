@@ -69,6 +69,11 @@ const StroopEffectGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const tickRef   = useRef(null);
   const flashRef  = useRef(null);
   const shakeRef  = useRef(null);
+  const progressBarRef = useRef(null);
+  const timeRef = useRef(GAME_DURATION);
+  const lastFrameRef = useRef(null);
+  const rafBarRef = useRef(null);
+  const prevSecondsRef = useRef(GAME_DURATION);
 
   const [ranking, setRanking] = useState([]);
   const [scoreMessage, setScoreMessage] = useState("");
@@ -89,6 +94,9 @@ const StroopEffectGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const startGame = useCallback(() => {
     setScore(0);
     setTimeLeft(GAME_DURATION);
+    timeRef.current = GAME_DURATION;
+    lastFrameRef.current = null;
+    prevSecondsRef.current = GAME_DURATION;
     setFlash("");
     setShaking(false);
     const r = generateRound(-1, -1);
@@ -103,19 +111,48 @@ const StroopEffectGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (isActive && gameState === STATES.IDLE) startGame();
   }, [isActive, startGame, gameState]);
 
-  /* ── Timer global de 30 s (se pausa si isActive=false) ── */
+  /* ── Timer RAF (60 fps, direct DOM bar) ── */
   useEffect(() => {
-    if (gameState !== STATES.PLAYING || !isActive) return;
-    tickRef.current = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          setGameState(STATES.ENDED);
-          return 0;
+    if (gameState !== STATES.PLAYING || !isActive) {
+      cancelAnimationFrame(rafBarRef.current);
+      lastFrameRef.current = null;
+      return;
+    }
+
+    const tick = (now) => {
+      if (!lastFrameRef.current) lastFrameRef.current = now;
+      const dt = (now - lastFrameRef.current) / 1000;
+      lastFrameRef.current = now;
+
+      timeRef.current -= dt;
+
+      if (timeRef.current <= 0) {
+        timeRef.current = 0;
+        setTimeLeft(0);
+        setGameState(STATES.ENDED);
+        if (progressBarRef.current) {
+          progressBarRef.current.style.transform = "scaleX(0)";
         }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(tickRef.current);
+        return;
+      }
+
+      // Direct DOM bar update — 60 fps
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${timeRef.current / GAME_DURATION})`;
+      }
+
+      // Sync React state only when displayed seconds change
+      const sec = Math.ceil(timeRef.current);
+      if (sec !== prevSecondsRef.current) {
+        prevSecondsRef.current = sec;
+        setTimeLeft(sec);
+      }
+
+      rafBarRef.current = requestAnimationFrame(tick);
+    };
+
+    rafBarRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafBarRef.current);
   }, [gameState, isActive]);
 
   /* ── Limpiar al acabar ── */
@@ -129,6 +166,7 @@ const StroopEffectGame = ({ isActive, onNextGame, onReplay, userId }) => {
       clearInterval(tickRef.current);
       clearTimeout(flashRef.current);
       clearTimeout(shakeRef.current);
+      cancelAnimationFrame(rafBarRef.current);
     };
   }, []);
 
@@ -153,14 +191,14 @@ const StroopEffectGame = ({ isActive, onNextGame, onReplay, userId }) => {
         clearTimeout(shakeRef.current);
         flashRef.current = setTimeout(() => setFlash(""), 300);
         shakeRef.current = setTimeout(() => setShaking(false), 400);
-        setTimeLeft((t) => {
-          const next = t - PENALTY_TIME;
-          if (next <= 0) {
-            setGameState(STATES.ENDED);
-            return 0;
-          }
-          return next;
-        });
+        timeRef.current = Math.max(0, timeRef.current - PENALTY_TIME);
+        if (timeRef.current <= 0) {
+          setTimeLeft(0);
+          setGameState(STATES.ENDED);
+        } else {
+          prevSecondsRef.current = Math.ceil(timeRef.current);
+          setTimeLeft(prevSecondsRef.current);
+        }
         nextRound(textIdx, inkIdx);
       }
     },
@@ -225,10 +263,14 @@ const StroopEffectGame = ({ isActive, onNextGame, onReplay, userId }) => {
             {/* Barra de tiempo */}
             <div className="w-full max-w-[320px] h-2 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ease-linear ${
+                ref={progressBarRef}
+                className={`h-full rounded-full ${
                   isLowTime ? "bg-red-500" : "bg-violet-400"
                 }`}
-                style={{ width: `${timerPct}%`, transitionDuration: "1000ms" }}
+                style={{
+                  transformOrigin: "left",
+                  willChange: "transform",
+                }}
               />
             </div>
             {/* Score */}

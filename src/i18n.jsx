@@ -146,11 +146,16 @@ const translations = {
     "desc.mental-math":     "Mente ágil, respuestas rápidas. Resuelve las operaciones matemáticas de cabeza antes de que el reloj llegue a cero.",
     "desc.perfect-circle":  "El trazo definitivo. Mantén el pulso firme y dibuja un círculo perfecto de un solo movimiento continuo.",
     "desc.memory-sequence":  "La prueba definitiva de retención. Memoriza la posición de los números y tócalos en orden consecutivo cuando se oculten al pulsar el primero.",
+    "desc.core-escape":       "Esquiva los cortafuegos a toda velocidad. Toca la pantalla para cambiar de carril y extrae los datos antes de que te atrapen.",
 
     // ── MemorySequence ────────────────────────────
     "memseq.round":       "Ronda",
     "memseq.instruction": "Toca el 1 para empezar",
     "memseq.subtitle":    "rondas completadas",
+
+    // ── CoreEscape ───────────────────────────────
+    "coreescape.unit":     "MB extraídos",
+    "coreescape.subtitle": "datos extraídos",
 
     // ── PerfectCircle ─────────────────────────────
     "perfectcircle.instruction": "Dibuja un círculo de un solo trazo",
@@ -573,11 +578,16 @@ const translations = {
     "desc.mental-math":     "Agile mind, fast answers. Solve the mathematical operations in your head before the clock hits zero.",
     "desc.perfect-circle":  "The ultimate stroke. Keep a steady hand and draw a perfect circle in one continuous motion.",
     "desc.memory-sequence":  "The ultimate retention test. Memorize the position of the numbers and tap them in consecutive order when they hide after pressing one.",
+    "desc.core-escape":       "Dodge the firewalls at full speed. Tap the screen to switch lanes and extract the data before they catch you.",
 
     // ── MemorySequence ────────────────────────────
     "memseq.round":       "Round",
     "memseq.instruction": "Tap 1 to start",
     "memseq.subtitle":    "rounds completed",
+
+    // ── CoreEscape ───────────────────────────────
+    "coreescape.unit":     "MB extracted",
+    "coreescape.subtitle": "data extracted",
 
     // ── PerfectCircle ─────────────────────────────
     "perfectcircle.instruction": "Draw a circle in a single stroke",
