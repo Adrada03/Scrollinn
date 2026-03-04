@@ -116,4 +116,5 @@ export const GAME_IDS = {
   MemorySequenceGame: 'memory-sequence',
   CoreEscapeGame: 'core-escape',
   NeonChronoGame: 'neon-chrono',
+  GhostPongGame: 'ghost-pong',
 };

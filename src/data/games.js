@@ -318,6 +318,16 @@ const GAMES = [
     gameComponent: "NeonChrono",
     requiresScrollLock: true,
   },
+  {
+    id: "ghost-pong",
+    title: "Ghost Pong",
+    description: "Rebota la bola invisible en la zona fantasma",
+    color: "bg-gray-900",
+    emoji: "👻",
+    logo: "/logo-ghostpong.png",
+    gameComponent: "GhostPong",
+    requiresScrollLock: true,
+  },
 ];
 
 export default GAMES;

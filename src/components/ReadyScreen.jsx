@@ -20,10 +20,13 @@
  *  - onStart:     () => void — callback al tocar para empezar
  */
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "../i18n";
 import { useSoundEffect } from "../hooks/useSoundEffect";
+
+/** Height threshold (px) below which compact mode kicks in */
+const COMPACT_HEIGHT = 580;
 
 /** Max px movement to still count as a tap (not a scroll) */
 const TAP_THRESHOLD = 10;
@@ -43,6 +46,19 @@ const ReadyScreen = ({
   const { t } = useLanguage();
   const { playNavigation } = useSoundEffect();
   const startPos = useRef(null);
+  const wrapperRef = useRef(null);
+  const [compact, setCompact] = useState(false);
+
+  /* ── Detect short containers → compact mode ── */
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setCompact(entry.contentRect.height < COMPACT_HEIGHT);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   /* ── Tap detection that coexists with scroll ──
      Track pointerdown position → on pointerup, if the finger
@@ -70,7 +86,8 @@ const ReadyScreen = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="absolute inset-0 z-[65] flex items-center justify-center pt-20"
+      ref={wrapperRef}
+      className="absolute inset-0 z-65 flex items-center justify-center pt-20"
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       style={{ touchAction: "pan-y" }}
@@ -84,11 +101,11 @@ const ReadyScreen = ({
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: -20, opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 flex flex-col items-center w-[85%] max-w-sm
-                   px-8 py-10 rounded-3xl
-                   bg-white/[0.07] backdrop-blur-xl
+        className={`relative z-10 flex flex-col items-center w-[85%] max-w-sm
+                   rounded-3xl bg-white/[0.07] backdrop-blur-xl
                    border border-white/12
-                   shadow-[0_8px_60px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)]"
+                   shadow-[0_8px_60px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)]
+                   ${compact ? 'px-6 py-4' : 'px-8 py-10'}`}
       >
         {/* ── Glow accent detrás del logo ── */}
         <div
@@ -97,13 +114,13 @@ const ReadyScreen = ({
         />
 
         {/* ── Logo / Emoji ── */}
-        <div className="relative mb-6">
+        <div className={compact ? 'relative mb-2' : 'relative mb-6'}>
           {logo ? (
             <motion.img
               src={logo}
               alt={title}
               draggable={false}
-              className="w-28 h-28 object-contain drop-shadow-[0_4px_30px_rgba(255,255,255,0.15)]"
+              className={`object-contain drop-shadow-[0_4px_30px_rgba(255,255,255,0.15)] ${compact ? 'w-16 h-16' : 'w-28 h-28'}`}
               style={
                 logoScale !== 1
                   ? { transform: `scale(${logoScale})`, transformOrigin: "center" }
@@ -127,8 +144,8 @@ const ReadyScreen = ({
 
         {/* ── Título ── */}
         <motion.h2
-          className="text-white text-2xl md:text-3xl font-extrabold tracking-tight text-center mb-2
-                     drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]"
+          className={`text-white font-extrabold tracking-tight text-center drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]
+                     ${compact ? 'text-lg mb-0.5' : 'text-2xl md:text-3xl mb-2'}`}
           initial={{ y: 12, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25, duration: 0.4 }}
@@ -137,12 +154,12 @@ const ReadyScreen = ({
         </motion.h2>
 
         {/* ── Línea decorativa ── */}
-        <div className="w-12 h-0.5 bg-linear-to-r from-transparent via-white/30 to-transparent mb-4" />
+        <div className={`h-0.5 bg-linear-to-r from-transparent via-white/30 to-transparent ${compact ? 'w-10 mb-1.5' : 'w-12 mb-4'}`} />
 
         {/* ── Instrucciones ── */}
         {instruction && (
           <motion.p
-            className="text-white/70 text-lg md:text-xl text-center leading-relaxed mb-6 max-w-70"
+            className={`text-white/70 text-center max-w-70 ${compact ? 'text-sm leading-snug mb-2' : 'text-lg md:text-xl leading-relaxed mb-6'}`}
             style={{ textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -154,7 +171,7 @@ const ReadyScreen = ({
 
         {/* ── "Toca para empezar" — Texto parpadeante ── */}
         <motion.p
-          className="text-white/90 text-base md:text-lg font-semibold tracking-widest uppercase"
+          className={`text-white/90 font-semibold tracking-widest uppercase ${compact ? 'text-sm' : 'text-base md:text-lg'}`}
           style={{ textShadow: "0 0 20px rgba(255,255,255,0.3)" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
@@ -171,7 +188,7 @@ const ReadyScreen = ({
         {/* ── Botones: Misiones + Elegir juego ── */}
         {(onOpenChallenges || onOpenGallery) && (
           <motion.div
-            className="flex items-center gap-4 mt-6"
+            className={`flex items-center ${compact ? 'gap-3 mt-3' : 'gap-4 mt-6'}`}
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.55, duration: 0.4 }}

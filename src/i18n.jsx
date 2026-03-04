@@ -148,6 +148,11 @@ const translations = {
     "desc.memory-sequence":  "La prueba definitiva de retención. Memoriza la posición de los números y tócalos en orden consecutivo cuando se oculten al pulsar el primero.",
     "desc.core-escape":       "Esquiva los cortafuegos a toda velocidad. Toca la pantalla para cambiar de carril y extrae los datos antes de que te atrapen.",
     "desc.neon-chrono":       "Pon a prueba tu reloj interno. Mantén pulsado, el cronómetro se apagará a ciegas y deberás soltar en el momento exacto.",
+    "desc.ghost-pong":        "Pong fantasma. Rebota la bola con tu pala, pero cuidado: la zona invisible crece y la bola acelera con cada rebote. ¡Rompe las cajas doradas para bonus!",
+
+    // ── GhostPong ────────────────────────────────
+    "ghostpong.subtitle":    "puntos",
+    "ghostpong.bonus":       "BONUS +5",
 
     // ── MemorySequence ────────────────────────────
     "memseq.round":       "Ronda",
@@ -602,6 +607,11 @@ const translations = {
     "desc.memory-sequence":  "The ultimate retention test. Memorize the position of the numbers and tap them in consecutive order when they hide after pressing one.",
     "desc.core-escape":       "Dodge the firewalls at full speed. Tap the screen to switch lanes and extract the data before they catch you.",
     "desc.neon-chrono":       "Test your internal clock. Hold down, the timer will go dark and you must release at the exact moment.",
+    "desc.ghost-pong":        "Ghost pong. Bounce the ball with your paddle, but beware: the invisible zone grows and the ball speeds up with every bounce. Smash golden boxes for bonus!",
+
+    // ── GhostPong ────────────────────────────────
+    "ghostpong.subtitle":    "points",
+    "ghostpong.bonus":       "BONUS +5",
 
     // ── MemorySequence ────────────────────────────
     "memseq.round":       "Round",

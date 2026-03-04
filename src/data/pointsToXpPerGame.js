@@ -234,6 +234,11 @@ export const calculateGameXP = (gameId, score) => {
       if (score < 2) return 0; // Suelo: Mínimo 2 rondas
       return Math.min(score * 10, 100);
 
+    // 👻 33. GHOST PONG (1 XP por rebote, min 6)
+    case 'ghost-pong':
+      if (score < 6) return 0; // Suelo: Mínimo 6 rebotes
+      return Math.min(score * 1, 100);
+
     default:
       // Si añades un juego nuevo y se te olvida ponerlo aquí, te avisa en consola
       console.warn(`No se ha definido lógica de XP para el juego: ${gameId}`);

@@ -32,7 +32,10 @@ INSERT INTO games (id, name, is_lower_better) VALUES
   ('higer-lower', 'Higher or Lower', false),
   ('memory-loop', 'Memory Loop', false),
   ('overheat', 'Overheat', false),
-  ('memory-sequence', 'Memory Sequence', false)
+  ('memory-sequence', 'Memory Sequence', false),
+  ('core-escape',     'Core Escape',     false),
+  ('neon-chrono',     'Neon Chrono',     false),
+  ('ghost-pong',      'Ghost Pong',      false)
 
 ON CONFLICT (id) DO UPDATE SET
   name            = EXCLUDED.name,
