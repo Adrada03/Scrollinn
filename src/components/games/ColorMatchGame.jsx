@@ -334,7 +334,7 @@ const ColorMatchGame = ({ isActive, onNextGame, onReplay, userId }) => {
                 key={color}
                 onClick={() => handleColorClick(color)}
                 disabled={isCurrent}
-                className={`rounded-xl transition-all duration-200 ${
+                className={`rounded-xl transition-transform duration-200 ${
                   isCurrent
                     ? "ring-2 ring-white/60 scale-110 brightness-125"
                     : "hover:scale-110 active:scale-95 cursor-pointer"
