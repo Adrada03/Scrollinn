@@ -190,3 +190,53 @@ body {
 .animate-fade-in-up {
   animation: fade-in-up 0.3s ease-out forwards;
 }
+
+/* ============================================
+   Neon Replay Button — Pulse & Hover FX
+   ============================================ */
+/* ── Wrapper gradiente: crea el borde neón cian→magenta ── */
+.neon-replay-wrapper {
+  padding: 3px; /* grosor del borde */
+  background: linear-gradient(90deg, #22d3ee, #a855f7, #ec4899);
+  border-radius: 14px;
+  animation: neon-replay-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes neon-replay-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 12px rgba(34,211,238,0.7),
+      0 0 28px rgba(34,211,238,0.35),
+      0 0 12px rgba(236,72,153,0.5),
+      0 0 28px rgba(236,72,153,0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(34,211,238,1),
+      0 0 48px rgba(34,211,238,0.55),
+      0 0 20px rgba(236,72,153,0.8),
+      0 0 48px rgba(236,72,153,0.35);
+  }
+}
+
+.neon-replay-wrapper:hover,
+.neon-replay-wrapper:has(.neon-replay-btn:active) {
+  animation: neon-replay-glow-intense 1.6s ease-in-out infinite;
+}
+
+@keyframes neon-replay-glow-intense {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(34,211,238,1),
+      0 0 50px rgba(34,211,238,0.6),
+      0 0 20px rgba(236,72,153,0.9),
+      0 0 50px rgba(236,72,153,0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(34,211,238,1),
+      0 0 70px rgba(34,211,238,0.75),
+      0 0 30px rgba(236,72,153,1),
+      0 0 70px rgba(236,72,153,0.5);
+  }
+}

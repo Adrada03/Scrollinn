@@ -24,7 +24,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { RefreshCw, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useLanguage } from "../i18n";
 import { useAuth } from "../context/AuthContext";
 import { useSoundEffect } from "../hooks/useSoundEffect";
@@ -536,19 +536,47 @@ const GameOverPanel = ({
               buttonsReady ? 'pointer-events-auto' : 'pointer-events-none'
             }`}
           >
-            {/* Botón principal: JUGAR DE NUEVO (píldora verde neón) */}
+            {/* Botón principal: REPLAY — Neón degradado cian→magenta con glow */}
             {onReplay && (
-              <button
-                onClick={buttonsReady ? onReplay : undefined}
-                className="w-full py-4 rounded-full font-black text-xl tracking-wide text-white
-                           bg-emerald-500 hover:bg-emerald-400
-                           active:scale-95 transition-all duration-150
-                           shadow-[0_0_24px_rgba(16,185,129,0.45),0_0_60px_rgba(16,185,129,0.15)]
-                           flex items-center justify-center gap-2.5 cursor-pointer"
+              <div
+                className="neon-replay-wrapper w-full"
+                style={{ borderRadius: 14 }}
               >
-                <RefreshCw className="w-5 h-5" strokeWidth={2.5} />
-                {t('gameover.replay').toUpperCase()}
-              </button>
+                <button
+                  onClick={buttonsReady ? onReplay : undefined}
+                  className="neon-replay-btn group flex items-center justify-center gap-3
+                             py-4 w-full rounded-xl
+                             outline-none border-none
+                             text-white font-mono font-bold text-lg uppercase tracking-[0.18em]
+                             cursor-pointer select-none
+                             transition-transform duration-200
+                             hover:scale-105 active:scale-95"
+                  style={{
+                    background: "rgba(5, 5, 15, 0.85)",
+                    textShadow: "0 0 10px rgba(255,255,255,0.4), 0 0 30px rgba(34,211,238,0.25)",
+                  }}
+                >
+                  {/* Gamepad icon (mismo que la nav "Jugar") */}
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.8}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
+                    style={{ filter: "drop-shadow(0 0 4px rgba(34,211,238,0.6))" }}
+                  >
+                    <rect x="2" y="6" width="20" height="12" rx="3" />
+                    <path d="M6 12h2" />
+                    <path d="M7 11v2" />
+                    <circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none" />
+                    <path d="M16 10.5l1.5 1.5" />
+                    <path d="M17.5 10.5L16 12" />
+                  </svg>
+                  <span>{t('gameover.replay').toUpperCase()}</span>
+                </button>
+              </div>
             )}
 
             {/* VER TOP 5 — Ghost Button */}
