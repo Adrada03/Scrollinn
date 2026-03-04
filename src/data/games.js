@@ -301,7 +301,7 @@ const GAMES = [
   {
     id: "neon-chrono",
     title: "Neon Chrono",
-    description: "Adivina el tiempo a ciegas manteniendo pulsado",
+    description: "Mantén pulsado el tiempo exacto que pide cada ronda",
     color: "bg-violet-950",
     emoji: "⏱️",
     logo: "/logo-neonchrono.png",

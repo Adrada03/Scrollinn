@@ -146,7 +146,7 @@ const translations = {
     "desc.perfect-circle":  "El trazo definitivo. Mantén el pulso firme y dibuja un círculo perfecto de un solo movimiento continuo.",
     "desc.memory-sequence":  "La prueba definitiva de retención. Memoriza la posición de los números y tócalos en orden consecutivo cuando se oculten al pulsar el primero.",
     "desc.core-escape":       "Esquiva los cortafuegos a toda velocidad. Toca la pantalla para cambiar de carril y extrae los datos antes de que te atrapen.",
-    "desc.neon-chrono":       "Pon a prueba tu reloj interno. Mantén pulsado, el cronómetro se apagará a ciegas y deberás soltar en el momento exacto.",
+    "desc.neon-chrono":       "Pon a prueba tu reloj interno. Mantén pulsado durante el tiempo exacto que te pide cada ronda y suelta en el momento justo.",
     "desc.ghost-pong":        "Pong fantasma. Rebota la bola con tu pala, pero cuidado: la zona invisible crece y la bola acelera con cada rebote. ¡Rompe las cajas doradas para bonus!",
 
     // ── GhostPong ────────────────────────────────
@@ -178,7 +178,7 @@ const translations = {
     "neonchrono.next_round":       "Siguiente ronda...",
     "neonchrono.score_label":      "Rondas",
     "neonchrono.subtitle":         "rondas superadas",
-    "neonchrono.instruction":      "Adivina el tiempo a ciegas",
+    "neonchrono.instruction":      "Mantén pulsado el tiempo que pide cada ronda",
     "neonchrono.title_great":      "¡Genial!",
     "neonchrono.title_legendary":  "¡Legendario!",
 
@@ -455,6 +455,7 @@ const translations = {
     "shop.login_required":  "Inicia sesión para comprar",
     "shop.rotation":        "NUEVA ROTACIÓN EN",
     "shop.days":            "D",
+    "shop.watermark":       "Nuevos avatares cada semana",
 
     // ── Daily Challenges ─────────────────────────
     "challenges.title":          "Desafíos Diarios",
@@ -603,7 +604,7 @@ const translations = {
     "desc.perfect-circle":  "The ultimate stroke. Keep a steady hand and draw a perfect circle in one continuous motion.",
     "desc.memory-sequence":  "The ultimate retention test. Memorize the position of the numbers and tap them in consecutive order when they hide after pressing one.",
     "desc.core-escape":       "Dodge the firewalls at full speed. Tap the screen to switch lanes and extract the data before they catch you.",
-    "desc.neon-chrono":       "Test your internal clock. Hold down, the timer will go dark and you must release at the exact moment.",
+    "desc.neon-chrono":       "Test your internal clock. Hold down for the exact time each round asks and release at the right moment.",
     "desc.ghost-pong":        "Ghost pong. Bounce the ball with your paddle, but beware: the invisible zone grows and the ball speeds up with every bounce. Smash golden boxes for bonus!",
 
     // ── GhostPong ────────────────────────────────
@@ -635,7 +636,7 @@ const translations = {
     "neonchrono.next_round":       "Next round...",
     "neonchrono.score_label":      "Rounds",
     "neonchrono.subtitle":         "rounds completed",
-    "neonchrono.instruction":      "Guess the time blindfolded",
+    "neonchrono.instruction":      "Hold for the time each round asks",
     "neonchrono.title_great":      "Great!",
     "neonchrono.title_legendary":  "Legendary!",
 
@@ -909,6 +910,7 @@ const translations = {
     "shop.login_required":  "Log in to purchase",
     "shop.rotation":        "NEW ROTATION IN",
     "shop.days":            "D",
+    "shop.watermark":       "New avatars every week",
 
     // ── Daily Challenges ─────────────────────────
     "challenges.title":          "Daily Challenges",

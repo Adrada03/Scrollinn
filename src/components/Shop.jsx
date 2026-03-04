@@ -822,7 +822,7 @@ const Shop = ({ coins = 0, currentUser, onCoinsChange }) => {
             ARCADE
           </span>
           <span className="text-[9px] text-slate-500 font-medium tracking-wider mt-1">
-            {lang === "es" ? "NUEVOS COSMÉTICOS CADA SEMANA" : "NEW COSMETICS EVERY WEEK"}
+            {t("shop.watermark").toUpperCase()}
           </span>
         </div>
 
