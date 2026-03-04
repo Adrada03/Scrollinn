@@ -172,7 +172,7 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
   }, [isEnded, reactionMs, submit, gameState]);
 
   // Color de fondo según estado
-  let bgClass = "bg-zinc-950";
+  let bgClass = "bg-[#0a0e17]";
   if (isWaiting) bgClass = "bg-red-800";
   if (isGreen)   bgClass = "bg-green-500";
   if (isEnded && falseStart) bgClass = "bg-red-900";
@@ -199,10 +199,10 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
             <div className="w-28 h-28 rounded-full bg-red-600 shadow-[0_0_60px_rgba(220,38,38,0.5)] flex items-center justify-center">
               <div className="w-20 h-20 rounded-full bg-red-500 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.3)]" />
             </div>
-            <span className="text-4xl sm:text-5xl font-black text-white/90 tracking-tight">
+            <span className="text-4xl sm:text-5xl font-black font-mono text-cyan-300/70 tracking-tight">
               {t("traffic.wait")}
             </span>
-            <span className="text-sm text-white/40 font-medium">
+            <span className="text-sm font-mono text-cyan-300/70 font-medium">
               {t("traffic.dont_touch")}
             </span>
           </div>
@@ -225,16 +225,16 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
           <div className="flex flex-col items-center gap-3">
             {/* Tiempo de reacción */}
             <span className={`text-7xl sm:text-8xl font-black font-mono tabular-nums ${getAccentColor(reactionMs)}`}
-              style={{ fontFeatureSettings: "'tnum'" }}
+              style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 12px rgba(0,255,255,0.6), 0 0 30px rgba(0,255,255,0.3)" }}
             >
               {reactionMs}
             </span>
-            <span className="text-lg text-white/50 font-semibold -mt-1">
+            <span className="text-lg font-mono text-cyan-300/70 font-semibold -mt-1">
               {t("traffic.milliseconds")}
             </span>
 
             {/* Veredicto */}
-            <span className="text-xl font-bold text-white/80 mt-3">
+            <span className="text-xl font-bold font-mono text-cyan-300/70 mt-3">
               {getVerdict(reactionMs)}
             </span>
 
@@ -257,7 +257,7 @@ const TrafficLightGame = ({ isActive, onNextGame, onReplay, userId }) => {
                 className="w-16 h-16 object-contain drop-shadow-lg"
                 draggable={false}
               />
-              <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
+              <span className="text-xs font-semibold font-mono text-cyan-300/70 bg-white/5 border border-cyan-400/20 backdrop-blur-sm px-4 py-2 rounded-xl">
                 {t("traffic.tap_when_green")}
               </span>
             </div>

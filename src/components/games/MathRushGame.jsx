@@ -250,7 +250,7 @@ const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   return (
     <div
-      className="relative h-full w-full flex flex-col items-center justify-center bg-zinc-950 overflow-hidden select-none"
+      className="relative h-full w-full flex flex-col items-center justify-center bg-[#0a0e17] overflow-hidden select-none"
       style={{
         touchAction: "manipulation",
         userSelect: "none",
@@ -286,12 +286,12 @@ const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
           </div>
           <div className="flex justify-between mt-2">
             <span
-              className="text-xs font-bold text-white/40 tabular-nums"
+              className="text-xs font-bold font-mono text-cyan-300/50 tabular-nums"
               style={{ fontFeatureSettings: "'tnum'" }}
             >
               {timeLeft.toFixed(1)}s
             </span>
-            <span className="text-xs font-bold text-white/40">
+            <span className="text-xs font-bold font-mono text-cyan-300/50">
               {score} ✓
             </span>
           </div>
@@ -302,8 +302,8 @@ const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {isPlaying && (
         <div className="relative z-2 flex flex-col items-center -mt-16">
           <span
-            className="text-6xl sm:text-7xl font-black text-white tabular-nums tracking-tight leading-none"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-6xl sm:text-7xl font-black font-mono text-white tabular-nums tracking-tight leading-none"
+            style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)' }}
           >
             {question.text}
           </span>
@@ -317,12 +317,15 @@ const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
           <button
             type="button"
             onPointerDown={() => handleAnswer(true)}
-            className="flex-1 flex items-center justify-center bg-green-800 active:bg-green-700 transition-colors duration-75 border-r border-white/5"
+            className="flex-1 flex items-center justify-center bg-green-500/15 border border-green-400/30 active:bg-green-500/25 transition-colors duration-75"
             style={{
-              touchAction: "manipulation",
-              userSelect: "none",
-              WebkitUserSelect: "none",
-              WebkitTapHighlightColor: "transparent",
+              ...{
+                touchAction: 'manipulation',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              },
+              boxShadow: 'inset 0 0 30px rgba(74,222,128,0.08), 0 0 15px rgba(74,222,128,0.1)',
             }}
           >
             <div className="flex flex-col items-center gap-1">
@@ -336,12 +339,15 @@ const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
           <button
             type="button"
             onPointerDown={() => handleAnswer(false)}
-            className="flex-1 flex items-center justify-center bg-red-800 active:bg-red-700 transition-colors duration-75 border-l border-white/5"
+            className="flex-1 flex items-center justify-center bg-red-500/15 border border-red-400/30 active:bg-red-500/25 transition-colors duration-75"
             style={{
-              touchAction: "manipulation",
-              userSelect: "none",
-              WebkitUserSelect: "none",
-              WebkitTapHighlightColor: "transparent",
+              ...{
+                touchAction: 'manipulation',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              },
+              boxShadow: 'inset 0 0 30px rgba(248,113,113,0.08), 0 0 15px rgba(248,113,113,0.1)',
             }}
           >
             <div className="flex flex-col items-center gap-1">
@@ -358,8 +364,8 @@ const MathRushGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {isPlaying && score > 0 && (
         <div className="absolute inset-x-0 top-[calc(var(--sat,0px)+7rem)] flex justify-center pointer-events-none z-1">
           <span
-            className="text-8xl font-black text-white/[0.04] tabular-nums"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-8xl font-black font-mono text-white/[0.04] tabular-nums"
+            style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)' }}
           >
             {score}
           </span>

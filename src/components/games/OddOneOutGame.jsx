@@ -222,7 +222,7 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const radius = grid.size <= 4 ? 12 : grid.size <= 6 ? 8 : 5;
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
+    <div className="w-full h-full relative overflow-hidden bg-[#0a0e17]">
       {/* Keyframes para shake */}
       <style>{`
         @keyframes oddShake {
@@ -282,7 +282,7 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
               >
                 {timeLeft}s
               </span>
-              <span className="text-white/80 text-lg font-black tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>
+              <span className="text-white/80 text-lg font-black font-mono tabular-nums" style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)' }}>
                 {score}
               </span>
               <span className="text-white/30 text-[10px] font-medium tracking-wider uppercase">

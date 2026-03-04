@@ -363,7 +363,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
-        background: "linear-gradient(180deg, #020617 0%, #0f172a 40%, #020617 100%)",
+        background: "linear-gradient(180deg, #0a0e17 0%, #0f172a 40%, #0a0e17 100%)",
       }}
       onPointerDown={isPlaying ? handlePointerDown : undefined}
       onPointerUp={isPlaying ? handlePointerUp : undefined}
@@ -471,7 +471,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
             {/* Score */}
             <div className="flex items-baseline gap-1.5">
               <span
-                className="text-5xl font-black italic text-white leading-none tracking-tight"
+                className="text-5xl font-black italic font-mono text-white leading-none tracking-tight"
                 style={{
                   fontFeatureSettings: "'tnum'",
                   textShadow:

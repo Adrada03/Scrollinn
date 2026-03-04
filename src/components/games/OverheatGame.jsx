@@ -343,9 +343,9 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
 
   // Background: dark with subtle heat tint
   const heatLevel = Math.min(1, tapRatio);
-  const bgR = Math.round(15 + heatLevel * 45);
-  const bgG = Math.round(15 - heatLevel * 10);
-  const bgB = Math.round(18 - heatLevel * 14);
+  const bgR = Math.round(10 + heatLevel * 45);
+  const bgG = Math.round(14 - heatLevel * 10);
+  const bgB = Math.round(23 - heatLevel * 14);
 
   // Flash overlay
   let flashOverlay = null;
@@ -451,7 +451,7 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
                 className="mb-6 px-5 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
               >
                 <span
-                  className="text-sm font-bold tabular-nums"
+                  className="text-sm font-mono font-bold tabular-nums"
                   style={{
                     fontFeatureSettings: "'tnum'",
                     color: heatColor,

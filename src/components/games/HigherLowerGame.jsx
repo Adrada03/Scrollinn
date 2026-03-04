@@ -31,10 +31,10 @@ const STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
 const PHASE = { WAITING: 0, FLIPPING: 1, RESULT: 2, SLIDING: 3 };
 
 const SUITS = [
-  { symbol: "♥", name: "hearts",   color: "text-red-500"   },
-  { symbol: "♦", name: "diamonds", color: "text-red-500"   },
-  { symbol: "♠", name: "spades",   color: "text-zinc-800"  },
-  { symbol: "♣", name: "clubs",    color: "text-zinc-800"  },
+  { symbol: "♥", name: "hearts",   color: "text-red-400"   },
+  { symbol: "♦", name: "diamonds", color: "text-red-400"   },
+  { symbol: "♠", name: "spades",   color: "text-cyan-300"  },
+  { symbol: "♣", name: "clubs",    color: "text-cyan-300"  },
 ];
 
 const VALUES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
@@ -81,21 +81,21 @@ const CardFace = ({ card, result = null, className = "" }) => {
 
   return (
     <div
-      className={`relative bg-white rounded-2xl shadow-2xl flex flex-col items-center justify-center border border-zinc-200 select-none ${className}`}
-      style={{ width: CARD_W, height: CARD_H, ...glowStyle }}
+      className={`relative rounded-2xl shadow-2xl flex flex-col items-center justify-center border border-cyan-400/15 select-none ${className}`}
+      style={{ width: CARD_W, height: CARD_H, background: "linear-gradient(145deg, #141a2a 0%, #0f1420 50%, #0a0e17 100%)", ...glowStyle }}
     >
       {/* Esquina superior izquierda */}
-      <div className={`absolute top-1.5 left-2 flex flex-col items-center leading-none ${color}`}>
+      <div className="absolute top-1.5 left-2 flex flex-col items-center leading-none text-white/70">
         <span className="text-[0.7rem] font-bold">{label}</span>
         <span className="text-[0.6rem] -mt-0.5">{symbol}</span>
       </div>
       {/* Centro */}
       <div className={`flex flex-col items-center ${color}`}>
-        <span className="text-[clamp(2.5rem,8vw,4rem)] font-black leading-none">{label}</span>
+        <span className="text-[clamp(2.5rem,8vw,4rem)] font-black font-mono leading-none text-white" style={{ textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)" }}>{label}</span>
         <span className="text-[clamp(1.5rem,5vw,2.5rem)] mt-0.5">{symbol}</span>
       </div>
       {/* Esquina inferior derecha (invertida) */}
-      <div className={`absolute bottom-1.5 right-2 flex flex-col items-center leading-none rotate-180 ${color}`}>
+      <div className="absolute bottom-1.5 right-2 flex flex-col items-center leading-none rotate-180 text-white/70">
         <span className="text-[0.7rem] font-bold">{label}</span>
         <span className="text-[0.6rem] -mt-0.5">{symbol}</span>
       </div>
@@ -318,7 +318,7 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
 
   /* Fondo del tapete */
   const bgStyle = {
-    background: "radial-gradient(ellipse at center, #1a3a2a 0%, #0c1f17 50%, #070f0b 100%)",
+    background: "#0a0e17",
   };
 
   /*
@@ -357,8 +357,8 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
       {gameState !== STATES.IDLE && (
         <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 z-3 flex flex-col items-center">
           <span
-            className="text-4xl font-black text-white tabular-nums drop-shadow-lg"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-4xl font-black font-mono text-white tabular-nums drop-shadow-lg"
+            style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)" }}
           >
             {score}
           </span>
@@ -372,10 +372,12 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
 
       {/* ── Instrucciones de prioridad ── */}
       {isPlaying && phase === PHASE.WAITING && (
-        <div className="absolute top-[calc(var(--sat,0px)+8.5rem)] left-0 right-0 z-3 flex justify-center pointer-events-none">
-          <span className="text-sm font-bold text-white/35 tracking-widest">
-            2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · J · Q · K · A
-          </span>
+        <div className="absolute top-[calc(var(--sat,0px)+8.5rem)] left-0 right-0 z-3 flex justify-center pointer-events-none px-4">
+          <div className="bg-white/5 border border-cyan-400/10 rounded-xl px-4 py-1.5 backdrop-blur-sm">
+            <span className="text-[0.65rem] font-mono text-cyan-300/60 tracking-wide text-center block">
+              2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · J · Q · K · A
+            </span>
+          </div>
         </div>
       )}
 
@@ -430,26 +432,26 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
           <button
             type="button"
             onPointerDown={() => handleGuess("higher")}
-            className="flex flex-col items-center justify-center w-36 h-[4.5rem] rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-90 shadow-lg shadow-emerald-500/30 transition-all duration-100 cursor-pointer select-none"
-            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+            className="flex flex-col items-center justify-center w-36 h-[4.5rem] rounded-2xl bg-emerald-500/15 border border-emerald-400/30 hover:bg-emerald-500/25 active:scale-90 transition-all duration-100 cursor-pointer select-none"
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent", boxShadow: "0 0 15px rgba(52,211,153,0.15), inset 0 0 15px rgba(52,211,153,0.05)" }}
           >
-            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <svg className="w-7 h-7 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
             </svg>
-            <span className="text-white text-[0.65rem] font-bold mt-0.5 uppercase tracking-wider">Higher</span>
+            <span className="text-emerald-300 text-[0.65rem] font-bold mt-0.5 uppercase tracking-wider">Higher</span>
           </button>
 
           {/* LOWER */}
           <button
             type="button"
             onPointerDown={() => handleGuess("lower")}
-            className="flex flex-col items-center justify-center w-36 h-[4.5rem] rounded-2xl bg-rose-500 hover:bg-rose-400 active:scale-90 shadow-lg shadow-rose-500/30 transition-all duration-100 cursor-pointer select-none"
-            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+            className="flex flex-col items-center justify-center w-36 h-[4.5rem] rounded-2xl bg-rose-500/15 border border-rose-400/30 hover:bg-rose-500/25 active:scale-90 transition-all duration-100 cursor-pointer select-none"
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent", boxShadow: "0 0 15px rgba(244,63,94,0.15), inset 0 0 15px rgba(244,63,94,0.05)" }}
           >
-            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <svg className="w-7 h-7 text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
-            <span className="text-white text-[0.65rem] font-bold mt-0.5 uppercase tracking-wider">Lower</span>
+            <span className="text-rose-300 text-[0.65rem] font-bold mt-0.5 uppercase tracking-wider">Lower</span>
           </button>
         </div>
       )}

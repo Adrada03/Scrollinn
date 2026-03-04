@@ -163,7 +163,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
 
   return (
     <div
-      className="relative h-full w-full flex items-center justify-center bg-zinc-950 overflow-hidden select-none"
+      className="relative h-full w-full flex items-center justify-center bg-[#0a0e17] overflow-hidden select-none"
       style={{
         userSelect: "none",
         WebkitUserSelect: "none",
@@ -229,7 +229,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
         {/* Instrucción durante juego */}
         {isReady && (
           <div className="absolute top-[calc(var(--sat,0px)+5rem)] inset-x-0 flex justify-center">
-            <span className="text-sm font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl animate-pulse">
+            <span className="text-sm font-semibold font-mono text-cyan-300/70 bg-white/5 border border-cyan-400/20 backdrop-blur-sm px-5 py-2.5 rounded-xl animate-pulse">
               {t("perfectscale.hold_inflate")}
             </span>
           </div>
@@ -237,7 +237,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
 
         {isInflating && (
           <div className="absolute top-[calc(var(--sat,0px)+5rem)] inset-x-0 flex justify-center">
-            <span className="text-sm font-bold text-cyan-400/70 bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl">
+            <span className="text-sm font-bold font-mono text-cyan-300/70 bg-white/5 border border-cyan-400/20 backdrop-blur-sm px-5 py-2.5 rounded-xl">
               {t("perfectscale.release")}
             </span>
           </div>
@@ -265,7 +265,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
                 className="w-16 h-16 object-contain drop-shadow-lg"
                 draggable={false}
               />
-              <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
+              <span className="text-xs font-semibold font-mono text-cyan-300/70 bg-white/5 border border-cyan-400/20 backdrop-blur-sm px-4 py-2 rounded-xl">
                 {t("perfectscale.inflate_edge")}
               </span>
             </div>
@@ -280,8 +280,8 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
                 {feedbackText}
               </span>
               <span
-                className="text-7xl sm:text-8xl font-black text-white tabular-nums leading-none"
-                style={{ fontFeatureSettings: "'tnum'" }}
+                className="text-7xl sm:text-8xl font-black font-mono text-white tabular-nums leading-none"
+                style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)" }}
               >
                 {score}
               </span>

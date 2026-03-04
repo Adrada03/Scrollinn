@@ -421,7 +421,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden select-none bg-slate-950"
+      className="relative h-full w-full overflow-hidden select-none bg-[#0a0e17]"
       onPointerDown={isPlaying ? handleTap : undefined}
       style={{ cursor: isPlaying ? "pointer" : "default" }}
     >
@@ -449,8 +449,8 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
       {phase !== PHASE.IDLE && (
         <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex items-center justify-center z-3">
           <span
-            className="text-4xl font-black text-white tabular-nums drop-shadow-lg"
-            style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 20px rgba(96,165,250,0.4)" }}
+            className="text-4xl font-mono font-black text-white tabular-nums drop-shadow-lg"
+            style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)" }}
           >
             {score}
           </span>
@@ -462,13 +462,13 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
         <>
           {/* ── Órbita Base (círculo) ── */}
           <div
-            className="absolute rounded-full border-2 border-blue-500/30"
+            className="absolute rounded-full border-2 border-cyan-500/30"
             style={{
               left: g.baseX - g.baseR,
               top: g.baseY - g.baseR,
               width: g.baseR * 2,
               height: g.baseR * 2,
-              boxShadow: "0 0 15px rgba(59,130,246,0.15), inset 0 0 15px rgba(59,130,246,0.05)",
+              boxShadow: "0 0 15px rgba(34,211,238,0.15), inset 0 0 15px rgba(34,211,238,0.05)",
             }}
           />
 
@@ -530,7 +530,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
               return (
                 <div
                   key={i}
-                  className="absolute rounded-full bg-blue-400"
+                  className="absolute rounded-full bg-cyan-400"
                   style={{
                     left: pt.x - size / 2,
                     top: pt.y - size / 2,
@@ -547,7 +547,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
             const pR = g.playerR || 8;
             return (
               <div
-                className="absolute rounded-full bg-blue-400"
+                className="absolute rounded-full bg-cyan-400"
                 style={{
                   left: g.playerX - pR,
                   top: g.playerY - pR,
@@ -555,8 +555,8 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
                   height: pR * 2,
                   boxShadow:
                     (phaseRef.current === PHASE.SHOOTING || phaseRef.current === PHASE.TRAVELING)
-                      ? "0 0 18px rgba(96,165,250,0.8), 0 0 40px rgba(96,165,250,0.3)"
-                      : "0 0 12px rgba(96,165,250,0.6)",
+                      ? "0 0 18px rgba(34,211,238,0.8), 0 0 40px rgba(34,211,238,0.3)"
+                      : "0 0 12px rgba(34,211,238,0.6)",
                 }}
               />
             );
@@ -576,7 +576,7 @@ const OrbitSniperGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
                 y1={g.playerY}
                 x2={g.playerX + (-Math.sin(g.angle)) * 35}
                 y2={g.playerY + Math.cos(g.angle) * 35}
-                stroke="rgba(96,165,250,0.3)"
+                stroke="rgba(34,211,238,0.3)"
                 strokeWidth="1.5"
                 strokeDasharray="4 3"
               />

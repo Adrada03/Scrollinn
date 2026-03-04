@@ -161,7 +161,7 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const inTargetZone = displayMs >= 9000 && displayMs <= 11000;
 
   return (
-    <div className="relative h-full w-full flex items-center justify-center bg-zinc-950 overflow-hidden select-none">
+    <div className="relative h-full w-full flex items-center justify-center bg-[#0a0e17] overflow-hidden select-none">
 
       {/* ── Overlay gradients para UI del feed ── */}
       <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-5" />
@@ -174,7 +174,7 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
           className={`w-72 h-72 sm:w-96 sm:h-96 rounded-full border transition-colors duration-300 ${
             inTargetZone && isPlaying
               ? "border-emerald-500/30 shadow-[0_0_60px_rgba(16,185,129,0.15)]"
-              : "border-white/5"
+              : "border-cyan-400/10"
           }`}
         />
       </div>
@@ -199,24 +199,24 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
           <div className="flex items-baseline font-mono tabular-nums select-none">
             <span
               className={`text-7xl sm:text-8xl font-black tracking-tight transition-colors duration-150 ${
-                inTargetZone && isPlaying ? "text-emerald-400" : "text-white"
+                inTargetZone && isPlaying ? "text-cyan-400" : "text-white"
               }`}
-              style={{ fontFeatureSettings: "'tnum'" }}
+              style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 20px rgba(34,211,238,0.4)' }}
             >
               {secsPart}
             </span>
             <span
               className={`text-7xl sm:text-8xl font-black transition-colors duration-150 ${
-                inTargetZone && isPlaying ? "text-emerald-400/60" : "text-white/40"
+                inTargetZone && isPlaying ? "text-cyan-400/60" : "text-white/40"
               }`}
             >
               :
             </span>
             <span
               className={`text-5xl sm:text-6xl font-bold tracking-tight transition-colors duration-150 ${
-                inTargetZone && isPlaying ? "text-emerald-400/80" : "text-white/60"
+                inTargetZone && isPlaying ? "text-cyan-400/80" : "text-white/60"
               }`}
-              style={{ fontFeatureSettings: "'tnum'" }}
+              style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 20px rgba(34,211,238,0.3)' }}
             >
               {milliPart}
             </span>
@@ -227,9 +227,9 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
         {isPlaying && (
           <button
             onClick={handleStop}
-            className="mt-12 px-12 py-5 rounded-2xl bg-white/15 border border-white/25 
-                       active:scale-95 active:bg-white/25 transition-all cursor-pointer
-                       shadow-[0_0_20px_rgba(255,255,255,0.06)]"
+            className="mt-12 px-12 py-5 rounded-2xl bg-white/5 border border-cyan-400/20 
+                       active:scale-95 active:bg-white/15 transition-all cursor-pointer
+                       shadow-[0_0_20px_rgba(34,211,238,0.1)]"
           >
             <span className="text-base font-bold text-white/90 tracking-wider uppercase">
               {t("timer.tap_stop")}
@@ -272,7 +272,7 @@ const TimerGame = ({ isActive, onNextGame, onReplay, userId }) => {
                 className="w-16 h-16 object-contain drop-shadow-lg"
                 draggable={false}
               />
-              <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
+              <span className="text-xs font-semibold font-mono text-cyan-300/70 bg-white/5 border border-cyan-400/20 backdrop-blur-sm px-4 py-2 rounded-xl">
                 {t("timer.instruction")}
               </span>
             </div>

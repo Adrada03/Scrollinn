@@ -1,17 +1,12 @@
 /**
- * AuthContext.jsx — Proveedor global de autenticación
+ * AuthContext.jsx — Proveedor global de autenticación (Supabase Auth nativo)
  *
- * Persistencia de sesión con localStorage:
- *  - Al montar la app, recupera la sesión guardada y la revalida contra la BD.
- *  - Cualquier cambio (login / logout / update) se refleja en localStorage automáticamente.
- *  - Sincroniza entre pestañas mediante el evento "storage".
+ * Usa `supabase.auth.onAuthStateChange` para escuchar cambios de sesión.
+ * Sincroniza el perfil de `public.users` cada vez que hay sesión activa.
  *
  * Exporta:
  *  - AuthProvider   — wrapper React
- *  - useAuth()      — hook: { currentUser, loading, login, logout, updateUser }
- *
- * Nota legal: almacenar la sesión en localStorage para autenticación se considera
- * "estrictamente necesario" y no requiere consentimiento de cookies.
+ *  - useAuth()      — hook: { session, currentUser, loading, logout, updateUser, refreshProfile }
  */
 
 import {
@@ -24,37 +19,6 @@ import {
 } from "react";
 import { supabase } from "../supabaseClient";
 
-// ─── Constantes ──────────────────────────────────────────────────────────────
-
-const SESSION_KEY = "scrollinn-session";
-
-// ─── Helpers de localStorage ────────────────────────────────────────────────
-
-function readStoredSession() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    // Validación mínima de integridad
-    if (parsed && parsed.id && parsed.username) return parsed;
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function writeSession(user) {
-  try {
-    if (user) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(SESSION_KEY);
-    }
-  } catch {
-    /* modo privado / SSR — falla silenciosamente */
-  }
-}
-
 // ─── Contexto ────────────────────────────────────────────────────────────────
 
 const AuthContext = createContext(null);
@@ -62,109 +26,116 @@ const AuthContext = createContext(null);
 /**
  * AuthProvider
  *
- * 1. Lee la sesión de localStorage al iniciar (instantáneo, sin parpadeo).
- * 2. Revalida contra Supabase (BD) para asegurar que el usuario sigue existiendo
- *    y refrescar datos que puedan haber cambiado (XP, avatar, etc.).
- * 3. Escucha el evento "storage" para sincronizar entre pestañas.
+ * 1. Al montar, obtiene la sesión actual con getSession().
+ * 2. Escucha onAuthStateChange para detectar login/logout/token refresh.
+ * 3. Cada vez que hay sesión activa, consulta public.users para datos de perfil.
  */
 export function AuthProvider({ children }) {
-  // Estado inicial: lo que haya guardado en localStorage (o null)
-  const [currentUser, setCurrentUser] = useState(() => readStoredSession());
+  const [session, setSession] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(() => sessionStorage.getItem("scrollinn-guest") === "1");
 
-  // ── 1. Revalidar sesión al montar ──────────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
+  // ── Fetch profile from public.users (con retry progresivo) ────────────
+  const fetchProfile = useCallback(async (userId) => {
+    if (!userId) {
+      setCurrentUser(null);
+      return;
+    }
 
-    async function validateSession() {
-      const stored = readStoredSession();
+    const delays = [0, 800, 1500, 2500]; // retry progresivo
 
-      if (!stored) {
-        setLoading(false);
-        return;
-      }
+    for (const delay of delays) {
+      if (delay > 0) await new Promise((r) => setTimeout(r, delay));
 
       try {
-        // Traer datos frescos del usuario desde la BD
         const { data, error } = await supabase
           .from("users")
           .select("id, username, xp, equipped_avatar_id, coins")
-          .eq("id", stored.id)
+          .eq("id", userId)
           .maybeSingle();
 
-        if (cancelled) return;
-
-        if (error || !data) {
-          // El usuario ya no existe en la BD → cerrar sesión local
-          writeSession(null);
-          setCurrentUser(null);
-        } else {
-          // Refrescar con los datos más recientes
-          const freshUser = {
+        if (!error && data) {
+          setCurrentUser({
             id: data.id,
             username: data.username,
             xp: data.xp ?? 0,
             equipped_avatar_id: data.equipped_avatar_id ?? "none",
             coins: data.coins ?? 0,
-          };
-          writeSession(freshUser);
-          setCurrentUser(freshUser);
+          });
+          return;
         }
       } catch {
-        // Error de red — mantener la sesión local como estaba
-        // (mejor UX offline que desloguear al usuario)
-      } finally {
-        if (!cancelled) setLoading(false);
+        // Network error — continue retrying
       }
     }
 
-    validateSession();
-    return () => {
-      cancelled = true;
-    };
+    // All retries exhausted — leave currentUser null
+    setCurrentUser(null);
   }, []);
 
-  // ── 2. Persistir en localStorage cada vez que cambia currentUser ───────────
+  // ── 1. Bootstrap session + listen for changes ─────────────────────────────
   useEffect(() => {
-    writeSession(currentUser);
-  }, [currentUser]);
+    let mounted = true;
 
-  // ── 3. Sincronizar entre pestañas ──────────────────────────────────────────
-  useEffect(() => {
-    const handleStorage = (e) => {
-      if (e.key === SESSION_KEY) {
-        try {
-          const updated = e.newValue ? JSON.parse(e.newValue) : null;
-          setCurrentUser(updated);
-        } catch {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      if (!mounted) return;
+      setSession(s);
+      if (s?.user?.id) {
+        fetchProfile(s.user.id).finally(() => {
+          if (mounted) setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        if (!mounted) return;
+        setSession(newSession);
+        if (newSession?.user?.id) {
+          fetchProfile(newSession.user.id);
+        } else {
           setCurrentUser(null);
         }
       }
-    };
+    );
 
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [fetchProfile]);
 
   // ── API pública ────────────────────────────────────────────────────────────
 
-  /** Guarda el usuario tras login/registro exitoso. */
-  const login = useCallback((user) => {
-    setCurrentUser(user);
+  /** Cierra sesión (Supabase Auth). */
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setCurrentUser(null);
+    setIsGuest(false);
+    sessionStorage.removeItem("scrollinn-guest");
   }, []);
 
-  /** Cierra sesión (local + localStorage). */
-  const logout = useCallback(() => {
-    setCurrentUser(null);
+  /** Entra como invitado (sin cuenta). */
+  const loginAsGuest = useCallback(() => {
+    setIsGuest(true);
+    sessionStorage.setItem("scrollinn-guest", "1");
+  }, []);
+
+  /** Sale del modo invitado y muestra AuthScreen. */
+  const exitGuest = useCallback(() => {
+    setIsGuest(false);
+    sessionStorage.removeItem("scrollinn-guest");
   }, []);
 
   /**
    * Actualiza parcialmente el usuario actual (p.ej. cambio de avatar o XP).
    * Acepta un objeto parcial o una función updater.
-   *
-   * Ejemplos:
-   *   updateUser({ xp: 120 })
-   *   updateUser(prev => ({ ...prev, equipped_avatar_id: 'cat' }))
    */
   const updateUser = useCallback((updater) => {
     setCurrentUser((prev) => {
@@ -175,11 +146,19 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  /** Refresca el perfil desde la BD */
+  const refreshProfile = useCallback(() => {
+    if (session?.user?.id) {
+      return fetchProfile(session.user.id);
+    }
+    return Promise.resolve();
+  }, [session?.user?.id, fetchProfile]);
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const value = useMemo(
-    () => ({ currentUser, loading, login, logout, updateUser }),
-    [currentUser, loading, login, logout, updateUser]
+    () => ({ session, currentUser, loading, logout, updateUser, refreshProfile, isGuest, loginAsGuest, exitGuest }),
+    [session, currentUser, loading, logout, updateUser, refreshProfile, isGuest, loginAsGuest, exitGuest]
   );
 
   return (
@@ -189,8 +168,6 @@ export function AuthProvider({ children }) {
 
 /**
  * Hook para consumir el contexto de autenticación.
- *
- * @returns {{ currentUser: object|null, loading: boolean, login: Function, logout: Function, updateUser: Function }}
  */
 export function useAuth() {
   const ctx = useContext(AuthContext);

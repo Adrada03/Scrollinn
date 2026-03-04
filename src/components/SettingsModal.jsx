@@ -7,10 +7,12 @@
  *  - Botón de cerrar sesión
  */
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../i18n";
 import { useSound } from "../context/SoundContext";
 import { useSoundEffect } from "../hooks/useSoundEffect";
+import CreditsModal from "./CreditsModal";
 
 /* ── Banderas inline (SVG) ── */
 const FlagGB = () => (
@@ -44,8 +46,10 @@ const SettingsModal = ({ isOpen, onClose, onLogout }) => {
   const { lang, toggleLang, t } = useLanguage();
   const { isMuted, toggleMute } = useSound();
   const { playNavigation } = useSoundEffect();
+  const [showCredits, setShowCredits] = useState(false);
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -144,12 +148,36 @@ const SettingsModal = ({ isOpen, onClose, onLogout }) => {
                 </div>
               </button>
 
-              {/* ── 3. Cerrar Sesión ── */}
+              {/* ── 3. Créditos y Licencias ── */}
+              <button
+                onClick={() => { playNavigation(); setShowCredits(true); }}
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10
+                  hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <span className="text-white font-medium">{t("credits.button")}</span>
+                </div>
+                <svg className="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+
+              {/* ── 4. Cerrar Sesión ── */}
               <button
                 onClick={() => { playNavigation(); onLogout(); onClose(); }}
-                className="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/20
+                className="w-full p-4 rounded-xl border
                   hover:bg-red-500/20 transition-colors cursor-pointer
                   text-red-400 font-semibold text-center"
+                style={{
+                  background: "rgba(127,29,29,0.15)",
+                  borderColor: "rgba(239,68,68,0.3)",
+                  boxShadow: "0 0 15px rgba(239,68,68,0.1), inset 0 0 15px rgba(239,68,68,0.05)",
+                }}
               >
                 {t("auth.logout")}
               </button>
@@ -167,6 +195,10 @@ const SettingsModal = ({ isOpen, onClose, onLogout }) => {
         </>
       )}
     </AnimatePresence>
+
+    {/* Credits Modal */}
+    <CreditsModal isOpen={showCredits} onClose={() => setShowCredits(false)} />
+    </>
   );
 };
 

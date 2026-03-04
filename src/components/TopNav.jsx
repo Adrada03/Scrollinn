@@ -14,6 +14,10 @@ const TopNav = ({
   onSearchClick,
   onOpenChallenges,
   challengeStatus = "pending",
+  onOpenSettings,
+  guestBanner,
+  guestLoginLabel,
+  onGuestLogin,
 }) => {
   const { t } = useLanguage();
   const { playNavigation } = useSoundEffect();
@@ -92,7 +96,20 @@ const TopNav = ({
           SCROLLINN
         </h1>
 
-        {/* ── Derecha: Lupa ── */}
+        {/* ── Derecha: Lupa + Gear (guest) ── */}
+        <div className="flex items-center gap-1">
+          {onOpenSettings && (
+            <button
+              onClick={() => { playNavigation(); onOpenSettings(); }}
+              className="pointer-events-auto p-2 text-white/50 hover:text-white active:scale-90 transition-all cursor-pointer"
+              aria-label={t("settings.title") || "Ajustes"}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
+          )}
         {onSearchClick ? (
           <button
             onClick={onSearchClick}
@@ -115,7 +132,25 @@ const TopNav = ({
         ) : (
           <div className="w-10" />
         )}
+        </div>
       </div>
+
+      {/* ── Guest banner (debajo del nav, dentro del fixed) ── */}
+      {guestBanner && (
+        <div className="relative pointer-events-auto flex items-center justify-between gap-2 px-4 py-1.5 text-xs font-medium"
+          style={{ background: "rgba(217,70,239,0.18)", borderBottom: "1px solid rgba(217,70,239,0.25)", color: "#d946ef" }}>
+          <span>{guestBanner}</span>
+          {onGuestLogin && (
+            <button
+              onClick={onGuestLogin}
+              className="shrink-0 px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors hover:bg-fuchsia-500/20"
+              style={{ background: "rgba(217,70,239,0.2)", color: "#e879f9" }}
+            >
+              {guestLoginLabel}
+            </button>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

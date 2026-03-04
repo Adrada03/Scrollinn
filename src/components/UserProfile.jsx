@@ -15,6 +15,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../supabaseClient";
 import Avatar from "./Avatar";
 import SettingsModal from "./SettingsModal";
+import CreditsModal from "./CreditsModal";
 import {
   getLevelFromXP,
   getLevelProgress,
@@ -35,10 +36,11 @@ const SkeletonCard = () => (
 );
 
 const UserProfile = ({ onOpenAvatarModal, onPlayGame }) => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, session } = useAuth();
   const { t } = useLanguage();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -117,20 +119,53 @@ const UserProfile = ({ onOpenAvatarModal, onPlayGame }) => {
     );
   }, [bestPositions, search]);
 
-  // ── Sin login ──
+  // ── Sin login (o cargando perfil tras login) ──
   if (!currentUser) {
-    return (
-      <div className="h-full flex items-center justify-center px-6">
-        <div className="text-center space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-            <svg className="w-10 h-10 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
+    // Session exists but profile hasn't loaded yet → loading spinner
+    if (session) {
+      return (
+        <div className="h-full flex items-center justify-center">
+          <div className="relative">
+            <div className="absolute -inset-8 bg-cyan-400/10 rounded-full blur-3xl animate-pulse" />
+            <h1
+              className="relative text-2xl font-black tracking-widest animate-pulse"
+              style={{
+                color: "#06b6d4",
+                textShadow: "0 0 20px rgba(6,182,212,0.6), 0 0 60px rgba(6,182,212,0.3)",
+              }}
+            >
+              SCROLLINN
+            </h1>
           </div>
-          <h2 className="text-white text-xl font-bold">{t("profile.login_required_title")}</h2>
-          <p className="text-white/50 text-sm">{t("profile.login_required_desc")}</p>
         </div>
-      </div>
+      );
+    }
+    return (
+      <>
+        <div className="h-full flex flex-col items-center justify-center px-6">
+          <div className="text-center space-y-4">
+            <div className="w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+              <svg className="w-10 h-10 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            </div>
+            <h2 className="text-white text-xl font-bold">{t("profile.login_required_title")}</h2>
+            <p className="text-white/50 text-sm">{t("profile.login_required_desc")}</p>
+          </div>
+
+          {/* Credits link visible sin login */}
+          <button
+            onClick={() => setIsCreditsOpen(true)}
+            className="mt-8 flex items-center gap-2 text-white/30 text-xs hover:text-cyan-400/70 transition-colors cursor-pointer"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {t("credits.button")}
+          </button>
+        </div>
+        <CreditsModal isOpen={isCreditsOpen} onClose={() => setIsCreditsOpen(false)} />
+      </>
     );
   }
 

@@ -234,37 +234,37 @@ const ColorMatchGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const cellGap = 2;
 
   return (
-    <div className="absolute inset-0 bg-[#2d1b36] flex flex-col items-center justify-center select-none overflow-hidden">
+    <div className="absolute inset-0 bg-[#0a0e17] flex flex-col items-center justify-center select-none overflow-hidden">
       {/* Degradados decorativos Scrollinn */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/60 to-transparent" />
-      </div>
+      <div className="absolute bottom-0 left-0 w-full h-52 bg-linear-to-t from-black/50 to-transparent pointer-events-none z-5" />
+      <div className="absolute top-0 left-0 w-full h-24 bg-linear-to-b from-black/30 to-transparent pointer-events-none z-5" />
+      <div className="absolute top-0 right-0 h-full w-20 bg-linear-to-l from-black/15 to-transparent pointer-events-none z-5" />
 
       {/* ====== HUD ====== */}
       {(isPlaying || isEnded) && (
         <div className="relative z-[2] flex items-center justify-between w-full px-6 mb-3" style={{ maxWidth: boardPx }}>
           {/* Movimientos */}
           <div className="flex items-center gap-2">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+            <span className="font-mono text-cyan-300/70 text-xs font-semibold uppercase tracking-wider">
               {t("colormatch.moves")}
             </span>
             <span
-              className={`text-lg font-black tabular-nums ${
+              className={`font-mono text-lg font-black tabular-nums ${
                 moves >= MAX_MOVES - 3 ? "text-red-400" : "text-white/90"
               }`}
+              style={{ textShadow: "0 0 6px #0ff, 0 0 20px #0ff" }}
             >
               {moves}
             </span>
-            <span className="text-white/30 text-sm font-bold">/ {MAX_MOVES}</span>
+            <span className="font-mono text-white/30 text-sm font-bold" style={{ textShadow: "0 0 4px #0ff" }}>/ {MAX_MOVES}</span>
           </div>
 
           {/* Progreso */}
           <div className="flex items-center gap-2">
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+            <span className="font-mono text-cyan-300/70 text-xs font-semibold uppercase tracking-wider">
               {t("colormatch.zone")}
             </span>
-            <span className="text-lg font-black text-white/90 tabular-nums">
+            <span className="font-mono text-lg font-black text-white/90 tabular-nums" style={{ textShadow: "0 0 6px #0ff, 0 0 20px #0ff" }}>
               {progress}%
             </span>
           </div>
@@ -280,7 +280,7 @@ const ColorMatchGame = ({ isActive, onNextGame, onReplay, userId }) => {
           display: "grid",
           gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
           gap: `${cellGap}px`,
-          background: "#111",
+          background: "#0d1117",
           padding: `${cellGap}px`,
         }}
       >
@@ -336,14 +336,13 @@ const ColorMatchGame = ({ isActive, onNextGame, onReplay, userId }) => {
                 disabled={isCurrent}
                 className={`rounded-xl transition-transform duration-200 ${
                   isCurrent
-                    ? "ring-2 ring-white/60 scale-110 brightness-125"
+                    ? "ring-2 ring-cyan-400/70 scale-110"
                     : "hover:scale-110 active:scale-95 cursor-pointer"
                 }`}
                 style={{
                   backgroundColor: color,
                   width: `calc((${boardPx} - 1.5rem) / ${NUM_COLORS})`,
                   aspectRatio: "1",
-                  opacity: isCurrent ? 0.5 : 1,
                 }}
               />
             );

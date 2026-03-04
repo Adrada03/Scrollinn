@@ -649,7 +649,7 @@ const GhostPongGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
   const isEnded = phase === PHASE.ENDED;
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center bg-black select-none overflow-hidden">
+    <div className="relative w-full h-full flex items-center justify-center bg-[#0a0e17] select-none overflow-hidden">
       {/* ── Contenedor del juego ── */}
       <div
         ref={containerRef}
@@ -661,7 +661,7 @@ const GhostPongGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
           maxHeight: `${GAME_H}px`,
           touchAction: phase === PHASE.PLAYING ? "none" : "auto",
           cursor: "none",
-          background: "radial-gradient(ellipse at center, #0f172a 0%, #020617 40%, #000 100%)",
+          background: "radial-gradient(ellipse at center, #0f172a 0%, #020617 40%, #0a0e17 100%)",
         }}
       >
         {/* ── Bordes láser (paredes neón magenta) ── */}
@@ -759,6 +759,11 @@ const GhostPongGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
         <div className="absolute inset-x-0 bottom-0 h-px"
              style={{ background: "linear-gradient(90deg, transparent, #ef4444 50%, transparent)", opacity: 0.35 }} />
       </div>
+
+      {/* ── Feed overlay gradients ── */}
+      <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 to-transparent pointer-events-none z-5" />
+      <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/30 to-transparent pointer-events-none z-5" />
+      <div className="absolute top-0 right-0 bottom-0 w-20 bg-linear-to-l from-black/15 to-transparent pointer-events-none z-5" />
 
       {/* ── Overlay de Game Over (resultado) ── */}
       {isEnded && (

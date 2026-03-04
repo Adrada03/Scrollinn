@@ -20,10 +20,12 @@ import TopNav from "./components/TopNav";
 import BottomNavigationBar from "./components/BottomNavigationBar";
 import GameFeed from "./components/Feed";
 import GameSelectorSheet from "./components/GameSelectorSheet";
-import AuthModal from "./components/AuthModal";
+import AuthScreen from "./components/AuthScreen";
 import AvatarSelectionModal from "./components/AvatarSelectionModal";
 import Shop from "./components/Shop";
 import UserProfile from "./components/UserProfile";
+import CreditsModal from "./components/CreditsModal";
+import SettingsModal from "./components/SettingsModal";
 
 // Datos
 import GAMES from "./data/games";
@@ -37,9 +39,6 @@ import { useLanguage } from "./i18n";
 // Contexto de autenticación
 import { useAuth } from "./context/AuthContext";
 
-// Contexto de sonido (para toggle en LockScreen)
-import { useSound } from "./context/SoundContext";
-
 /**
  * Variants para fade entre pestañas principales.
  */
@@ -49,68 +48,24 @@ const fadeVariants = {
   exit: { opacity: 0 },
 };
 
-/* ── Lock Screen Overlay ── */
-const LockScreen = ({ title, description, benefits, ctaText, onAction, children }) => (
-  <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl px-8">
-    <div className="flex flex-col items-center gap-4 max-w-sm text-center w-full">
-      {/* Lock icon with glow */}
-      <div className="relative mb-1">
-        <div className="absolute -inset-4 bg-cyan-400/15 rounded-full blur-2xl" />
-        <div className="relative w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <svg className="w-10 h-10 text-cyan-400/60" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-          </svg>
-        </div>
-      </div>
-
-      <h2 className="text-white text-xl font-bold leading-tight">{title}</h2>
-      <p className="text-white/45 text-sm leading-relaxed">{description}</p>
-
-      {/* Benefits list */}
-      {benefits && benefits.length > 0 && (
-        <div className="w-full mt-2 space-y-2 text-left">
-          {benefits.map((b, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/4 border border-white/5"
-            >
-              <span className="text-lg shrink-0 leading-none">{b.icon}</span>
-              <span className="text-white/65 text-[13px] leading-snug">{b.text}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* CTA button */}
-      {onAction && ctaText && (
-        <button
-          onClick={onAction}
-          className="mt-4 w-full py-3.5 rounded-2xl font-bold text-sm tracking-wide text-white
-            cursor-pointer active:scale-95 transition-all duration-200"
-          style={{
-            background: "linear-gradient(135deg, #06b6d4, #3b82f6)",
-            boxShadow: "0 8px 32px rgba(6,182,212,0.25), 0 2px 8px rgba(6,182,212,0.15)",
-          }}
-        >
-          {ctaText}
-        </button>
-      )}
-
-      {/* Extra content (e.g. sound toggle for logged-out users) */}
-      {children}
-    </div>
-  </div>
-);
-
 function App() {
-  const { currentUser, login, logout, updateUser } = useAuth();
+  const { session, currentUser, loading: authLoading, logout, updateUser, isGuest, exitGuest } = useAuth();
   const { t } = useLanguage();
-  const { isMuted, toggleMute } = useSound();
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [isGameSelectorOpen, setIsGameSelectorOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [gameEpoch, setGameEpoch] = useState(0);
+  const [showAuthScreen, setShowAuthScreen] = useState(false);
+
+  // Usuarios sin sesión se tratan como invitados
+  const isEffectiveGuest = !session;
+
+  // Cerrar AuthScreen automáticamente al iniciar sesión
+  useEffect(() => {
+    if (session) setShowAuthScreen(false);
+  }, [session]);
 
   // ── Challenge status para TopNav ──
   const [challengeStatusForTopNav, setChallengeStatusForTopNav] = useState("pending");
@@ -129,12 +84,7 @@ function App() {
     return () => window.removeEventListener("challenges-updated", handler);
   }, [refreshChallengeStatusForTopNav]);
 
-  // ── Escuchar evento global "open-auth" (emitido por DailyChallengesModal, etc.) ──
-  useEffect(() => {
-    const handler = () => setIsAuthOpen(true);
-    window.addEventListener("open-auth", handler);
-    return () => window.removeEventListener("open-auth", handler);
-  }, []);
+
 
   // ── Bottom Navigation Tab system ──
   const [mainTab, setMainTab] = useState("jugar"); // 'tienda' | 'jugar' | 'perfil'
@@ -155,14 +105,11 @@ function App() {
       if (e.key === "Escape" && isGameSelectorOpen) {
         setIsGameSelectorOpen(false);
       }
-      if (e.key === "Escape" && isAuthOpen) {
-        setIsAuthOpen(false);
-      }
       if (e.key === "Escape" && isAvatarModalOpen) {
         setIsAvatarModalOpen(false);
       }
     },
-    [isGameSelectorOpen, isAuthOpen, isAvatarModalOpen]
+    [isGameSelectorOpen, isAvatarModalOpen]
   );
 
   useEffect(() => {
@@ -221,12 +168,25 @@ function App() {
     }
   }, [pendingProfileGameId, mainTab, handleSelectGame]);
 
-  /** Benefits shown on lock screens for non-logged-in users */
-  const loginBenefits = [
-    { icon: "🏆", text: t("lock.benefit_scores") },
-    { icon: "🎨", text: t("lock.benefit_avatars") },
-    { icon: "📈", text: t("lock.benefit_levels") },
-  ];
+  // ── Auth guard: loading spinner ──────────────────────────────
+  if (authLoading) {
+    return (
+      <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-slate-950">
+        <div className="relative">
+          <div className="absolute -inset-8 bg-cyan-400/10 rounded-full blur-3xl animate-pulse" />
+          <h1
+            className="relative text-3xl font-black tracking-widest animate-pulse"
+            style={{
+              color: "#06b6d4",
+              textShadow: "0 0 20px rgba(6,182,212,0.6), 0 0 60px rgba(6,182,212,0.3)",
+            }}
+          >
+            SCROLLINN
+          </h1>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -246,22 +206,27 @@ function App() {
               transition={{ duration: 0.2, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              {/* Lock screen para Tienda sin login */}
-              {!currentUser && (
-                <LockScreen
-                  title={t("lock.shop_title")}
-                  description={t("lock.shop_desc")}
-                  benefits={loginBenefits}
-                  ctaText={t("lock.cta")}
-                  onAction={() => setIsAuthOpen(true)}
+              {isEffectiveGuest ? (
+                <div className="flex flex-col items-center justify-center h-full gap-4 px-8 text-center">
+                  <svg className="w-16 h-16 text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                  <p className="text-white/40 text-sm max-w-xs">{t("authscreen.guest_login_prompt")}</p>
+                  <button
+                    onClick={() => setShowAuthScreen(true)}
+                    className="px-6 py-2.5 rounded-xl font-bold text-sm text-white cursor-pointer active:scale-95 transition-all"
+                    style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)", boxShadow: "0 4px 20px rgba(6,182,212,0.3)" }}
+                  >
+                    {t("authscreen.guest_login_btn")}
+                  </button>
+                </div>
+              ) : (
+                <Shop
+                  coins={currentUser?.coins ?? 0}
+                  currentUser={currentUser}
+                  onCoinsChange={(newCoins) => updateUser({ coins: newCoins })}
                 />
               )}
-
-              <Shop
-                coins={currentUser?.coins ?? 0}
-                currentUser={currentUser}
-                onCoinsChange={(newCoins) => updateUser({ coins: newCoins })}
-              />
             </motion.div>
           )}
 
@@ -281,6 +246,10 @@ function App() {
                 onSearchClick={() => setIsGameSelectorOpen(true)}
                 onOpenChallenges={() => window.dispatchEvent(new CustomEvent("open-challenges-from-topnav"))}
                 challengeStatus={challengeStatusForTopNav}
+                onOpenSettings={isEffectiveGuest ? () => setIsSettingsOpen(true) : undefined}
+                guestBanner={isEffectiveGuest ? t("authscreen.guest_banner") : null}
+                guestLoginLabel={isEffectiveGuest ? t("authscreen.guest_login_btn") : null}
+                onGuestLogin={isEffectiveGuest ? () => setShowAuthScreen(true) : undefined}
               />
 
               <GameFeed
@@ -288,7 +257,7 @@ function App() {
                 games={GAMES}
                 selectedGameId={selectedGameId}
                 gameEpoch={gameEpoch}
-                disabled={isGameSelectorOpen || isAuthOpen}
+                disabled={isGameSelectorOpen}
                 onOpenGallery={() => setIsGameSelectorOpen(true)}
                 currentUser={currentUser}
               />
@@ -306,48 +275,20 @@ function App() {
               transition={{ duration: 0.2, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              {!currentUser ? (
-                <LockScreen
-                  title={t("profile.login_required_title")}
-                  description={t("profile.login_required_desc")}
-                  benefits={loginBenefits}
-                  ctaText={t("lock.cta")}
-                  onAction={() => setIsAuthOpen(true)}
-                >
-                  {/* ── Toggle de sonido accesible sin login ── */}
+              {isEffectiveGuest ? (
+                <div className="flex flex-col items-center justify-center h-full gap-4 px-8 text-center">
+                  <svg className="w-16 h-16 text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                  </svg>
+                  <p className="text-white/40 text-sm max-w-xs">{t("authscreen.guest_login_prompt")}</p>
                   <button
-                    onClick={toggleMute}
-                    className="mt-2 w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10
-                      hover:bg-white/10 transition-colors cursor-pointer"
+                    onClick={() => setShowAuthScreen(true)}
+                    className="px-6 py-2.5 rounded-xl font-bold text-sm text-white cursor-pointer active:scale-95 transition-all"
+                    style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)", boxShadow: "0 4px 20px rgba(6,182,212,0.3)" }}
                   >
-                    <div className="flex items-center gap-3">
-                      {!isMuted ? (
-                        <div className="w-8 h-8 rounded-lg bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
-                          <svg className="w-5 h-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5z" />
-                          </svg>
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                          <svg className="w-5 h-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M23 9l-6 6" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l6 6" />
-                          </svg>
-                        </div>
-                      )}
-                      <span className="text-white font-medium">{t("settings.sound")}</span>
-                    </div>
-                    <div className={`w-12 h-7 rounded-full p-0.5 transition-colors duration-200 ${
-                      !isMuted ? "bg-violet-500" : "bg-white/10"
-                    }`}>
-                      <div className={`w-6 h-6 rounded-full bg-white shadow-md transition-transform duration-200 ${
-                        !isMuted ? "translate-x-5" : "translate-x-0"
-                      }`} />
-                    </div>
+                    {t("authscreen.guest_login_btn")}
                   </button>
-                </LockScreen>
+                </div>
               ) : (
                 <UserProfile
                   onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
@@ -380,15 +321,6 @@ function App() {
         selectedGameId={selectedGameId}
       />
 
-      {/* Modal de autenticación */}
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-        onAuthSuccess={(user) => (user ? login(user) : logout())}
-        currentUser={currentUser}
-        onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
-      />
-
       {/* Modal de selección de avatar */}
       <AvatarSelectionModal
         isOpen={isAvatarModalOpen}
@@ -397,6 +329,23 @@ function App() {
         onAvatarChange={handleAvatarChange}
         onGoToShop={() => setMainTab("tienda")}
       />
+
+      {/* Modal de créditos (accesible sin login) */}
+      <CreditsModal isOpen={isCreditsOpen} onClose={() => setIsCreditsOpen(false)} />
+
+      {/* Settings para invitados (idioma, sonido) */}
+      {isEffectiveGuest && (
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          onLogout={() => setShowAuthScreen(true)}
+        />
+      )}
+
+      {/* AuthScreen overlay — se muestra bajo demanda */}
+      {showAuthScreen && (
+        <AuthScreen onClose={() => setShowAuthScreen(false)} />
+      )}
 
       {/* ── Toast elegante ── */}
       {toast && (

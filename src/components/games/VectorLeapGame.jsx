@@ -137,14 +137,14 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
         last = { x: startX, w: INIT_PLAT_W, topY: startTopY };
         platforms.push(last);
       }
-      while (platforms.length < 6) {
-        const minGap = 70 + diff * 25;
-        const maxGap = 170 + diff * 60;
-        const gap = rand(minGap, Math.min(maxGap, dims.w * 0.6));
-        const minW = Math.max(MIN_PLAT_W - diff * 15, 30);
-        const maxW = Math.max(MAX_PLAT_W - diff * 40, 45);
+      while (platforms.length < 12) {
+        const minGap = 60 + diff * 20;
+        const maxGap = 140 + diff * 40;
+        const gap = rand(minGap, Math.min(maxGap, dims.w * 0.5));
+        const minW = Math.max(MIN_PLAT_W - diff * 10, 35);
+        const maxW = Math.max(MAX_PLAT_W - diff * 30, 50);
         const w = rand(minW, maxW);
-        const heightDelta = rand(0, 100) * (0.3 + diff * 0.7);
+        const heightDelta = rand(0, 60) * (0.2 + diff * 0.5);
         const plat = {
           x: last.x + last.w + gap,
           w,
@@ -432,7 +432,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full bg-slate-900 overflow-hidden select-none"
+      className="relative w-full h-full bg-[#0a0e17] overflow-hidden select-none"
       onPointerDown={handlePointerDown}
     >
       {/* ── Gradient overlays para UI del feed ── */}
@@ -451,7 +451,11 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
               height: 1.5 + (i % 3),
               left: `${(i * 31 + 17) % 100}%`,
               top: `${(i * 19 + 11) % 70}%`,
-              backgroundColor: `rgba(255,255,255,${0.05 + (i % 5) * 0.03})`,
+              backgroundColor: i % 3 === 0
+                ? `rgba(34,211,238,${0.06 + (i % 5) * 0.03})`
+                : i % 3 === 1
+                  ? `rgba(168,85,247,${0.05 + (i % 5) * 0.025})`
+                  : `rgba(255,255,255,${0.04 + (i % 5) * 0.025})`,
             }}
           />
         ))}
@@ -461,8 +465,8 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       {phase !== PHASE.IDLE && (
         <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
           <span
-            className="text-5xl font-black text-white/80 tabular-nums"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-5xl font-black font-mono text-white/80 tabular-nums"
+            style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)' }}
           >
             {score}
           </span>
@@ -493,7 +497,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
         style={{ height: GROUND_H }}
       >
         {/* Línea decorativa superior del suelo */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-emerald-500/20" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-cyan-500/20" />
       </div>
 
       {/* ── Trail de vuelo ── */}
@@ -503,7 +507,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
         return (
           <div
             key={i}
-            className="absolute rounded-full bg-sky-400 pointer-events-none"
+            className="absolute rounded-full bg-cyan-400 pointer-events-none"
             style={{
               width: 4,
               height: 4,
@@ -522,19 +526,19 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
         return (
           <div
             key={idx}
-            className={`absolute bg-emerald-600 ${idx === 0 ? '' : 'opacity-80'}`}
+            className={`absolute bg-cyan-600/70 ${idx === 0 ? '' : 'opacity-80'}`}
             style={{
               left: s.left,
               bottom: 0,
               width: plat.w,
               height: s.bottom,
               borderRadius: "3px 3px 0 0",
-              boxShadow: idx === g.targetPlatform ? '0 0 0 3px #38bdf8' : undefined,
+              boxShadow: idx === g.targetPlatform ? '0 0 8px 2px rgba(34,211,238,0.5), 0 0 0 3px #22d3ee' : '0 0 6px rgba(34,211,238,0.15)',
             }}
           >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-400 rounded-t-sm" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-cyan-400 rounded-t-sm" />
             {idx > 0 && (
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 border-2 border-emerald-300/40 rounded-full" />
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 border-2 border-cyan-300/40 rounded-full" />
             )}
           </div>
         );
@@ -551,10 +555,10 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
             height: PLAYER_SIZE,
           }}
         >
-          <div className="w-full h-full bg-sky-400 rounded-sm shadow-lg shadow-sky-400/30" />
+          <div className="w-full h-full bg-cyan-400 rounded-sm shadow-lg shadow-cyan-400/50" style={{ boxShadow: '0 0 10px rgba(34,211,238,0.6), 0 0 20px rgba(34,211,238,0.3)' }} />
           {/* Ojos */}
-          <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-sky-900" />
-          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-sky-900" />
+          <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-cyan-900" />
+          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-cyan-900" />
         </div>
       )}
 
@@ -621,7 +625,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
               className="w-16 h-16 object-contain drop-shadow-lg"
               draggable={false}
             />
-            <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
+            <span className="text-xs font-semibold font-mono text-cyan-300/70 bg-white/5 border border-cyan-400/20 backdrop-blur-sm px-4 py-2 rounded-xl">
               {t("vectorleap.instruction")}
             </span>
           </div>

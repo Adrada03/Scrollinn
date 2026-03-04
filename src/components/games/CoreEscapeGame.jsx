@@ -583,7 +583,7 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full overflow-hidden bg-black select-none ${isPlaying || isCrashing ? 'touch-none' : ''}`}
+      className={`relative w-full h-full overflow-hidden bg-[#0a0e17] select-none ${isPlaying || isCrashing ? 'touch-none' : ''}`}
       onPointerDown={isPlaying ? handleTap : undefined}
     >
       {/* ── Scoped CSS keyframes ── */}
@@ -727,10 +727,10 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
           {/* Score */}
           <span
             ref={scoreDisplayRef}
-            className="text-3xl sm:text-4xl font-black text-white/90 tabular-nums tracking-tight"
+            className="text-3xl sm:text-4xl font-black font-mono text-white/90 tabular-nums tracking-tight"
             style={{
               fontFeatureSettings: "'tnum'",
-              textShadow: "0 0 20px rgba(255,255,255,0.15)",
+              textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)",
             }}
           >
             0 MB

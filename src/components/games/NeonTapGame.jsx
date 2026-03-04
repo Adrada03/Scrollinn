@@ -327,7 +327,7 @@ const NeonTapGame = ({ isActive, onNextGame, onReplay, userId }) => {
               >
                 {timeLeft}s
               </span>
-              <span className="text-white/90 text-2xl font-black tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>
+              <span className="text-white/90 text-2xl font-black font-mono tabular-nums" style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)" }}>
                 {score}
               </span>
               <span className="text-white/30 text-[10px] font-medium tracking-wider uppercase">

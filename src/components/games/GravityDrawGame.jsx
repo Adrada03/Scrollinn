@@ -58,15 +58,15 @@ const SIM_TIMEOUT_MS = 5000;    // 5 s máximo en fase SIM
 const PRE_SIM_DELAY  = 500;     // ms de pausa antes de soltar la bola (ajustable)
 
 // Colores
-const BG_COLOR      = "#0d1117";
+const BG_COLOR      = "#0a0e17";
 const BALL_COLOR    = "#ffffff";
-const BALL_GLOW     = "rgba(255,255,255,0.35)";
-const LINE_COLOR    = "#00e5ff";
-const LINE_GLOW     = "rgba(0,229,255,0.4)";
+const BALL_GLOW     = "rgba(34,211,238,0.5)";
+const LINE_COLOR    = "#22d3ee";
+const LINE_GLOW     = "rgba(34,211,238,0.55)";
 const GOAL_COLOR    = "#ff9800";
 const GOAL_GLOW     = "rgba(255,152,0,0.35)";
-const TIMER_BG      = "rgba(255,255,255,0.12)";
-const TIMER_FILL    = "#00e5ff";
+const TIMER_BG      = "rgba(34,211,238,0.08)";
+const TIMER_FILL    = "#22d3ee";
 
 /* ═══════════════════ HELPERS VECTORIALES ═══════════════════ */
 function dot(ax, ay, bx, by) { return ax * bx + ay * by; }
@@ -447,28 +447,46 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
       ctx.fillStyle = BG_COLOR;
       ctx.fillRect(0, 0, W, H);
 
-      // Zona fuera del área de juego (oscurecer)
+      // Zona fuera del área de juego (oscurecer con tinte neón)
       if (offsetX > 0) {
-        ctx.fillStyle = "rgba(0,0,0,0.35)";
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
         ctx.fillRect(0, 0, leftW, H);
         ctx.fillRect(rightW, 0, W - rightW, H);
-        // Bordes del área de juego
-        ctx.strokeStyle = "rgba(0,229,255,0.08)";
+        // Bordes del área de juego — neón cian
+        ctx.strokeStyle = "rgba(34,211,238,0.12)";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(leftW,  0); ctx.lineTo(leftW,  H);
         ctx.moveTo(rightW, 0); ctx.lineTo(rightW, H);
         ctx.stroke();
+        // Glow sutil en los bordes
+        ctx.shadowColor = "rgba(34,211,238,0.15)";
+        ctx.shadowBlur = 8;
+        ctx.strokeStyle = "rgba(34,211,238,0.06)";
+        ctx.beginPath();
+        ctx.moveTo(leftW,  0); ctx.lineTo(leftW,  H);
+        ctx.moveTo(rightW, 0); ctx.lineTo(rightW, H);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
       }
 
-      // Sutil cuadrícula (solo dentro del área de juego)
-      ctx.strokeStyle = "rgba(255,255,255,0.03)";
-      ctx.lineWidth = 1;
+      // Sutil cuadrícula neón (solo dentro del área de juego)
       const gridSize = 40;
+      // Cuadrícula principal
+      ctx.strokeStyle = "rgba(34,211,238,0.035)";
+      ctx.lineWidth = 1;
       for (let x = leftW; x < rightW; x += gridSize) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
       }
       for (let y = 0; y < H; y += gridSize) {
+        ctx.beginPath(); ctx.moveTo(leftW, y); ctx.lineTo(rightW, y); ctx.stroke();
+      }
+      // Sub-cuadrícula fina
+      ctx.strokeStyle = "rgba(34,211,238,0.015)";
+      for (let x = leftW; x < rightW; x += gridSize / 4) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 0; y < H; y += gridSize / 4) {
         ctx.beginPath(); ctx.moveTo(leftW, y); ctx.lineTo(rightW, y); ctx.stroke();
       }
 
@@ -479,30 +497,31 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         if (zoneBot > zoneTop + 10) {
           ctx.save();
           const zoneH = zoneBot - zoneTop;
-          // Líneas divisorias visibles (arriba y abajo de la zona)
+          // Líneas divisorias neón (cian/púrpura)
           ctx.setLineDash([10, 6]);
-          ctx.strokeStyle = "rgba(255,170,50,0.35)";
+          ctx.strokeStyle = "rgba(34,211,238,0.3)";
           ctx.lineWidth = 1.5;
           ctx.beginPath();
           ctx.moveTo(leftW, zoneTop); ctx.lineTo(rightW, zoneTop);
           ctx.stroke();
+          ctx.strokeStyle = "rgba(168,85,247,0.3)";
           ctx.beginPath();
           ctx.moveTo(leftW, zoneBot); ctx.lineTo(rightW, zoneBot);
           ctx.stroke();
           ctx.setLineDash([]);
-          // Relleno suave de la zona
+          // Relleno suave de la zona — gradiente cian/púrpura
           const zoneGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneBot);
-          zoneGrad.addColorStop(0, "rgba(255,170,50,0)");
-          zoneGrad.addColorStop(0.2, "rgba(255,170,50,0.07)");
-          zoneGrad.addColorStop(0.5, "rgba(255,170,50,0.09)");
-          zoneGrad.addColorStop(0.8, "rgba(255,170,50,0.07)");
-          zoneGrad.addColorStop(1, "rgba(255,170,50,0)");
+          zoneGrad.addColorStop(0, "rgba(34,211,238,0)");
+          zoneGrad.addColorStop(0.2, "rgba(34,211,238,0.04)");
+          zoneGrad.addColorStop(0.5, "rgba(168,85,247,0.05)");
+          zoneGrad.addColorStop(0.8, "rgba(168,85,247,0.04)");
+          zoneGrad.addColorStop(1, "rgba(34,211,238,0)");
           ctx.fillStyle = zoneGrad;
           ctx.fillRect(leftW, zoneTop, gameW, zoneH);
           // Texto centrado grande en la zona
           if (!g.drawing) {
-            ctx.fillStyle = "rgba(255,190,80,0.30)";
-            ctx.font = "700 16px system-ui, sans-serif";
+            ctx.fillStyle = "rgba(34,211,238,0.25)";
+            ctx.font = "700 16px 'Courier New', monospace";
             ctx.textAlign = "center";
             ctx.fillText(t("gravitydraw.drawHere"), leftW + gameW / 2, zoneTop + zoneH / 2 + 5);
           }
@@ -892,14 +911,15 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         ctx.restore();
       }
 
-      // Línea del jugador (o preview mientras dibuja)
+      // Línea del jugador (o preview mientras dibuja) — neón cian con glow fuerte
       const lineData = g.line || (g.drawStart && g.drawEnd
         ? [g.drawStart.x, g.drawStart.y, g.drawEnd.x, g.drawEnd.y]
         : null);
       if (lineData) {
         ctx.save();
-        ctx.shadowColor = LINE_GLOW;
-        ctx.shadowBlur = 14;
+        // Glow exterior amplio
+        ctx.shadowColor = "rgba(34,211,238,0.6)";
+        ctx.shadowBlur = 20;
         ctx.strokeStyle = LINE_COLOR;
         ctx.lineWidth = 5;
         ctx.lineCap = "round";
@@ -907,55 +927,82 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         ctx.moveTo(lineData[0], lineData[1]);
         ctx.lineTo(lineData[2], lineData[3]);
         ctx.stroke();
-        // Endpoints
+        // Línea interior más brillante
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = "rgba(255,255,255,0.5)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(lineData[0], lineData[1]);
+        ctx.lineTo(lineData[2], lineData[3]);
+        ctx.stroke();
+        // Endpoints con glow
+        ctx.shadowColor = "rgba(34,211,238,0.8)";
+        ctx.shadowBlur = 10;
         ctx.fillStyle = LINE_COLOR;
         ctx.beginPath();
-        ctx.arc(lineData[0], lineData[1], 4, 0, Math.PI * 2);
+        ctx.arc(lineData[0], lineData[1], 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(lineData[2], lineData[3], 4, 0, Math.PI * 2);
+        ctx.arc(lineData[2], lineData[3], 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
         ctx.restore();
       }
 
-      // Bola (blanca con glow)
+      // Bola (neón blanca con glow cian/púrpura dinámico)
       ctx.save();
-      ctx.shadowColor = BALL_GLOW;
-      ctx.shadowBlur = 24;
+      // Halo exterior amplio
+      const ballPulse = 0.8 + 0.2 * Math.sin(now * 0.004);
+      ctx.shadowColor = `rgba(34,211,238,${0.4 * ballPulse})`;
+      ctx.shadowBlur = 28;
       ctx.fillStyle = BALL_COLOR;
       ctx.beginPath();
       ctx.arc(g.ballX, g.ballY, ballR, 0, Math.PI * 2);
       ctx.fill();
-      // Brillo interior
+      // Segundo halo púrpura
+      ctx.shadowColor = `rgba(168,85,247,${0.2 * ballPulse})`;
+      ctx.shadowBlur = 18;
+      ctx.fill();
+      // Brillo interior 
       const grad = ctx.createRadialGradient(
-        g.ballX - ballR * 0.2, g.ballY - ballR * 0.2, 1,
+        g.ballX - ballR * 0.25, g.ballY - ballR * 0.25, 1,
         g.ballX, g.ballY, ballR
       );
-      grad.addColorStop(0, "rgba(255,255,255,0.9)");
-      grad.addColorStop(1, "rgba(255,255,255,0)");
+      grad.addColorStop(0, "rgba(255,255,255,0.95)");
+      grad.addColorStop(0.5, "rgba(224,242,254,0.4)");
+      grad.addColorStop(1, "rgba(34,211,238,0.05)");
       ctx.fillStyle = grad;
       ctx.fill();
+      // Anillo exterior sutil
       ctx.shadowBlur = 0;
+      ctx.strokeStyle = `rgba(34,211,238,${0.25 * ballPulse})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(g.ballX, g.ballY, ballR + 2, 0, Math.PI * 2);
+      ctx.stroke();
       ctx.restore();
 
-      // Mensaje de éxito (fase SCORED)
+      // Mensaje de éxito (fase SCORED) — neón verde con glow
       if (g.phase === PHASE.SCORED && g.scoredAlpha > 0) {
         ctx.save();
         ctx.globalAlpha = g.scoredAlpha;
         ctx.fillStyle = "#4ade80";
-        ctx.font = "bold 28px system-ui, sans-serif";
+        ctx.font = "bold 28px 'Courier New', monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.shadowColor = "rgba(74,222,128,0.5)";
-        ctx.shadowBlur = 20;
+        ctx.shadowColor = "rgba(74,222,128,0.7)";
+        ctx.shadowBlur = 25;
+        ctx.fillText(t("gravitydraw.success"), leftW + gameW / 2, H * 0.44);
+        // Doble capa de glow
+        ctx.shadowColor = "rgba(34,211,238,0.3)";
+        ctx.shadowBlur = 40;
         ctx.fillText(t("gravitydraw.success"), leftW + gameW / 2, H * 0.44);
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
         ctx.restore();
       }
 
-      // Barra de tiempo (solo en DRAW) — dentro del área de juego, debajo del header
+      // Barra de tiempo (solo en DRAW) — neón cian con glow
       if (g.phase === PHASE.DRAW) {
         const barW = gameW - 40;
         const barH = 6;
@@ -967,11 +1014,14 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         ctx.beginPath();
         ctx.roundRect(barX, barY, barW, barH, 3);
         ctx.fill();
-        // Fill
+        // Fill con glow
+        ctx.shadowColor = "rgba(34,211,238,0.5)";
+        ctx.shadowBlur = 8;
         ctx.fillStyle = TIMER_FILL;
         ctx.beginPath();
         ctx.roundRect(barX, barY, barW * pct, barH, 3);
         ctx.fill();
+        ctx.shadowBlur = 0;
       }
 
       // Barra de tiempo SIM (cuenta atrás 5 s)
@@ -987,20 +1037,26 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         ctx.beginPath();
         ctx.roundRect(barX, barY, barW, barH, 3);
         ctx.fill();
-        // Fill — cambia de cyan a rojo cuando queda poco
-        const simColor = pct > 0.3 ? "#ff6b00" : "#ff2244";
+        // Fill — cambia de púrpura a magenta cuando queda poco
+        const simColor = pct > 0.3 ? "#a855f7" : "#ec4899";
+        ctx.shadowColor = pct > 0.3 ? "rgba(168,85,247,0.5)" : "rgba(236,72,153,0.5)";
+        ctx.shadowBlur = 8;
         ctx.fillStyle = simColor;
         ctx.beginPath();
         ctx.roundRect(barX, barY, barW * pct, barH, 3);
         ctx.fill();
+        ctx.shadowBlur = 0;
       }
 
-      // Instrucción fase draw
+      // Instrucción fase draw — neón monospace
       if (g.phase === PHASE.DRAW && !g.drawing && !g.line) {
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
-        ctx.font = "600 14px system-ui, sans-serif";
+        ctx.fillStyle = "rgba(34,211,238,0.35)";
+        ctx.font = "600 14px 'Courier New', monospace";
         ctx.textAlign = "center";
+        ctx.shadowColor = "rgba(34,211,238,0.2)";
+        ctx.shadowBlur = 8;
         ctx.fillText(t("gravitydraw.instruction"), leftW + gameW / 2, 76 + sat);
+        ctx.shadowBlur = 0;
       }
 
       rafRef.current = requestAnimationFrame(loop);
@@ -1175,6 +1231,11 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
       className="absolute inset-0 overflow-hidden select-none"
       style={{ background: BG_COLOR }}
     >
+      {/* ── Gradient overlays para UI del feed ── */}
+      <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-5" />
+      <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/30 to-transparent pointer-events-none z-5" />
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-linear-to-l from-black/15 to-transparent pointer-events-none z-5" />
+
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
@@ -1184,12 +1245,18 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         onMouseLeave={handlePointerUp}
       />
 
+      {/* ── Scanlines CRT sobre el canvas ── */}
+      <div className="absolute inset-0 pointer-events-none cyber-scanlines opacity-40" />
+
       {/* ── HUD: Score ── */}
       {!isIdle && (
         <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
           <span
-            className="text-5xl font-black text-white/80 tabular-nums"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-5xl font-black text-white tabular-nums font-mono"
+            style={{
+              fontFeatureSettings: "'tnum'",
+              textShadow: "0 0 20px rgba(34,211,238,0.6), 0 0 40px rgba(34,211,238,0.2), 0 0 60px rgba(168,85,247,0.15)",
+            }}
           >
             {score}
           </span>
@@ -1203,10 +1270,17 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
             <img
               src="/logo-gravitydraw.png"
               alt="Gravity Draw"
-              className="w-16 h-16 object-contain drop-shadow-lg"
+              className="w-16 h-16 object-contain"
+              style={{ filter: "drop-shadow(0 0 12px rgba(34,211,238,0.5)) drop-shadow(0 0 24px rgba(168,85,247,0.3))" }}
               draggable={false}
             />
-            <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
+            <span
+              className="text-xs font-bold font-mono text-cyan-300/70 bg-cyan-400/5 backdrop-blur-sm px-4 py-2 rounded-xl tracking-wider uppercase"
+              style={{
+                border: "1px solid rgba(34,211,238,0.15)",
+                textShadow: "0 0 8px rgba(34,211,238,0.4)",
+              }}
+            >
               {t("gravitydraw.instruction")}
             </span>
           </div>

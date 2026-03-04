@@ -154,12 +154,12 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
     setRanking([]);
     setScoreMessage("");
 
-    // Torre: solo la base
+    // Torre: solo la base (estilizada como plataforma cyberpunk)
     towerRef.current = [{
       x: cw / 2 - baseW / 2,
       y: landingY,
       w: baseW,
-      color: "#6b7280", // gray-500
+      color: "#22d3ee", // cyan-400 — acento neón para la base
     }];
     forceRender();
     setGameState(STATES.PLAYING);
@@ -345,7 +345,8 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full bg-zinc-900 overflow-hidden select-none"
+      className="relative w-full h-full overflow-hidden select-none"
+      style={{ background: "#0a0e17" }}
       onPointerDown={handleTap}
     >
       {/* ── Gradient overlays para UI del feed ── */}
@@ -353,13 +354,48 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/30 to-transparent pointer-events-none z-5" />
       <div className="absolute right-0 top-0 bottom-0 w-20 bg-linear-to-l from-black/15 to-transparent pointer-events-none z-5" />
 
-      {/* ── Fondo decorativo: líneas de guía verticales ── */}
+      {/* ── Fondo cyberpunk: rejilla de circuito ── */}
+      <div className="absolute inset-0 pointer-events-none cyber-circuit-bg opacity-60" />
+
+      {/* ── Scanlines CRT ── */}
+      <div className="absolute inset-0 pointer-events-none cyber-scanlines" />
+
+      {/* ── Radial glow ambiental en la base de la torre ── */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          left: "50%",
+          bottom: `${(1 - LANDING_RATIO) * 100}%`,
+          width: "120%",
+          height: "45%",
+          transform: "translateX(-50%)",
+          background: "radial-gradient(ellipse at center, rgba(34,211,238,0.06) 0%, rgba(168,85,247,0.03) 40%, transparent 70%)",
+        }}
+      />
+
+      {/* ── Fondo decorativo: líneas de guía verticales neón ── */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="absolute top-0 bottom-0 w-px bg-white/3"
-            style={{ left: `${(i + 1) * 12.5}%` }}
+            className="absolute top-0 bottom-0"
+            style={{
+              left: `${(i + 1) * 12.5}%`,
+              width: "1px",
+              background: "rgba(34,211,238,0.04)",
+            }}
+          />
+        ))}
+        {/* Líneas horizontales sutiles */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={`h${i}`}
+            className="absolute left-0 right-0"
+            style={{
+              top: `${(i + 1) * 8.33}%`,
+              height: "1px",
+              background: "rgba(34,211,238,0.02)",
+            }}
           />
         ))}
       </div>
@@ -368,8 +404,11 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       {gameState !== STATES.IDLE && (
         <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
           <span
-            className="text-5xl font-black text-white/80 tabular-nums"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-5xl font-black text-white tabular-nums font-mono"
+            style={{
+              fontFeatureSettings: "'tnum'",
+              textShadow: "0 0 20px rgba(34,211,238,0.6), 0 0 40px rgba(34,211,238,0.2), 0 0 60px rgba(168,85,247,0.15)",
+            }}
           >
             {score}
           </span>
@@ -382,19 +421,24 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
         {/* ── Grúa: cable + caja pendiente + indicador (con cooldown visual) ── */}
         {isPlaying && dropXRef.current < 0 && (
           <div style={{ opacity: craneOpacity, transition: "opacity 0.15s ease" }}>
-            {/* Cable */}
+            {/* Cable — neón con glow */}
             <div
               className="absolute"
               style={{
                 left: craneXRef.current + boxW / 2 - cableW / 2,
                 top: 0,
-                width: cableW,
+                width: Math.max(2, cableW),
                 height: craneY + cableExt,
-                background: inCooldown ? "#f87171" : "rgba(255,255,255,0.2)",
-                transition: "background 0.2s ease",
+                background: inCooldown
+                  ? "linear-gradient(180deg, rgba(248,113,113,0.1), #f87171)"
+                  : "linear-gradient(180deg, rgba(34,211,238,0.05), rgba(34,211,238,0.4))",
+                boxShadow: inCooldown
+                  ? "0 0 6px rgba(248,113,113,0.5)"
+                  : "0 0 8px rgba(34,211,238,0.3), 0 0 2px rgba(34,211,238,0.5)",
+                transition: "background 0.2s ease, box-shadow 0.2s ease",
               }}
             />
-            {/* Caja en la grúa */}
+            {/* Caja en la grúa — con borde neón y glow fuerte */}
             <div
               className="absolute rounded-sm"
               style={{
@@ -402,18 +446,21 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
                 top: craneY + cableExt,
                 width: boxW,
                 height: boxH,
-                background: getBoxColor(scoreRef.current + 1),
-                boxShadow: `0 0 12px ${getBoxColor(scoreRef.current + 1)}40, inset 0 1px 0 rgba(255,255,255,0.25)`,
+                background: `linear-gradient(135deg, ${getBoxColor(scoreRef.current + 1)}cc, ${getBoxColor(scoreRef.current + 1)}88)`,
+                border: `1px solid ${getBoxColor(scoreRef.current + 1)}`,
+                boxShadow: `0 0 14px ${getBoxColor(scoreRef.current + 1)}60, 0 0 30px ${getBoxColor(scoreRef.current + 1)}20, inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3)`,
               }}
             />
-            {/* Indicador superior de la grúa */}
+            {/* Indicador superior de la grúa — neón */}
             <div
-              className="absolute bg-gray-500 rounded-sm"
+              className="absolute rounded-sm"
               style={{
                 left: craneXRef.current + boxW / 2 - indicW / 2,
                 top: craneY - Math.round(gameW * 0.01),
                 width: indicW,
                 height: indicH,
+                background: "linear-gradient(90deg, #22d3ee, #a855f7)",
+                boxShadow: "0 0 8px rgba(34,211,238,0.5), 0 0 4px rgba(168,85,247,0.4)",
               }}
             />
             {/* Barra de cooldown bajo la caja pendiente */}
@@ -434,7 +481,7 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
                     transform: `scaleX(${cooldownProgress})`,
                     transformOrigin: "left",
                     willChange: "transform",
-                    background: "linear-gradient(90deg, #f87171, #22d3ee)",
+                    background: "linear-gradient(90deg, #f87171, #a855f7, #22d3ee)",
                   }}
                 />
               </div>
@@ -442,19 +489,34 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
           </div>
         )}
 
-        {/* ── Caja cayendo ── */}
+        {/* ── Caja cayendo — con estela neón ── */}
         {dropXRef.current >= 0 && (
-          <div
-            className="absolute rounded-sm"
-            style={{
-              left: dropXRef.current,
-              top: dropYRef.current,
-              width: boxW,
-              height: boxH,
-              background: getBoxColor(scoreRef.current + 1),
-              boxShadow: `0 0 12px ${getBoxColor(scoreRef.current + 1)}40, inset 0 1px 0 rgba(255,255,255,0.25)`,
-            }}
-          />
+          <>
+            {/* Estela vertical tras la caja */}
+            <div
+              className="absolute"
+              style={{
+                left: dropXRef.current + boxW * 0.15,
+                top: craneY + cableExt,
+                width: boxW * 0.7,
+                height: Math.max(0, dropYRef.current - craneY - cableExt),
+                background: `linear-gradient(180deg, transparent, ${getBoxColor(scoreRef.current + 1)}15)`,
+                filter: "blur(4px)",
+              }}
+            />
+            <div
+              className="absolute rounded-sm"
+              style={{
+                left: dropXRef.current,
+                top: dropYRef.current,
+                width: boxW,
+                height: boxH,
+                background: `linear-gradient(135deg, ${getBoxColor(scoreRef.current + 1)}cc, ${getBoxColor(scoreRef.current + 1)}88)`,
+                border: `1px solid ${getBoxColor(scoreRef.current + 1)}`,
+                boxShadow: `0 0 18px ${getBoxColor(scoreRef.current + 1)}70, 0 0 35px ${getBoxColor(scoreRef.current + 1)}25, inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.3)`,
+              }}
+            />
+          </>
         )}
 
         {/* ── Torre de cajas apiladas ── */}
@@ -467,24 +529,54 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
               top: box.y + cam,
               width: box.w,
               height: boxH,
-              background: box.color,
+              background: i === 0
+                ? "linear-gradient(135deg, #1e293b, #334155)"
+                : `linear-gradient(135deg, ${box.color}bb, ${box.color}77)`,
+              border: i === 0
+                ? "1px solid rgba(34,211,238,0.3)"
+                : `1px solid ${box.color}99`,
               boxShadow: i === 0
-                ? "none"
-                : `0 0 8px ${box.color}30, inset 0 1px 0 rgba(255,255,255,0.2)`,
-              border: i === 0 ? "2px solid #9ca3af" : "none",
+                ? "0 0 12px rgba(34,211,238,0.15), inset 0 1px 0 rgba(255,255,255,0.1)"
+                : `0 0 10px ${box.color}35, 0 0 25px ${box.color}12, inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.25)`,
             }}
           >
-            {/* Línea decorativa superior */}
+            {/* Línea decorativa superior brillante */}
             {i > 0 && (
-              <div className="absolute top-0 left-0.5 right-0.5 h-px bg-white/20 rounded" />
+              <div
+                className="absolute top-0 left-0.5 right-0.5 h-px rounded"
+                style={{ background: `${box.color}55` }}
+              />
+            )}
+            {/* Sutil marca interior */}
+            {i === 0 && (
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ fontSize: Math.round(boxH * 0.45), color: "rgba(34,211,238,0.25)", fontWeight: 900, fontFamily: "monospace" }}
+              >
+                ▼
+              </div>
             )}
           </div>
         ))}
 
-        {/* ── Línea de suelo ── */}
+        {/* ── Línea de suelo — neón cian con glow ── */}
         <div
-          className="absolute left-0 right-0 h-px bg-white/10"
-          style={{ top: landingY + cam + boxH }}
+          className="absolute left-0 right-0"
+          style={{
+            top: landingY + cam + boxH,
+            height: "1px",
+            background: "linear-gradient(90deg, transparent 5%, rgba(34,211,238,0.3) 30%, rgba(34,211,238,0.5) 50%, rgba(34,211,238,0.3) 70%, transparent 95%)",
+            boxShadow: "0 0 8px rgba(34,211,238,0.2), 0 0 20px rgba(34,211,238,0.1)",
+          }}
+        />
+        {/* Sub-suelo: gradiente oscuro */}
+        <div
+          className="absolute left-0 right-0 pointer-events-none"
+          style={{
+            top: landingY + cam + boxH + 1,
+            height: "60px",
+            background: "linear-gradient(180deg, rgba(34,211,238,0.03), transparent)",
+          }}
         />
       </div>
 
@@ -495,10 +587,17 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
             <img
               src="/logo-dropthebox.png"
               alt="Drop the Box"
-              className="w-16 h-16 object-contain drop-shadow-lg"
+              className="w-16 h-16 object-contain"
+              style={{ filter: "drop-shadow(0 0 12px rgba(34,211,238,0.5)) drop-shadow(0 0 24px rgba(168,85,247,0.3))" }}
               draggable={false}
             />
-            <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
+            <span
+              className="text-xs font-bold font-mono text-cyan-300/70 bg-cyan-400/5 backdrop-blur-sm px-4 py-2 rounded-xl tracking-wider uppercase"
+              style={{
+                border: "1px solid rgba(34,211,238,0.15)",
+                textShadow: "0 0 8px rgba(34,211,238,0.4)",
+              }}
+            >
               {t("dropthebox.instruction")}
             </span>
           </div>
@@ -511,16 +610,25 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
           className="absolute inset-x-0 flex justify-center pointer-events-none z-3"
           style={{ top: craneY + boxH + cableExt + Math.round(gameW * 0.12) }}
         >
-          <span className="text-sm font-medium text-white/20 tracking-wider uppercase animate-pulse">
+          <span
+            className="text-sm font-mono font-medium text-cyan-400/30 tracking-wider uppercase animate-pulse"
+            style={{ textShadow: "0 0 10px rgba(34,211,238,0.2)" }}
+          >
             {t("dropthebox.tap_drop")}
           </span>
         </div>
       )}
 
-      {/* ── Velocidad info ── */}
+      {/* ── Velocidad info — neón ── */}
       {isPlaying && score >= 5 && (
         <div className="absolute bottom-28 left-0 right-0 flex justify-center pointer-events-none z-3">
-          <span className="text-xs text-white/15 font-medium">
+          <span
+            className="text-xs font-mono font-medium"
+            style={{
+              color: "rgba(168,85,247,0.35)",
+              textShadow: "0 0 8px rgba(168,85,247,0.2)",
+            }}
+          >
             {t("dropthebox.speed")} ×{(craneSpeedRef.current / baseCraneSpeed).toFixed(1)}
           </span>
         </div>
@@ -530,12 +638,18 @@ const DropTheBoxGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       {isEnded && (
         <div className="flex flex-col items-center gap-2 mb-4">
           <span
-            className="text-7xl sm:text-8xl font-black text-white tabular-nums"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-7xl sm:text-8xl font-black text-white tabular-nums font-mono"
+            style={{
+              fontFeatureSettings: "'tnum'",
+              textShadow: "0 0 20px rgba(34,211,238,0.5), 0 0 50px rgba(168,85,247,0.3)",
+            }}
           >
             {score}
           </span>
-          <span className="text-lg text-white/50 font-semibold">
+          <span
+            className="text-lg text-cyan-300/50 font-semibold font-mono"
+            style={{ textShadow: "0 0 8px rgba(34,211,238,0.3)" }}
+          >
             {t("dropthebox.boxes_stacked")}
           </span>
         </div>

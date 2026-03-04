@@ -66,6 +66,7 @@ const GAMES = [
     emoji: "⚡",
     logo: "/logo-neontap.png",
     gameComponent: "NeonTap",
+    requiresScrollLock: true,
   },
   {
     id: "stroop-effect",

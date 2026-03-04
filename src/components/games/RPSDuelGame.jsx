@@ -255,7 +255,7 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
   return (
     <div
-      className="relative h-full w-full flex flex-col items-center justify-center bg-zinc-950 overflow-hidden select-none"
+      className="relative h-full w-full flex flex-col items-center justify-center bg-[#0a0e17] overflow-hidden select-none"
       style={{
         touchAction: "manipulation",
         userSelect: "none",
@@ -291,12 +291,12 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
           </div>
           <div className="flex justify-between mt-2">
             <span
-              className="text-xs font-bold text-white/40 tabular-nums"
-              style={{ fontFeatureSettings: "'tnum'" }}
+              className="text-xs font-bold font-mono text-cyan-300/50 tabular-nums"
+              style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 6px rgba(34,211,238,0.4)' }}
             >
               {timeLeft.toFixed(2)}s
             </span>
-            <span className="text-xs font-bold text-white/40">
+            <span className="text-xs font-bold font-mono text-cyan-300/50" style={{ textShadow: '0 0 6px rgba(34,211,238,0.4)' }}>
               {score} ✓
             </span>
           </div>
@@ -307,7 +307,7 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
       {isPlaying && score > 0 && (
         <div className="absolute inset-x-0 top-[calc(var(--sat,0px)+7rem)] flex justify-center pointer-events-none z-1">
           <span
-            className="text-9xl font-black text-white/4 tabular-nums"
+            className="text-9xl font-black text-white/4 font-mono tabular-nums"
             style={{ fontFeatureSettings: "'tnum'" }}
           >
             {score}
@@ -357,14 +357,14 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
               className="
                 w-20 h-20 sm:w-24 sm:h-24
                 rounded-full
-                bg-white/10 hover:bg-white/20 active:bg-white/25
+                bg-white/5 hover:bg-white/15 active:bg-white/20
                 backdrop-blur-sm
-                border-2 border-white/20
+                border border-cyan-400/20
                 flex items-center justify-center
                 text-4xl sm:text-5xl
                 transition-all duration-75
                 active:scale-90
-                shadow-lg shadow-black/30
+                shadow-[0_0_12px_rgba(34,211,238,0.15)]
               "
               style={{
                 touchAction: "manipulation",

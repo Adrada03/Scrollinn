@@ -31,6 +31,7 @@ import { useSoundEffect } from "../hooks/useSoundEffect";
 import { supabase } from "../supabaseClient";
 import { getLevelProgress } from "../utils/leveling";
 import { getTop5 } from "../services/gameService";
+import GAMES from "../data/games";
 import Avatar from "./Avatar";
 import PublicProfileModal from "./PublicProfileModal";
 
@@ -641,7 +642,7 @@ const GameOverPanel = ({
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-3 shrink-0">
                 <h3 className="text-white font-extrabold text-xl tracking-tight">
-                  {t('gameover.top5')}
+                  {GAMES.find(g => g.id === gameId)?.title || t('gameover.top5')}
                 </h3>
                 <button
                   onClick={() => setShowLeaderboard(false)}

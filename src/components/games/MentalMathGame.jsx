@@ -2,7 +2,7 @@
  * MentalMathGame.jsx — "Mental Math"
  *
  * Reflexive multiplication quiz with progressive difficulty.
- * Light-mode "Modern Clean / Playful" aesthetic (Kahoot / Duolingo style).
+ * Cyberpunk neon aesthetic with dark background and glowing accents.
  *
  * Flow:  IDLE → PLAYING → ENDED
  *
@@ -184,14 +184,14 @@ function generateQuestion(score = 0) {
 }
 
 /* ═══════════════════════════════════════════════════
-   ACCENT COLORS for answer buttons (Kahoot-style)
+   ACCENT COLORS for answer buttons (Cyberpunk neon)
    ═══════════════════════════════════════════════════ */
 
 const BTN_ACCENTS = [
-  { bg: "bg-blue-500",   border: "border-blue-600",   hover: "hover:bg-blue-400",   text: "text-white" },
-  { bg: "bg-amber-500",  border: "border-amber-600",  hover: "hover:bg-amber-400",  text: "text-white" },
-  { bg: "bg-rose-500",   border: "border-rose-600",   hover: "hover:bg-rose-400",   text: "text-white" },
-  { bg: "bg-violet-500", border: "border-violet-600", hover: "hover:bg-violet-400", text: "text-white" },
+  { bg: "bg-cyan-500/10",   border: "border-cyan-400/30",   hover: "hover:bg-cyan-500/20",   text: "text-cyan-200",   glow: "rgba(34,211,238,0.25)" },
+  { bg: "bg-purple-500/10", border: "border-purple-400/30", hover: "hover:bg-purple-500/20", text: "text-purple-200", glow: "rgba(168,85,247,0.25)" },
+  { bg: "bg-pink-500/10",   border: "border-pink-400/30",   hover: "hover:bg-pink-500/20",   text: "text-pink-200",   glow: "rgba(236,72,153,0.25)" },
+  { bg: "bg-violet-500/10", border: "border-violet-400/30", hover: "hover:bg-violet-500/20", text: "text-violet-200", glow: "rgba(139,92,246,0.25)" },
 ];
 
 /* ═══════════════════════════════════════════════════
@@ -241,14 +241,15 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (barFillRef.current) {
       barFillRef.current.style.transform = `scaleX(${pct})`;
 
-      // Color transitions: blue → amber → red
+      // Color transitions: cyan → purple → pink
       const bg =
         pct > 0.5
-          ? "#3b82f6"    // blue-500
+          ? "#22d3ee"    // cyan-400
           : pct > 0.25
-            ? "#f59e0b"  // amber-500
-            : "#ef4444"; // red-500
+            ? "#a855f7"  // purple-500
+            : "#ec4899"; // pink-500
       barFillRef.current.style.backgroundColor = bg;
+      barFillRef.current.style.boxShadow = `0 0 8px ${bg}66`;
 
       // Blink at low time
       barFillRef.current.classList.toggle("mm-pulse-low", pct <= 0.25);
@@ -257,7 +258,7 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
     if (barTextRef.current) {
       barTextRef.current.textContent = `${timeLeftRef.current.toFixed(1)}s`;
       barTextRef.current.style.color =
-        pct > 0.5 ? "#64748b" : pct > 0.25 ? "#b45309" : "#dc2626";
+        pct > 0.5 ? "#67e8f9" : pct > 0.25 ? "#c084fc" : "#f472b6";
     }
   }, []);
 
@@ -397,22 +398,23 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const isEnded = phase === STATES.ENDED;
 
   /* ═══════════════════════════════════════════════════
-     RENDER — Light Mode "Playful" Aesthetic
+     RENDER — Cyberpunk Neon Aesthetic
      ═══════════════════════════════════════════════════ */
 
   return (
     <div
-      className="relative h-full w-full flex items-center justify-center select-none overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #eff6ff 0%, #f1f5f9 50%, #faf5ff 100%)" }}
+      className="relative h-full w-full flex items-center justify-center select-none overflow-hidden bg-[#0a0e17]"
     >
-      {/* Subtle decorative blobs */}
-      <div className="absolute top-[-15%] right-[-10%] w-[60vw] h-[60vw] max-w-[400px] max-h-[400px] rounded-full opacity-30 pointer-events-none"
-        style={{ background: "radial-gradient(circle, #bfdbfe 0%, transparent 70%)" }} />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[350px] max-h-[350px] rounded-full opacity-25 pointer-events-none"
-        style={{ background: "radial-gradient(circle, #ddd6fe 0%, transparent 70%)" }} />
+      {/* Neon decorative blobs */}
+      <div className="absolute top-[-15%] right-[-10%] w-[60vw] h-[60vw] max-w-[400px] max-h-[400px] rounded-full opacity-20 pointer-events-none"
+        style={{ background: "radial-gradient(circle, #22d3ee 0%, transparent 70%)" }} />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[350px] max-h-[350px] rounded-full opacity-15 pointer-events-none"
+        style={{ background: "radial-gradient(circle, #a855f7 0%, transparent 70%)" }} />
 
-      {/* Bottom gradient for text legibility */}
+      {/* Feed gradient overlays */}
       <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-5" />
+      <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/30 to-transparent pointer-events-none z-5" />
+      <div className="absolute top-0 right-0 bottom-0 w-20 bg-linear-to-l from-black/15 to-transparent pointer-events-none z-5" />
 
       {/* ── Confined game area ── */}
       <div className="max-w-[450px] mx-auto w-full h-full relative flex flex-col items-center justify-center px-4 z-[1]">
@@ -423,7 +425,7 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
             <div className="flex flex-col items-center gap-3 animate-pulse">
               <img src="/logo-mentalmath.png" alt="Mental Math"
                 className="w-16 h-16 object-contain drop-shadow-lg" draggable={false} />
-              <span className="text-xs font-semibold text-slate-600 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-slate-200/60">
+              <span className="text-xs font-semibold text-cyan-300/70 font-mono bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl border border-cyan-400/20">
                 {t("desc.mental-math")}
               </span>
             </div>
@@ -437,16 +439,16 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
             className="w-full flex flex-col items-center gap-4 mm-fade-in"
           >
             {/* Card container */}
-            <div className="w-full bg-white rounded-3xl shadow-xl shadow-slate-200/60 px-5 py-6 flex flex-col items-center gap-4">
+            <div className="w-full bg-white/5 border border-cyan-400/10 rounded-3xl backdrop-blur-sm px-5 py-6 flex flex-col items-center gap-4">
 
               {/* Score badge */}
               <div className="flex items-center gap-2">
-                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+                <span className="text-cyan-400/60 text-xs font-bold uppercase tracking-widest font-mono">
                   Score
                 </span>
                 <span
-                  className={`text-slate-800 text-3xl font-black tabular-nums ${scorePop ? "mm-pop" : ""}`}
-                  style={{ fontFeatureSettings: "'tnum'" }}
+                  className={`text-white text-3xl font-black tabular-nums font-mono ${scorePop ? "mm-pop" : ""}`}
+                  style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)" }}
                 >
                   {score}
                 </span>
@@ -454,9 +456,9 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
               {/* Question display */}
               <div className="flex items-center justify-center py-2">
-                <span className="text-slate-800 text-6xl sm:text-7xl font-black tracking-tight">
+                <span className="text-white text-6xl sm:text-7xl font-black tracking-tight font-mono" style={{ textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)" }}>
                   {question.a}
-                  <span className="text-blue-500 mx-2">×</span>
+                  <span className="text-cyan-400 mx-2">×</span>
                   {question.b}
                 </span>
               </div>
@@ -466,7 +468,7 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
                 <div
                   ref={barContainerRef}
                   className="w-full overflow-hidden"
-                  style={{ height: "12px", borderRadius: "6px", background: "#e2e8f0" }}
+                  style={{ height: "12px", borderRadius: "6px", background: "rgba(34,211,238,0.1)" }}
                 >
                   <div
                     ref={barFillRef}
@@ -474,50 +476,55 @@ const MentalMathGame = ({ isActive, onNextGame, onReplay, userId }) => {
                       width: "100%",
                       height: "100%",
                       borderRadius: "6px",
-                      backgroundColor: "#3b82f6",
+                      backgroundColor: "#22d3ee",
                       transformOrigin: "left",
                       willChange: "transform",
                       transform: "scaleX(1)",
+                      boxShadow: "0 0 8px rgba(34,211,238,0.4)",
                     }}
                   />
                 </div>
                 <span
                   ref={barTextRef}
-                  className="text-xs font-bold tabular-nums"
-                  style={{ color: "#64748b", fontFeatureSettings: "'tnum'" }}
+                  className="text-xs font-bold tabular-nums font-mono"
+                  style={{ color: "#67e8f9", fontFeatureSettings: "'tnum'", textShadow: "0 0 8px rgba(34,211,238,0.4)" }}
                 >
                   {BASE_TIME.toFixed(1)}s
                 </span>
               </div>
             </div>
 
-            {/* Options Grid 2×2 — Kahoot-style colored buttons */}
+            {/* Options Grid 2×2 — Cyberpunk neon buttons */}
             <div className="w-full grid grid-cols-2 gap-3 mt-1">
               {question.options.map((opt, i) => {
                 const accent = BTN_ACCENTS[i];
                 let cls, extraStyle = {};
 
                 if (feedback === "correct" && opt === question.correct) {
-                  // ✅ Correct: solid green, pop
-                  cls = "bg-emerald-500 border-b-4 border-emerald-700 text-white mm-pop";
+                  // ✅ Correct: neon green glow, pop
+                  cls = "bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 mm-pop";
+                  extraStyle = { boxShadow: "0 0 15px rgba(52,211,153,0.4)" };
                 } else if (feedback === i) {
-                  // ❌ Wrong: solid red, shake
-                  cls = "bg-red-500 border-b-4 border-red-700 text-white mm-shake";
+                  // ❌ Wrong: neon red glow, shake
+                  cls = "bg-red-500/20 border border-red-400/50 text-red-300 mm-shake";
+                  extraStyle = { boxShadow: "0 0 15px rgba(239,68,68,0.4)" };
                 } else if (feedback !== null && feedback !== "correct" && opt === question.correct) {
                   // Show correct when wrong was picked
-                  cls = "bg-emerald-500 border-b-4 border-emerald-700 text-white";
+                  cls = "bg-emerald-500/20 border border-emerald-400/50 text-emerald-300";
+                  extraStyle = { boxShadow: "0 0 15px rgba(52,211,153,0.4)" };
                 } else if (feedback !== null) {
                   // Dimmed
-                  cls = `${accent.bg} border-b-4 ${accent.border} ${accent.text} opacity-30 pointer-events-none`;
+                  cls = `${accent.bg} border ${accent.border} ${accent.text} opacity-30 pointer-events-none`;
                 } else {
                   // Normal
-                  cls = `${accent.bg} border-b-4 ${accent.border} ${accent.text} ${accent.hover} active:border-b-0 active:mt-1 cursor-pointer`;
+                  cls = `${accent.bg} border ${accent.border} ${accent.text} ${accent.hover} active:scale-95 cursor-pointer`;
+                  extraStyle = { boxShadow: `0 0 12px ${accent.glow}` };
                 }
 
                 return (
                   <button
                     key={i}
-                    className={`w-full py-5 rounded-2xl text-2xl sm:text-3xl font-black transition-all duration-100 ${cls}`}
+                    className={`w-full py-5 rounded-2xl text-2xl sm:text-3xl font-black font-mono transition-all duration-100 ${cls}`}
                     style={extraStyle}
                     onClick={() => handleAnswer(opt, i)}
                     disabled={feedback !== null}

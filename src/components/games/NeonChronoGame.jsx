@@ -242,7 +242,7 @@ const NeonChronoGame = ({ isActive, onNextGame, onReplay, userId }) => {
   return (
     <div
       className={`relative h-full w-full flex flex-col items-center justify-center overflow-hidden select-none ${isHolding ? 'touch-none' : ''} transition-colors duration-200
-        ${isHolding ? "bg-[#050510]" : "bg-zinc-950"}`}
+        ${isHolding ? "bg-[#050510]" : "bg-[#0a0e17]"}`}
       onPointerDown={isActive && isWaiting ? handlePointerDown : undefined}
       onPointerUp={isActive ? handlePointerUp : undefined}
       onContextMenu={(e) => e.preventDefault()}

@@ -376,7 +376,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
   const isEnded = gameState === GAME_STATES.ENDED;
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-gradient-to-b from-[#1a0a2e] via-[#16213e] to-[#0f0c29]">
+    <div className="w-full h-full relative overflow-hidden bg-[#0a0e17]">
       {/* Canvas */}
       <div className="absolute inset-0">
         <canvas
@@ -394,8 +394,8 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
       {gameState !== GAME_STATES.IDLE && (
         <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] inset-x-0 flex items-center justify-center gap-6 pointer-events-none z-[3]">
           <span
-            className="text-white/80 text-2xl font-black tabular-nums"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-white/80 text-2xl font-black tabular-nums font-mono"
+            style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)' }}
           >
             {score}
           </span>
@@ -417,7 +417,7 @@ const CircleNinjaGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
       {/* Instrucciones al inicio */}
       {isPlaying && score === 0 && lives === MAX_LIVES && (
         <div className="absolute inset-x-0 top-[28vh] text-center pointer-events-none z-[3] animate-pulse">
-          <span className="text-sm font-medium text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full">
+          <span className="text-sm font-medium font-mono text-cyan-300/70 bg-white/5 border border-cyan-400/20 backdrop-blur-sm px-4 py-2 rounded-full">
             {t("circleninja.instruction")}
           </span>
         </div>

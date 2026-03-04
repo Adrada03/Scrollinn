@@ -176,9 +176,9 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
   const heat      = Math.min(1, score / 80);             // 0 → 1 gradual
 
   // Color de fondo dinámico: de zinc-950 a rojo oscuro
-  const bgR = Math.round(9  + heat * 80);   // 9 → ~89
-  const bgG = Math.round(9  - heat * 6);    // 9 → ~3
-  const bgB = Math.round(11 - heat * 8);    // 11 → ~3
+  const bgR = Math.round(10 + heat * 80);   // 10 → ~90
+  const bgG = Math.round(14 - heat * 11);   // 14 → ~3
+  const bgB = Math.round(23 - heat * 20);   // 23 → ~3
   const bgColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
 
   // Color del botón: de cyan-ish a rojo intenso
@@ -223,10 +223,10 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
             />
           </div>
           <div className="flex justify-between mt-2">
-            <span className="text-xs font-bold text-white/50 tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>
+            <span className="text-xs font-mono text-cyan-300/70 tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>
               {timeLeft.toFixed(1)}s
             </span>
-            <span className="text-xs font-bold text-white/50">
+            <span className="text-xs font-mono text-cyan-300/70">
               {score} taps
             </span>
           </div>
@@ -256,11 +256,11 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
           {/* Score dentro del botón */}
           <div className="flex flex-col items-center gap-1 pointer-events-none">
             <span
-              className="font-black text-white tabular-nums leading-none transition-all duration-75"
+              className="font-mono font-black text-white tabular-nums leading-none transition-all duration-75"
               style={{
                 fontSize: `${scoreFontSize}rem`,
                 fontFeatureSettings: "'tnum'",
-                textShadow: "0 2px 20px rgba(0,0,0,0.3)",
+                textShadow: "0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)",
                 transform: shake ? "scale(1.08)" : "scale(1)",
               }}
             >

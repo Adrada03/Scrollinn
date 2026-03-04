@@ -60,6 +60,24 @@ const translations = {
     "auth.have_account":   "¿Ya tienes cuenta?",
     "auth.go_login":       "Inicia sesión",
 
+    // ── AuthScreen (pantalla obligatoria) ───────
+    "authscreen.subtitle":        "Inicia sesión para jugar",
+    "authscreen.email_or_username": "Email o nombre de usuario",
+    "authscreen.email_or_username_ph": "tu@email.com o tu_nombre",
+    "authscreen.username_not_found": "Usuario no encontrado.",
+    "authscreen.username_label":    "Nombre de usuario",
+    "authscreen.username_placeholder": "tu_nombre",
+    "authscreen.fill_username":     "Elige un nombre de usuario.",
+    "authscreen.fill_both":       "Rellena email y contraseña.",
+    "authscreen.invalid_credentials": "Email o contraseña incorrectos.",
+    "authscreen.password_min":    "La contraseña debe tener al menos 6 caracteres.",
+    "authscreen.check_email":     "¡Cuenta creada! Revisa tu email para confirmar.",
+    "authscreen.hint":            "Al registrarte aceptas los términos de uso. Tu progreso se guardará automáticamente.",
+    "authscreen.guest_btn":         "Jugar como invitado",
+    "authscreen.guest_banner":      "Estás jugando como invitado. Tus puntuaciones no se guardarán.",
+    "authscreen.guest_login_prompt": "Inicia sesión para guardar puntuaciones, comprar avatares y ver tu perfil.",
+    "authscreen.guest_login_btn":   "Iniciar sesión",
+
     // ── Countdown ───────────────────────────────
     "countdown.how_to_play": "Cómo jugar",
 
@@ -428,6 +446,13 @@ const translations = {
     "settings.language":    "Idioma",
     "settings.sound":       "Sonido",
 
+    // ── Credits Modal ───────────────────────────
+    "credits.title":           "Créditos y Licencias",
+    "credits.subtitle":        "Juegos de código abierto adaptados para Scrollinn",
+    "credits.original":        "Ver original",
+    "credits.license_heading":  "Texto completo de la Licencia MIT",
+    "credits.button":           "Créditos y Licencias",
+
     // ── User Profile ────────────────────────────
     "profile.level":                "Nivel",
     "profile.my_rankings":          "Mis Rankings",
@@ -517,6 +542,24 @@ const translations = {
     "auth.create_fast":    "Create one in seconds!",
     "auth.have_account":   "Already have an account?",
     "auth.go_login":       "Log in",
+
+    // ── AuthScreen (mandatory screen) ───────────
+    "authscreen.subtitle":        "Log in to play",
+    "authscreen.email_or_username": "Email or username",
+    "authscreen.email_or_username_ph": "you@email.com or your_name",
+    "authscreen.username_not_found": "Username not found.",
+    "authscreen.username_label":    "Username",
+    "authscreen.username_placeholder": "your_name",
+    "authscreen.fill_username":     "Choose a username.",
+    "authscreen.fill_both":       "Please fill in email and password.",
+    "authscreen.invalid_credentials": "Invalid email or password.",
+    "authscreen.password_min":    "Password must be at least 6 characters.",
+    "authscreen.check_email":     "Account created! Check your email to confirm.",
+    "authscreen.hint":            "By signing up you accept the terms of use. Your progress will be saved automatically.",
+    "authscreen.guest_btn":         "Play as guest",
+    "authscreen.guest_banner":      "You're playing as a guest. Your scores won't be saved.",
+    "authscreen.guest_login_prompt": "Log in to save scores, buy avatars and view your profile.",
+    "authscreen.guest_login_btn":   "Log in",
 
     // ── Countdown ───────────────────────────────
     "countdown.how_to_play": "How to play",
@@ -882,6 +925,13 @@ const translations = {
     "settings.title":       "Settings",
     "settings.language":    "Language",
     "settings.sound":       "Sound",
+
+    // ── Credits Modal ───────────────────────────
+    "credits.title":           "Credits & Licenses",
+    "credits.subtitle":        "Open-source games adapted for Scrollinn",
+    "credits.original":        "View original",
+    "credits.license_heading":  "Full MIT License Text",
+    "credits.button":           "Credits & Licenses",
 
     // ── User Profile ────────────────────────────
     "profile.level":                "Level",

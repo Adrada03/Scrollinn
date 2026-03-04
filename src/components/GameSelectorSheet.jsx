@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLanguage } from "../i18n";
 
@@ -10,12 +10,10 @@ import { useLanguage } from "../i18n";
 const GameSelectorSheet = ({ isOpen, onClose, games, onSelectGame, selectedGameId }) => {
   const { t } = useLanguage();
   const [search, setSearch] = useState("");
-  const inputRef = useRef();
 
-  // Animación: focus input al abrir
+  // Limpiar búsqueda al cerrar
   useEffect(() => {
-    if (isOpen) setTimeout(() => inputRef.current?.focus(), 200);
-    else setSearch("");
+    if (!isOpen) setSearch("");
   }, [isOpen]);
 
   // Filtro de juegos
@@ -82,12 +80,14 @@ const GameSelectorSheet = ({ isOpen, onClose, games, onSelectGame, selectedGameI
                   </button>
                 </div>
 
-                {/* Search bar */}
+                {/* Search bar — sin autofocus para no abrir teclado */}
                 <input
-                  ref={inputRef}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder={t("gallery.search")}
+                  inputMode="search"
+                  autoComplete="off"
+                  autoFocus={false}
                   className="w-full mt-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder:text-white/40 focus:border-cyan-500/50 outline-none transition-all"
                 />
               </div>
@@ -140,7 +140,7 @@ const GameSelectorSheet = ({ isOpen, onClose, games, onSelectGame, selectedGameI
                     );
                   })}
                 </div>
-              )}
+                )}
             </div>
             </div>
           </motion.div>

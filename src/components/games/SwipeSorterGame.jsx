@@ -290,7 +290,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
 
   return (
     <div
-      className="relative h-full w-full flex items-center justify-center bg-zinc-950 overflow-hidden select-none"
+      className="relative h-full w-full flex items-center justify-center bg-[#0a0e17] overflow-hidden select-none"
       style={{
         userSelect: "none",
         WebkitUserSelect: "none",
@@ -321,10 +321,10 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
             />
           </div>
           <div className="flex justify-between mt-2">
-            <span className="text-xs font-bold text-white/40 tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>
+            <span className="text-xs font-mono text-cyan-300/50 tabular-nums" style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 6px rgba(0,255,255,0.4)' }}>
               {timeLeft.toFixed(1)}s
             </span>
-            <span className="text-xs font-bold text-white/40">
+            <span className="text-xs font-mono text-cyan-300/50" style={{ textShadow: '0 0 6px rgba(0,255,255,0.4)' }}>
               {score} ✓
             </span>
           </div>
@@ -346,7 +346,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
             >
               <span className="text-white/90 text-3xl font-black">←</span>
               <span
-                className="text-[0.7rem] font-extrabold text-red-300 tracking-widest"
+                className="text-[0.7rem] font-mono font-extrabold text-red-300 tracking-widest"
                 style={{ writingMode: "vertical-lr", textOrientation: "mixed" }}
               >
                 {t("swipesorter.red")}
@@ -365,7 +365,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
             >
               <span className="text-white/90 text-3xl font-black">→</span>
               <span
-                className="text-[0.7rem] font-extrabold text-blue-300 tracking-widest"
+                className="text-[0.7rem] font-mono font-extrabold text-blue-300 tracking-widest"
                 style={{ writingMode: "vertical-lr", textOrientation: "mixed" }}
               >
                 {t("swipesorter.blue")}
@@ -378,7 +378,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
       {/* ── Reglas fijas (siempre visibles jugando) ── */}
       {isPlaying && (
         <div className="absolute bottom-[20vh] inset-x-0 flex justify-center z-2 pointer-events-none">
-          <div className="flex items-center gap-8 text-sm font-bold text-white/40">
+          <div className="flex items-center gap-8 text-sm font-mono font-bold text-white/40">
             <span className="flex items-center gap-2">
               <span className="w-4 h-4 rounded bg-red-500/80" /> {t("swipesorter.left")}
             </span>
@@ -435,7 +435,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
       {isPlaying && score > 0 && (
         <div className="absolute inset-x-0 top-[calc(var(--sat,0px)+7rem)] flex justify-center pointer-events-none z-2">
           <span
-            className="text-6xl font-black text-white/10 tabular-nums"
+            className="text-6xl font-mono font-black text-white/10 tabular-nums"
             style={{ fontFeatureSettings: "'tnum'" }}
           >
             {score}
@@ -453,7 +453,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
               className="w-16 h-16 object-contain drop-shadow-lg"
               draggable={false}
             />
-            <span className="text-xs font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
+            <span className="text-xs font-mono text-cyan-300/70 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-xl">
               {t("swipesorter.instruction")}
             </span>
           </div>

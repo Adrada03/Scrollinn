@@ -463,9 +463,9 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
 
   return (
     <div
-      className="relative h-full w-full overflow-hidden select-none bg-black"
+      className="relative h-full w-full overflow-hidden select-none bg-[#0a0e17]"
       style={{
-        background: "radial-gradient(circle at center, #0f172a 0%, #000000 70%)",
+        background: "radial-gradient(circle at center, #0f172a 0%, #0a0e17 70%)",
         boxShadow: "inset 0 0 60px rgba(0,0,0,0.85)",
       }}
     >
@@ -476,17 +476,18 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
       />
 
       {/* ── Feed-blending gradients ── */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black/60 to-transparent z-5" />
-      <div className="pointer-events-none absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/40 to-transparent z-5" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 to-transparent z-5" />
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/30 to-transparent z-5" />
+      <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-20 bg-linear-to-l from-black/15 to-transparent z-5" />
 
       {/* ── Timer display (during DRAWING) ── */}
       {isDrawing && (
         <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-0 right-0 flex justify-center z-4 pointer-events-none">
           <span
-            className={`text-5xl font-black tabular-nums transition-colors duration-200 ${
+            className={`text-5xl font-black font-mono tabular-nums transition-colors duration-200 ${
               timerDanger ? "text-red-500 animate-pulse" : "text-white/20"
             }`}
-            style={{ fontFeatureSettings: "'tnum'" }}
+            style={{ fontFeatureSettings: "'tnum'", textShadow: "0 0 20px rgba(34,211,238,0.4), 0 0 40px rgba(34,211,238,0.2)" }}
           >
             {timeLeft.toFixed(1)}s
           </span>
@@ -519,10 +520,10 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
                 <path d="m15 5 4 4" />
               </svg>
             </div>
-            <p className="text-slate-400/70 text-lg font-medium text-center px-8">
+            <p className="text-slate-400/70 text-lg font-mono font-medium text-center px-8">
               {t("perfectcircle.instruction")}
             </p>
-            <p className="text-slate-500/40 text-xs tracking-widest uppercase">
+            <p className="text-slate-500/40 text-xs font-mono tracking-widest uppercase">
               {TIME_LIMIT}s limit
             </p>
           </div>
@@ -539,7 +540,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
         {isReveal && !errorMsg && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-2 pointer-events-none gap-1">
             <p
-              className="font-black italic text-7xl tabular-nums"
+              className="font-black font-mono italic text-7xl tabular-nums"
               style={{
                 color: "#fff",
                 textShadow: "0 0 40px rgba(34,211,238,0.5), 0 0 80px rgba(74,222,128,0.3)",

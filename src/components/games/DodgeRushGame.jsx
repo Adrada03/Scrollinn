@@ -381,7 +381,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
   }, [isEnded, score, submit, gameState]);
 
   return (
-    <div className="relative h-full w-full flex items-center justify-center bg-zinc-950 overflow-hidden select-none">
+    <div className="relative h-full w-full flex items-center justify-center bg-[#0a0e17] overflow-hidden select-none">
 
       {/* ── Overlay gradients para UI del feed ── */}
       <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-5" />
@@ -405,7 +405,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
         {/* Score + Vidas */}
         {gameState !== STATES.IDLE && (
           <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex items-center justify-between px-8">
-            <span className="text-3xl font-black text-white tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>
+            <span className="text-3xl font-black font-mono text-white tabular-nums" style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)' }}>
               {score}<span className="text-sm font-semibold text-white/40 ml-1">s</span>
             </span>
             <div className="flex gap-1.5">
@@ -429,7 +429,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
         {isEnded && (
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="flex flex-col items-center gap-2 mb-4">
-              <span className="text-7xl sm:text-8xl font-black text-white tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>
+              <span className="text-7xl sm:text-8xl font-black font-mono text-white tabular-nums" style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)' }}>
                 {score}
               </span>
               <span className="text-lg text-white/50 font-semibold">

@@ -1065,7 +1065,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
   const isEnded = phase === "ended";
 
   return (
-    <div className="relative h-full w-full flex items-center justify-center overflow-hidden select-none" style={{ background: "#0b132b" }}>
+    <div className="relative h-full w-full flex items-center justify-center overflow-hidden select-none cyber-circuit-bg" style={{ background: "#0a0e17" }}>
       {/* Feed gradients — cyberpunk vignette */}
       <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/70 via-black/30 to-transparent pointer-events-none z-5" />
       <div className="absolute top-0 left-0 right-0 h-24 bg-linear-to-b from-black/40 to-transparent pointer-events-none z-5" />
@@ -1083,7 +1083,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
         {phase === "playing" && (
           <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex items-center justify-center">
             <span
-              className="text-5xl font-black italic tabular-nums"
+              className="text-5xl font-black italic font-mono tabular-nums"
               style={{ fontFeatureSettings: "'tnum'", color: "#fff",
                        textShadow: "0 0 10px rgba(34,211,238,1), 0 0 30px rgba(34,211,238,0.6), 0 0 60px rgba(34,211,238,0.3), 0 2px 4px rgba(0,0,0,0.8)" }}
             >
@@ -1095,7 +1095,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
         {/* Tap hint (first round only) */}
         {phase === "playing" && displayScore === 0 && (
           <div className="absolute bottom-32 left-0 right-0 flex items-center justify-center animate-pulse">
-            <span className="text-base font-bold tracking-widest uppercase" style={{ color: "rgba(34,211,238,0.5)",
+            <span className="text-base font-mono font-bold tracking-widest uppercase" style={{ color: "rgba(34,211,238,0.5)",
                        textShadow: "0 0 12px rgba(34,211,238,0.3)" }}>
               {t("crossroaddart.tap")}
             </span>
@@ -1107,7 +1107,7 @@ const CrossroadDartGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
           <>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span
-                className="text-7xl sm:text-8xl font-black italic tabular-nums"
+                className="text-7xl sm:text-8xl font-black italic font-mono tabular-nums"
                 style={{ fontFeatureSettings: "'tnum'", color: "#fff",
                          textShadow: "0 0 15px rgba(34,211,238,1), 0 0 40px rgba(34,211,238,0.7), 0 0 80px rgba(34,211,238,0.4), 0 0 120px rgba(34,211,238,0.2)" }}
               >

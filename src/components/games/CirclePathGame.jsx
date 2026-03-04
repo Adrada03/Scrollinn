@@ -36,7 +36,7 @@ const HIT_THRESHOLD = 23.5;
 const APPROACH_THRESHOLD = 40;
 const MISS_THRESHOLD = 90;
 
-const BG_COLOR = "#0f2922";   // fondo suave esmeralda oscuro
+const BG_COLOR = "#0a0e17";   // fondo cyberpunk oscuro
 const FG_COLOR = "#e2e8f0";   // bolas y brazo (slate-200)
 
 /* ─────────── Helpers ─────────── */
@@ -254,16 +254,16 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       // Círculo exterior
       ctx.beginPath();
       ctx.arc(t.x, t.y, TARGET_RADIUS, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.45)";
+      ctx.fillStyle = "rgba(34,211,238,0.18)";
       ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.7)";
+      ctx.strokeStyle = "rgba(34,211,238,0.45)";
       ctx.lineWidth = 3;
       ctx.stroke();
 
       // Brillo sutil interior
       ctx.beginPath();
       ctx.arc(t.x, t.y, TARGET_RADIUS * 0.65, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.10)";
+      ctx.fillStyle = "rgba(34,211,238,0.08)";
       ctx.fill();
 
       // Número del paso
@@ -439,8 +439,8 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       {gameState !== GAME_STATES.IDLE && (
         <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] inset-x-0 flex items-center justify-center pointer-events-none z-[3]">
           <span
-            className="text-white/80 text-2xl font-black tabular-nums"
-            style={{ fontFeatureSettings: "'tnum'" }}
+            className="text-white/80 text-2xl font-black font-mono tabular-nums"
+            style={{ fontFeatureSettings: "'tnum'", textShadow: '0 0 10px rgba(34,211,238,0.5), 0 0 30px rgba(34,211,238,0.2)' }}
           >
             {score}
           </span>
@@ -450,7 +450,7 @@ const CirclePathGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       {/* Instrucciones al inicio */}
       {isPlaying && score === 0 && (
         <div className="absolute inset-x-0 top-[28vh] text-center pointer-events-none z-[3] animate-pulse">
-          <span className="text-sm font-medium text-white/50 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full">
+          <span className="text-sm font-mono text-cyan-300/70 bg-white/5 border border-cyan-400/20 backdrop-blur-sm px-4 py-2 rounded-full">
             {t("circlepath.instruction")}
           </span>
         </div>

@@ -237,13 +237,14 @@ const MemorySequenceGame = ({ isActive, onNextGame, onReplay, userId }) => {
         <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
           <div
             className={`
-              px-5 py-2 rounded-full text-white font-bold text-lg
+              px-5 py-2 rounded-full text-white font-mono font-bold text-lg
               transition-all duration-300
               ${roundFlash
                 ? "bg-green-500/90 scale-110"
-                : "bg-white/10 backdrop-blur-sm"
+                : "bg-white/10 backdrop-blur-sm border border-cyan-400/20"
               }
             `}
+            style={{ textShadow: "0 0 10px rgba(34,211,238,0.5)" }}
           >
             {t("memseq.round")} {round}
           </div>
