@@ -146,8 +146,6 @@ const GameFeed = ({
   selectedGameId,
   gameEpoch = 0,
   disabled = false,
-  likesMap,
-  onToggleLike,
   onOpenGallery,
   currentUser,
   pendingGameIdToLaunch,
@@ -158,6 +156,13 @@ const GameFeed = ({
   const { containerRef, activeIndex, scrollToSlide } = useActiveSlide(0);
   const scrollLockedRef = useRef(false);
   const [isChallengesOpen, setIsChallengesOpen] = useState(false);
+
+  // Escuchar evento global para abrir retos desde TopNav
+  useEffect(() => {
+    const handler = () => setIsChallengesOpen(true);
+    window.addEventListener("open-challenges-from-topnav", handler);
+    return () => window.removeEventListener("open-challenges-from-topnav", handler);
+  }, []);
 
   // Efecto: Si hay pendingGameIdToLaunch y estamos en la pestaña correcta, lanzar el juego y limpiar el estado
   useEffect(() => {
@@ -189,8 +194,6 @@ const GameFeed = ({
         selectedGameId={selectedGameId}
         gameEpoch={gameEpoch}
         disabled={disabled}
-        likesMap={likesMap}
-        onToggleLike={onToggleLike}
         onOpenGallery={onOpenGallery}
         currentUser={currentUser}
         containerRef={containerRef}
@@ -212,8 +215,6 @@ const GameFeedContent = ({
   selectedGameId,
   gameEpoch = 0,
   disabled = false,
-  likesMap,
-  onToggleLike,
   onOpenGallery,
   currentUser,
   containerRef,
@@ -629,10 +630,6 @@ const GameFeedContent = ({
                           isActive && isCountingDown && !shouldSkipCountdown
                         }
                         onCountdownComplete={() => setIsCountingDown(false)}
-                        likes={likesMap[game.id]?.count || 0}
-                        isLiked={likesMap[game.id]?.liked || false}
-                        onLike={() => onToggleLike(game.id)}
-                        onOpenGallery={onOpenGallery}
                         hasRealGame={shouldSkipCountdown}
                         isChallengesOpen={isChallengesOpen}
                         onChallengesOpenChange={onChallengesOpenChange}
@@ -669,9 +666,6 @@ const GameFeedContent = ({
                       title={game.title}
                       instruction={t(`desc.${game.id}`)}
                       color={game.color}
-                      onOpenChallenges={() => onChallengesOpenChange?.(true)}
-                      onOpenGallery={onOpenGallery}
-                      challengeStatus={challengeStatus}
                       onStart={() => {
                         setIsReady(false);
                         if (shouldSkipCountdown) {

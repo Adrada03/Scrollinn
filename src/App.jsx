@@ -1,12 +1,3 @@
-// Utilidad: mapa de likes vacío para inicializar estado
-function emptyLikesMap() {
-  const map = {};
-  GAMES.forEach((game) => {
-    map[game.id] = { count: 0, liked: false };
-  });
-  return map;
-}
-
 // Lanza un juego directamente desde el perfil (bypass tabs)
 const playGameDirectly = (gameId) => {
   const cleanId = typeof gameId === "string" ? gameId.trim().toLowerCase() : String(gameId);
@@ -20,7 +11,7 @@ const playGameDirectly = (gameId) => {
     console.warn("[playGameDirectly] No se encontró el juego con id:", gameId);
   }
 };
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -37,8 +28,8 @@ import UserProfile from "./components/UserProfile";
 // Datos
 import GAMES from "./data/games";
 
-// Servicios Supabase
-import { getLikesMap, toggleLike, getUserLikesCount } from "./services/gameService";
+// Servicios
+import { getTodayChallenges, getChallengeStatus } from "./services/challengeService";
 
 // i18n
 import { useLanguage } from "./i18n";
@@ -50,29 +41,12 @@ import { useAuth } from "./context/AuthContext";
 import { useSound } from "./context/SoundContext";
 
 /**
- * Estado inicial vacío — se rellena al cargar desde la BD.
- * Mientras carga, cada juego muestra 0 likes.
- */
-
-
-
-/**
  * Variants para fade entre pestañas principales.
  */
 const fadeVariants = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
-};
-
-/**
- * Variants para la transición horizontal entre sub-pestañas del feed.
- * `custom` = slideDirection (+1 derecha, -1 izquierda).
- */
-const slideVariants = {
-  enter: (dir) => ({ x: dir > 0 ? "40%" : "-40%", opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir) => ({ x: dir > 0 ? "-40%" : "40%", opacity: 0 }),
 };
 
 /* ── Lock Screen Overlay ── */
@@ -136,9 +110,24 @@ function App() {
   const [isGameSelectorOpen, setIsGameSelectorOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [likesMap, setLikesMap] = useState(emptyLikesMap);
   const [gameEpoch, setGameEpoch] = useState(0);
-  const likesLoaded = useRef(false);
+
+  // ── Challenge status para TopNav ──
+  const [challengeStatusForTopNav, setChallengeStatusForTopNav] = useState("pending");
+
+  const refreshChallengeStatusForTopNav = useCallback(() => {
+    if (!currentUser?.id) { setChallengeStatusForTopNav("none"); return; }
+    getTodayChallenges(currentUser.id).then((data) => {
+      setChallengeStatusForTopNav(getChallengeStatus(data));
+    });
+  }, [currentUser?.id]);
+
+  useEffect(() => { refreshChallengeStatusForTopNav(); }, [refreshChallengeStatusForTopNav]);
+  useEffect(() => {
+    const handler = () => refreshChallengeStatusForTopNav();
+    window.addEventListener("challenges-updated", handler);
+    return () => window.removeEventListener("challenges-updated", handler);
+  }, [refreshChallengeStatusForTopNav]);
 
   // ── Escuchar evento global "open-auth" (emitido por DailyChallengesModal, etc.) ──
   useEffect(() => {
@@ -150,15 +139,6 @@ function App() {
   // ── Bottom Navigation Tab system ──
   const [mainTab, setMainTab] = useState("jugar"); // 'tienda' | 'jugar' | 'perfil'
 
-  // ── Feed sub-tabs (Todos | Favoritos) ──
-  const [activeTab, setActiveTab] = useState("all");
-  const [userLikesCount, setUserLikesCount] = useState(0);
-  const [slideDirection, setSlideDirection] = useState(0); // -1 izq, +1 der
-  const prevTabRef = useRef("all");
-
-  /** Orden de las sub-pestañas del feed para calcular dirección del slide */
-  const TAB_ORDER = { all: 0, favorites: 1 };
-
   // ── Toast notification ──
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
@@ -168,74 +148,6 @@ function App() {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 3000);
   }, []);
-
-  /**
-   * Callback para cambio de sub-pestaña del feed desde TopNav.
-   * Si recibe "__toast__", muestra un toast en vez de cambiar la tab.
-   */
-  const handleTabChange = useCallback((tab, message) => {
-    if (tab === "__toast__") {
-      showToast(message);
-      return;
-    }
-    const dir = TAB_ORDER[tab] > TAB_ORDER[prevTabRef.current] ? 1 : -1;
-    setSlideDirection(dir);
-    prevTabRef.current = tab;
-    setActiveTab(tab);
-  }, [showToast]);
-
-  /**
-   * Carga likes desde la BD. Si hay usuario, también carga cuáles ha likeado.
-   */
-  const fetchLikes = useCallback(async (userId) => {
-    try {
-      const likesMapData = await getLikesMap(userId);
-      setLikesMap((prev) => {
-        const merged = { ...prev };
-        for (const [gameId, info] of Object.entries(likesMapData)) {
-          merged[gameId] = info;
-        }
-        return merged;
-      });
-    } catch (err) {
-      console.warn("No se pudieron cargar los likes desde la BD:", err.message);
-    }
-  }, []);
-
-  // Cargar likes al montar la app
-  useEffect(() => {
-    if (!likesLoaded.current) {
-      likesLoaded.current = true;
-      fetchLikes(currentUser?.id);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Re-cargar likes cuando el usuario cambia (login/logout) para marcar sus likes
-  useEffect(() => {
-    if (likesLoaded.current) {
-      fetchLikes(currentUser?.id);
-    }
-  }, [currentUser, fetchLikes]);
-
-  // ── Actualizar el conteo de likes del usuario (para desbloqueo de Favoritos) ──
-  useEffect(() => {
-    if (currentUser?.id) {
-      getUserLikesCount(currentUser.id).then(setUserLikesCount);
-    } else {
-      setUserLikesCount(0);
-      // Si el usuario cierra sesión, volver a "Todos"
-      setActiveTab("all");
-    }
-  }, [currentUser, likesMap]); // likesMap como dep para recalcular tras toggle
-
-  /**
-   * Juegos filtrados para la pestaña "Favoritos":
-   * solo aquellos cuyo id tenga liked === true en el likesMap.
-   */
-  const favoriteGames = useMemo(() => {
-    if (activeTab !== "favorites") return GAMES;
-    return GAMES.filter((g) => likesMap[g.id]?.liked);
-  }, [activeTab, likesMap]);
 
   // Escape cierra modales abiertos
   const handleKeyDown = useCallback(
@@ -259,53 +171,13 @@ function App() {
   }, [handleKeyDown]);
 
   /**
-   * Toggle like de un juego — llama a la API si hay usuario logueado.
-   * Si no hay usuario, abre el modal de auth.
-   */
-  const handleToggleLike = useCallback(
-    async (gameId) => {
-      // Optimistic update local
-      setLikesMap((prev) => {
-        const current = prev[gameId];
-        return {
-          ...prev,
-          [gameId]: {
-            count: current.liked ? current.count - 1 : current.count + 1,
-            liked: !current.liked,
-          },
-        };
-      });
-
-      // Sincronizar con Supabase
-      try {
-        const result = await toggleLike(currentUser?.id, gameId);
-        if (result.success) {
-          setLikesMap((prev) => ({
-            ...prev,
-            [gameId]: { count: result.totalLikes, liked: result.liked },
-          }));
-        }
-      } catch (err) {
-        console.warn("Error al sincronizar like con la BD:", err.message);
-      }
-    },
-    [currentUser]
-  );
-
-  /**
-   * Lista de juegos activa según la pestaña (para la galería).
-   */
-  const activeGames = activeTab === "favorites" ? favoriteGames : GAMES;
-
-  /**
    * Navega a un juego específico desde la galería.
    */
   const handleSelectGame = useCallback((index) => {
-    const list = activeTab === "favorites" ? favoriteGames : GAMES;
-    setSelectedGameId(list[index].id);
+    setSelectedGameId(GAMES[index].id);
     setGameEpoch((e) => e + 1);
     setIsGameSelectorOpen(false);
-  }, [activeTab, favoriteGames]);
+  }, []);
 
   /**
    * Optimistic update del avatar equipado.
@@ -326,17 +198,15 @@ function App() {
 
   /**
    * Navega a la pestaña central y abre el juego indicado desde el perfil.
-   * Garantiza que el cambio de pestaña y subpestaña se complete antes de lanzar el juego.
    */
   const launchGameFromProfile = useCallback((gameId) => {
-    setActiveTab("all");
     setMainTab("jugar");
     setPendingProfileGameId(gameId);
   }, []);
 
   // Efecto: cuando pendingProfileGameId está seteado y la pestaña es la correcta, lanza el juego
   useEffect(() => {
-    if (pendingProfileGameId && mainTab === "jugar" && activeTab === "all") {
+    if (pendingProfileGameId && mainTab === "jugar") {
       const list = GAMES;
       const cleanId = typeof pendingProfileGameId === "string" ? pendingProfileGameId.trim().toLowerCase() : String(pendingProfileGameId);
       const index = list.findIndex((g) => (g.id && g.id.toLowerCase()) === cleanId);
@@ -349,14 +219,13 @@ function App() {
       }
       setPendingProfileGameId(null);
     }
-  }, [pendingProfileGameId, mainTab, activeTab, handleSelectGame]);
+  }, [pendingProfileGameId, mainTab, handleSelectGame]);
 
   /** Benefits shown on lock screens for non-logged-in users */
   const loginBenefits = [
     { icon: "🏆", text: t("lock.benefit_scores") },
     { icon: "🎨", text: t("lock.benefit_avatars") },
     { icon: "📈", text: t("lock.benefit_levels") },
-    { icon: "❤️", text: t("lock.benefit_favorites") },
   ];
 
   return (
@@ -407,57 +276,22 @@ function App() {
               transition={{ duration: 0.2, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              {/* Top Nav simplificada: solo Todos | Favoritos */}
+              {/* Top Nav minimalista: Retos | SCROLLINN | Lupa */}
               <TopNav
-                onOpenAuth={() => setIsAuthOpen(true)}
-                currentUser={currentUser}
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                userLikesCount={userLikesCount}
                 onSearchClick={() => setIsGameSelectorOpen(true)}
+                onOpenChallenges={() => window.dispatchEvent(new CustomEvent("open-challenges-from-topnav"))}
+                challengeStatus={challengeStatusForTopNav}
               />
 
-              {/* Sub-contenido con transición slide */}
-              <AnimatePresence mode="wait" initial={false} custom={slideDirection}>
-                <motion.div
-                  key={activeTab}
-                  custom={slideDirection}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
-                  className="h-full w-full"
-                >
-                  {/* Lock screen para Favoritos */}
-                  {activeTab === "favorites" && !currentUser ? (
-                    <LockScreen
-                      title={t("lock.login_title")}
-                      description={t("lock.login_desc")}
-                      benefits={loginBenefits}
-                      ctaText={t("lock.cta")}
-                      onAction={() => setIsAuthOpen(true)}
-                    />
-                  ) : activeTab === "favorites" && currentUser && (userLikesCount ?? 0) < 5 ? (
-                    <LockScreen
-                      title={t("lock.fav_title")}
-                      description={t("lock.fav_desc", { count: userLikesCount ?? 0 })}
-                    />
-                  ) : (
-                    <GameFeed
-                      key={`feed-${activeTab}`}
-                      games={activeTab === "favorites" ? favoriteGames : GAMES}
-                      selectedGameId={selectedGameId}
-                      gameEpoch={gameEpoch}
-                      disabled={isGameSelectorOpen || isAuthOpen}
-                      likesMap={likesMap}
-                      onToggleLike={handleToggleLike}
-                      onOpenGallery={() => setIsGameSelectorOpen(true)}
-                      currentUser={currentUser}
-                    />
-                  )}
-                </motion.div>
-              </AnimatePresence>
+              <GameFeed
+                key="feed-all"
+                games={GAMES}
+                selectedGameId={selectedGameId}
+                gameEpoch={gameEpoch}
+                disabled={isGameSelectorOpen || isAuthOpen}
+                onOpenGallery={() => setIsGameSelectorOpen(true)}
+                currentUser={currentUser}
+              />
             </motion.div>
           )}
 
@@ -538,7 +372,7 @@ function App() {
       <GameSelectorSheet
         isOpen={isGameSelectorOpen}
         onClose={() => setIsGameSelectorOpen(false)}
-        games={activeGames}
+        games={GAMES}
         onSelectGame={(idx) => {
           handleSelectGame(idx);
           setIsGameSelectorOpen(false);

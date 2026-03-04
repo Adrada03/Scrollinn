@@ -1,102 +1,120 @@
 /**
- * TopNav.jsx — Barra de navegación superior fija (simplificada)
+ * TopNav.jsx — Barra de navegación superior fija (rediseño minimalista)
  *
- * Layout: Solo selector central "Todos" | "Favoritos"
- * Los controles de Perfil, Idioma y Tienda se han movido
- * a la Bottom Navigation Bar y al panel de Ajustes.
+ * Layout:
+ *  - Izquierda: Botón de Retos (icono rayo con estados de color)
+ *  - Centro: Título "SCROLLINN" con estilo neón
+ *  - Derecha: Lupa de búsqueda
  */
 
 import { useLanguage } from "../i18n";
 import { useSoundEffect } from "../hooks/useSoundEffect";
 
-/* ── Tabs config (solo Todos y Favoritos) ── */
-const TABS = [
-  { key: "all",       i18nKey: "tab.all" },
-  { key: "favorites", i18nKey: "tab.favorites" },
-];
-
 const TopNav = ({
-  onOpenAuth,
-  currentUser,
-  activeTab,
-  onTabChange,
-  userLikesCount,
   onSearchClick,
+  onOpenChallenges,
+  challengeStatus = "pending",
 }) => {
   const { t } = useLanguage();
   const { playNavigation } = useSoundEffect();
 
-  /**
-   * Maneja clic en una pestaña.
-   * "Favoritos" requiere login + ≥5 likes.
-   */
-  const handleTabClick = (tabKey) => {
-    playNavigation();
-    onTabChange(tabKey);
+  /* ── Colores del icono de retos según estado ── */
+  const getChallengeIconColor = () => {
+    switch (challengeStatus) {
+      case "claimable":
+        return "text-green-400";
+      case "pending":
+        return "text-red-500";
+      case "allDone":
+        return "text-green-500";
+      default:
+        return "text-white/40";
+    }
   };
 
+  const shouldPulse =
+    challengeStatus === "pending" || challengeStatus === "claimable";
+
   return (
-    <nav className="fixed top-0 left-0 w-full z-70 pointer-events-none"
-         style={{ paddingTop: 'var(--sat)', paddingLeft: 'var(--sal)', paddingRight: 'var(--sar)' }}>
+    <nav
+      className="fixed top-0 left-0 w-full z-70 pointer-events-none"
+      style={{
+        paddingTop: "var(--sat)",
+        paddingLeft: "var(--sal)",
+        paddingRight: "var(--sar)",
+      }}
+    >
       {/* Degradado para legibilidad */}
       <div className="absolute inset-0 h-20 bg-linear-to-b from-black/60 to-transparent" />
 
-      {/* Contenido: Pestañas centradas + lupa a la derecha */}
-      <div className="relative flex items-center justify-center px-4 pt-4 pb-3">
-          {/* ── Centro: Pestañas Todos | Favoritos ── */}
-          <div className="pointer-events-auto flex items-center gap-8">
-            {TABS.map(({ key, i18nKey }) => {
-              const isActive = activeTab === key;
-              const isLocked =
-                key === "favorites" && (!currentUser || (userLikesCount ?? 0) < 5);
-
-              return (
-                <button
-                  key={key}
-                  onClick={() => handleTabClick(key)}
-                  className={`relative pb-1.5 cursor-pointer transition-all duration-200 text-[17px] tracking-wide select-none
-                    ${isActive
-                      ? "text-white font-bold"
-                      : "text-white/50 hover:text-white/80 font-medium"
-                    }
-                  `}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  <span className="flex items-center gap-1.5">
-                    {t(i18nKey)}
-                    {/* Candado si está bloqueado */}
-                    {isLocked && (
-                      <svg className="w-3.5 h-3.5 text-white/40" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
-                      </svg>
-                    )}
-                  </span>
-
-                  {/* Indicador activo (línea blanca debajo) */}
-                  {isActive && (
-                    <span
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-white"
-                      style={{ boxShadow: "0 0 6px rgba(255,255,255,0.5)" }}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ── Lupa (search) a la derecha ── */}
-          {onSearchClick && (
-            <button
-              onClick={onSearchClick}
-              className="pointer-events-auto absolute right-4 top-1/2 -translate-y-1/2 p-1.5 text-white/70 hover:text-white active:scale-90 transition-all cursor-pointer"
-              aria-label={t("gallery.search_game")}
+      {/* Contenido */}
+      <div className="relative flex items-center justify-between px-4 pt-4 pb-3">
+        {/* ── Izquierda: Botón de Retos (Rayo) ── */}
+        {onOpenChallenges ? (
+          <button
+            onClick={() => {
+              playNavigation();
+              onOpenChallenges();
+            }}
+            className={`pointer-events-auto p-3 -m-1 transition-all cursor-pointer active:scale-90 ${
+              shouldPulse ? "animate-pulse" : ""
+            }`}
+            aria-label={t("gallery.challenges_aria") || "Retos diarios"}
+          >
+            {/* Lightning bolt SVG */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={`w-6 h-6 drop-shadow-[0_0_6px_currentColor] ${getChallengeIconColor()}`}
+              viewBox="0 0 24 24"
+              fill="currentColor"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="10.5" cy="10.5" r="6.5" />
-                <path d="M15.5 15.5 21 21" />
-              </svg>
-            </button>
-          )}
+              <path
+                fillRule="evenodd"
+                d="M14.615 1.595a.75.75 0 01.359.852L12.982 9.75h7.268a.75.75 0 01.548 1.262l-10.5 11.25a.75.75 0 01-1.272-.71l1.992-7.302H3.75a.75.75 0 01-.548-1.262l10.5-11.25a.75.75 0 01.913-.143z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
+
+        {/* ── Centro: SCROLLINN ── */}
+        <h1
+          className="pointer-events-none text-[20px] font-black tracking-[0.15em] uppercase select-none"
+          style={{
+            background: "linear-gradient(135deg, #fff 0%, #22d3ee 50%, #e879f9 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: "drop-shadow(0 0 12px rgba(34,211,238,0.45)) drop-shadow(0 0 4px rgba(232,121,249,0.3))",
+          }}
+        >
+          SCROLLINN
+        </h1>
+
+        {/* ── Derecha: Lupa ── */}
+        {onSearchClick ? (
+          <button
+            onClick={onSearchClick}
+            className="pointer-events-auto p-2 text-white/70 hover:text-white active:scale-90 transition-all cursor-pointer"
+            aria-label={t("gallery.search_game") || "Buscar juego"}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="10.5" cy="10.5" r="6.5" />
+              <path d="M15.5 15.5 21 21" />
+            </svg>
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
       </div>
     </nav>
   );

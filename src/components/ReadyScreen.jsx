@@ -39,9 +39,6 @@ const ReadyScreen = ({
   instruction,
   color,
   onStart,
-  onOpenChallenges,
-  onOpenGallery,
-  challengeStatus = "pending",
 }) => {
   const { t } = useLanguage();
   const { playNavigation } = useSoundEffect();
@@ -145,7 +142,7 @@ const ReadyScreen = ({
         {/* ── Título ── */}
         <motion.h2
           className={`text-white font-extrabold tracking-tight text-center drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]
-                     ${compact ? 'text-lg mb-0.5' : 'text-2xl md:text-3xl mb-2'}`}
+                     ${compact ? 'text-xl mb-0.5' : 'text-3xl md:text-4xl mb-2'}`}
           initial={{ y: 12, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25, duration: 0.4 }}
@@ -159,7 +156,7 @@ const ReadyScreen = ({
         {/* ── Instrucciones ── */}
         {instruction && (
           <motion.p
-            className={`text-white/70 text-center max-w-70 ${compact ? 'text-sm leading-snug mb-2' : 'text-lg md:text-xl leading-relaxed mb-6'}`}
+            className={`text-white/70 text-center max-w-72 ${compact ? 'text-base leading-snug mb-2' : 'text-xl md:text-2xl leading-relaxed mb-6'}`}
             style={{ textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -171,7 +168,7 @@ const ReadyScreen = ({
 
         {/* ── "Toca para empezar" — Texto parpadeante ── */}
         <motion.p
-          className={`text-white/90 font-semibold tracking-widest uppercase ${compact ? 'text-sm' : 'text-base md:text-lg'}`}
+          className={`text-white/90 font-semibold tracking-widest uppercase ${compact ? 'text-base' : 'text-lg md:text-xl'}`}
           style={{ textShadow: "0 0 20px rgba(255,255,255,0.3)" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
@@ -184,55 +181,6 @@ const ReadyScreen = ({
         >
           {t("ui.tap_to_start") || "Toca para empezar"}
         </motion.p>
-
-        {/* ── Botones: Misiones + Elegir juego ── */}
-        {(onOpenChallenges || onOpenGallery) && (
-          <motion.div
-            className={`flex items-center ${compact ? 'gap-3 mt-3' : 'gap-4 mt-6'}`}
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.55, duration: 0.4 }}
-          >
-            {onOpenChallenges && (
-              <button
-                onPointerDown={(e) => e.stopPropagation()}
-                onPointerUp={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenChallenges();
-                }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full
-                           backdrop-blur-md border
-                           hover:bg-white/[0.14] active:scale-95 transition-all cursor-pointer ${
-                  challengeStatus === "allDone" ? "bg-emerald-500/15 border-emerald-500/30" :
-                  challengeStatus === "claimable" ? "animate-pulse bg-emerald-500/20 border-emerald-500/40" :
-                  challengeStatus === "pending" ? "animate-pulse bg-red-500/20 border-red-500/40" :
-                  "bg-white/[0.08] border-white/12"
-                }`}
-              >
-                {/* Target icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 ${
-                  challengeStatus === "allDone" ? "text-emerald-400" :
-                  challengeStatus === "claimable" ? "text-emerald-400" :
-                  challengeStatus === "pending" ? "text-red-400" : "text-white"
-                }`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="6" />
-                  <circle cx="12" cy="12" r="2" fill="currentColor" />
-                </svg>
-                <span className={`text-xs font-semibold ${
-                  challengeStatus === "allDone" ? "text-emerald-400" :
-                  challengeStatus === "claimable" ? "text-emerald-400" :
-                  challengeStatus === "pending" ? "text-red-400" : "text-white/80"
-                }`}>
-                  {t("ui.challenges") || "Retos"}
-                </span>
-              </button>
-            )}
-
-
-          </motion.div>
-        )}
       </motion.div>
 
       {/* ── Partículas/Glow decorativo exterior ── */}
