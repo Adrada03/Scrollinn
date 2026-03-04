@@ -95,13 +95,6 @@ export const calculateGameXP = (gameId, score) => {
       if (score >= 20) return 60;
       return 0; // Menos de 20 puntos no da XP
 
-    // 🛑 10. HEXTRIS (Intervalos de Puntuación)
-    case 'hextris':
-      if (score >= 2000) return 100;
-      if (score >= 1600) return 75;
-      if (score >= 1200) return 50;
-      return 0; // Menos de 1200 puntos no da XP
-
     // 🧠 11. STROOP EFFECT (Intervalos de Puntuación)
     case 'stroop-effect':
       if (score >= 42) return 50;

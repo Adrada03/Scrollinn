@@ -511,6 +511,73 @@ const DailyChallengesModal = ({ isOpen, onClose, onStateChange, onNavigateToGame
   // ── No-challenges placeholder ──
   const isEmpty = !loading && challenges.length === 0;
 
+  // ── Login-required: misma estética que LockScreen de Favoritos/Tienda ──
+  if (isOpen && !currentUser) {
+    return createPortal(
+      <AnimatePresence>
+        <motion.div
+          className="fixed inset-0 z-100 bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          <motion.div
+            className="relative w-full max-w-md max-h-[75svh] flex flex-col bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
+            initial={{ scale: 0.85, opacity: 0, y: 30 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.85, opacity: 0, y: 30 }}
+            transition={{ type: "spring", damping: 24, stiffness: 280 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/5 hover:bg-white/12 flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Cerrar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="flex flex-col items-center justify-center px-8 py-10 gap-4 text-center">
+              {/* Lock icon */}
+              <div className="relative mb-1">
+                <div className="absolute -inset-4 bg-cyan-400/15 rounded-full blur-2xl" />
+                <div className="relative w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-cyan-400/60" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+
+              <h2 className="text-white text-xl font-bold leading-tight">{t("lock.challenges_title")}</h2>
+              <p className="text-white/45 text-sm leading-relaxed">{t("lock.challenges_desc")}</p>
+
+              {/* CTA */}
+              <button
+                onClick={() => {
+                  onClose();
+                  window.dispatchEvent(new Event("open-auth"));
+                }}
+                className="mt-2 w-full py-3.5 rounded-2xl font-bold text-sm tracking-wide text-white
+                  cursor-pointer active:scale-95 transition-all duration-200"
+                style={{
+                  background: "linear-gradient(135deg, #06b6d4, #3b82f6)",
+                  boxShadow: "0 8px 32px rgba(6,182,212,0.25), 0 2px 8px rgba(6,182,212,0.15)",
+                }}
+              >
+                {t("lock.cta")}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>,
+      document.body
+    );
+  }
+
   return (
     <>
     {createPortal(

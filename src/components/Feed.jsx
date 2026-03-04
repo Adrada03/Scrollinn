@@ -29,7 +29,6 @@ import OddOneOutGame from "./games/OddOneOutGame";
 import CircleNinjaGame from "./games/CircleNinjaGame";
 import ColorMatchGame from "./games/ColorMatchGame";
 import CirclePathGame from "./games/CirclePathGame";
-import HextrisGame from "./games/HextrisGame";
 import NeonTapGame from "./games/NeonTapGame";
 import StroopEffectGame from "./games/StroopEffectGame";
 import TimerGame from "./games/TimerGame";
@@ -65,7 +64,6 @@ const GAME_COMPONENTS = {
   CircleNinja: CircleNinjaGame,
   ColorMatch: ColorMatchGame,
   CirclePath: CirclePathGame,
-  Hextris: HextrisGame,
   NeonTap: NeonTapGame,
   StroopEffect: StroopEffectGame,
   Timer: TimerGame,

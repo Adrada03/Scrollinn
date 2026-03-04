@@ -59,16 +59,6 @@ const GAMES = [
     requiresScrollLock: true,
   },
   {
-    id: "hextris",
-    title: "Hextris",
-    description: "Gira el hexágono y combina bloques del mismo color",
-    color: "bg-indigo-900",
-    emoji: "⬡",
-    logo: "/logo-hextris.png",
-    gameComponent: "Hextris",
-    requiresScrollLock: true,
-  },
-  {
     id: "neon-tap",
     title: "Neon Tap",
     description: "Toca el cuadrado iluminado antes de que desaparezca",

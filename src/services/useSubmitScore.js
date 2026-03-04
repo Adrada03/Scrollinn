@@ -100,7 +100,6 @@ export const GAME_IDS = {
   ColorMatchGame: 'color-match',
   CircleNinjaGame: 'circle-ninja',
   CirclePathGame: 'circle-path',
-  HextrisGame: 'hextris',
   OddOneOutGame: 'odd-one-out',
   OverheatGame: 'overheat',
   MemoryLoopGame: 'memory-loop',

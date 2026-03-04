@@ -121,7 +121,6 @@ const translations = {
     "desc.circle-ninja":    "Desata tu katana digital. Desliza para cortar los círculos verdes y no toques los rojos bajo ningún concepto.",
     "desc.color-match":     "Conquista el tablero paso a paso. Cambia de color estratégicamente para inundar la pantalla en el menor número de movimientos.",
     "desc.circle-path":     "No rompas la cadena. Toca en el momento exacto para conectar con el siguiente círculo numerado de la ruta.",
-    "desc.hextris":         "Sobrevive al colapso geométrico. Gira el hexágono a toda velocidad para combinar los bloques que caen por colores.",
     "desc.neon-tap":        "Reflejos al límite. Toca el cuadrado iluminado antes de que desaparezca en la oscuridad.",
     "desc.stroop-effect":   "Engaña a tu propio cerebro. Toca el color de la tinta, ignorando por completo la palabra escrita.",
     "desc.timer":           "Controla el tiempo. Detén el cronómetro exactamente en 09:999. Ni un milisegundo más, ni uno menos.",
@@ -220,9 +219,6 @@ const translations = {
 
     // ── FrenzyTap ───────────────────────────────
     // (solo usa svc.score_error + subtitle "taps" que es universal)
-
-    // ── Hextris ─────────────────────────────────
-    "hextris.subtitle": "puntos",
 
     // ── MathRush ────────────────────────────────
     "mathrush.true":     "Verdadero",
@@ -413,6 +409,8 @@ const translations = {
     "lock.login_desc":      "Guarda tus juegos preferidos y accede a ellos rápidamente.",
     "lock.fav_title":       "Favoritos bloqueados",
     "lock.fav_desc":        "Necesitas tener 5 juegos en favoritos para acceder a este modo. (Llevas {{count}}/5)",
+    "lock.challenges_title": "Desbloquea Retos Diarios",
+    "lock.challenges_desc":  "Completa desafíos diarios para ganar monedas y XP extra.",
     "lock.shop_title":      "Desbloquea la Tienda",
     "lock.shop_desc":       "Accede a avatares exclusivos, personaliza tu perfil y gasta tus monedas.",
     "lock.benefit_scores":  "Guarda puntuaciones y compite en rankings globales",
@@ -580,7 +578,6 @@ const translations = {
     "desc.circle-ninja":    "Unleash your digital katana. Swipe to slice the green circles and avoid the red ones at all costs.",
     "desc.color-match":     "Conquer the board step by step. Change colors strategically to flood the screen in the fewest moves possible.",
     "desc.circle-path":     "Don't break the chain. Tap at the exact right moment to connect to the next numbered circle on the path.",
-    "desc.hextris":         "Survive the geometric collapse. Spin the hexagon at full speed to match the falling blocks by color.",
     "desc.neon-tap":        "Reflexes to the limit. Tap the illuminated square before it fades into the dark.",
     "desc.stroop-effect":   "Trick your own brain. Tap the color of the ink, completely ignoring the written word.",
     "desc.timer":           "Control time itself. Stop the stopwatch exactly at 09:999. Not a millisecond more, not one less.",
@@ -676,9 +673,6 @@ const translations = {
     "dropthebox.tap_drop":     "Tap to drop",
     "dropthebox.boxes_stacked":"boxes stacked",
     "dropthebox.speed":        "Speed",
-
-    // ── Hextris ─────────────────────────────────
-    "hextris.subtitle": "points",
 
     // ── MathRush ────────────────────────────────
     "mathrush.true":     "True",
@@ -869,6 +863,8 @@ const translations = {
     "lock.login_desc":      "Save your favorite games and access them quickly.",
     "lock.fav_title":       "Favorites locked",
     "lock.fav_desc":        "You need to have 5 games in your favorites to access this mode. ({{count}}/5 so far)",
+    "lock.challenges_title": "Unlock Daily Challenges",
+    "lock.challenges_desc":  "Complete daily challenges to earn coins and bonus XP.",
     "lock.shop_title":      "Unlock the Shop",
     "lock.shop_desc":       "Access exclusive avatars, customize your profile and spend your coins.",
     "lock.benefit_scores":  "Save scores & compete in global rankings",

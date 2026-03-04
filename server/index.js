@@ -476,7 +476,6 @@ pool.query("SELECT NOW()")
           ('circle-ninja',  'Circle Ninja',   false),
           ('color-match',   'Color Match',    true),
           ('circle-path',   'Circle Path',    false),
-          ('hextris',       'Hextris',        false),
           ('neon-tap',      'Neon Tap',       false),
           ('stroop-effect', 'Stroop Effect',  false),
           ('timer',         'Timer',          true),

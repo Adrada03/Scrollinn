@@ -46,6 +46,9 @@ import { useLanguage } from "./i18n";
 // Contexto de autenticación
 import { useAuth } from "./context/AuthContext";
 
+// Contexto de sonido (para toggle en LockScreen)
+import { useSound } from "./context/SoundContext";
+
 /**
  * Estado inicial vacío — se rellena al cargar desde la BD.
  * Mientras carga, cada juego muestra 0 likes.
@@ -73,7 +76,7 @@ const slideVariants = {
 };
 
 /* ── Lock Screen Overlay ── */
-const LockScreen = ({ title, description, benefits, ctaText, onAction }) => (
+const LockScreen = ({ title, description, benefits, ctaText, onAction, children }) => (
   <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl px-8">
     <div className="flex flex-col items-center gap-4 max-w-sm text-center w-full">
       {/* Lock icon with glow */}
@@ -118,6 +121,9 @@ const LockScreen = ({ title, description, benefits, ctaText, onAction }) => (
           {ctaText}
         </button>
       )}
+
+      {/* Extra content (e.g. sound toggle for logged-out users) */}
+      {children}
     </div>
   </div>
 );
@@ -125,6 +131,7 @@ const LockScreen = ({ title, description, benefits, ctaText, onAction }) => (
 function App() {
   const { currentUser, login, logout, updateUser } = useAuth();
   const { t } = useLanguage();
+  const { isMuted, toggleMute } = useSound();
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [isGameSelectorOpen, setIsGameSelectorOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -132,6 +139,13 @@ function App() {
   const [likesMap, setLikesMap] = useState(emptyLikesMap);
   const [gameEpoch, setGameEpoch] = useState(0);
   const likesLoaded = useRef(false);
+
+  // ── Escuchar evento global "open-auth" (emitido por DailyChallengesModal, etc.) ──
+  useEffect(() => {
+    const handler = () => setIsAuthOpen(true);
+    window.addEventListener("open-auth", handler);
+    return () => window.removeEventListener("open-auth", handler);
+  }, []);
 
   // ── Bottom Navigation Tab system ──
   const [mainTab, setMainTab] = useState("jugar"); // 'tienda' | 'jugar' | 'perfil'
@@ -465,7 +479,41 @@ function App() {
                   benefits={loginBenefits}
                   ctaText={t("lock.cta")}
                   onAction={() => setIsAuthOpen(true)}
-                />
+                >
+                  {/* ── Toggle de sonido accesible sin login ── */}
+                  <button
+                    onClick={toggleMute}
+                    className="mt-2 w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10
+                      hover:bg-white/10 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      {!isMuted ? (
+                        <div className="w-8 h-8 rounded-lg bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5z" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M23 9l-6 6" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 9l6 6" />
+                          </svg>
+                        </div>
+                      )}
+                      <span className="text-white font-medium">{t("settings.sound")}</span>
+                    </div>
+                    <div className={`w-12 h-7 rounded-full p-0.5 transition-colors duration-200 ${
+                      !isMuted ? "bg-violet-500" : "bg-white/10"
+                    }`}>
+                      <div className={`w-6 h-6 rounded-full bg-white shadow-md transition-transform duration-200 ${
+                        !isMuted ? "translate-x-5" : "translate-x-0"
+                      }`} />
+                    </div>
+                  </button>
+                </LockScreen>
               ) : (
                 <UserProfile
                   onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
