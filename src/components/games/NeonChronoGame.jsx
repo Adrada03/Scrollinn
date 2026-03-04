@@ -241,12 +241,12 @@ const NeonChronoGame = ({ isActive, onNextGame, onReplay, userId }) => {
      ══════════════════════════════════════════════════════════════ */
   return (
     <div
-      className={`relative h-full w-full flex flex-col items-center justify-center overflow-hidden select-none touch-none transition-colors duration-200
+      className={`relative h-full w-full flex flex-col items-center justify-center overflow-hidden select-none ${isHolding ? 'touch-none' : ''} transition-colors duration-200
         ${isHolding ? "bg-[#050510]" : "bg-zinc-950"}`}
       onPointerDown={isActive && isWaiting ? handlePointerDown : undefined}
       onPointerUp={isActive ? handlePointerUp : undefined}
       onContextMenu={(e) => e.preventDefault()}
-      style={{ touchAction: "none", WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
+      style={{ touchAction: isHolding ? "none" : "auto", WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
     >
       {/* ── Feed overlay gradients (safe zones) ── */}
       <div className="absolute bottom-0 left-0 right-0 h-52 bg-linear-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-5" />

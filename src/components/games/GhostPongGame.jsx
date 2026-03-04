@@ -659,7 +659,7 @@ const GhostPongGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
           height: "100%",
           maxWidth: `${GAME_W}px`,
           maxHeight: `${GAME_H}px`,
-          touchAction: "none",
+          touchAction: phase === PHASE.PLAYING ? "none" : "auto",
           cursor: "none",
           background: "radial-gradient(ellipse at center, #0f172a 0%, #020617 40%, #000 100%)",
         }}

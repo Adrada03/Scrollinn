@@ -583,7 +583,7 @@ const CoreEscapeGame = ({ isActive, onNextGame, onReplay, userId }) => {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-black touch-none select-none"
+      className={`relative w-full h-full overflow-hidden bg-black select-none ${isPlaying || isCrashing ? 'touch-none' : ''}`}
       onPointerDown={isPlaying ? handleTap : undefined}
     >
       {/* ── Scoped CSS keyframes ── */}
