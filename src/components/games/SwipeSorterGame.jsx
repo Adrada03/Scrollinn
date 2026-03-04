@@ -309,7 +309,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
 
       {/* ── Barra de tiempo ── */}
       {gameState !== STATES.IDLE && !isEnded && (
-        <div className="absolute top-20 left-6 right-6 z-3">
+        <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-6 right-6 z-3">
           <div className="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
             <div
               ref={progressBarRef}
@@ -335,7 +335,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
       {isPlaying && (
         <>
           {/* Banda izquierda = ROJO */}
-          <div className="absolute left-3 top-28 bottom-28 w-10 rounded-2xl pointer-events-none z-1 flex items-center justify-center overflow-hidden">
+          <div className="absolute left-3 top-[calc(var(--sat,0px)+7rem)] bottom-28 w-10 rounded-2xl pointer-events-none z-1 flex items-center justify-center overflow-hidden">
             <div
               className="absolute inset-0 bg-red-500 rounded-2xl"
               style={{ opacity: 0.15 + leftOpacity * 0.4 }}
@@ -354,7 +354,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
             </div>
           </div>
           {/* Banda derecha = AZUL */}
-          <div className="absolute right-3 top-28 bottom-28 w-10 rounded-2xl pointer-events-none z-1 flex items-center justify-center overflow-hidden">
+          <div className="absolute right-3 top-[calc(var(--sat,0px)+7rem)] bottom-28 w-10 rounded-2xl pointer-events-none z-1 flex items-center justify-center overflow-hidden">
             <div
               className="absolute inset-0 bg-blue-500 rounded-2xl"
               style={{ opacity: 0.15 + rightOpacity * 0.4 }}
@@ -433,7 +433,7 @@ const SwipeSorterGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef
 
       {/* ── Score grande central ── */}
       {isPlaying && score > 0 && (
-        <div className="absolute inset-x-0 top-28 flex justify-center pointer-events-none z-2">
+        <div className="absolute inset-x-0 top-[calc(var(--sat,0px)+7rem)] flex justify-center pointer-events-none z-2">
           <span
             className="text-6xl font-black text-white/10 tabular-nums"
             style={{ fontFeatureSettings: "'tnum'" }}

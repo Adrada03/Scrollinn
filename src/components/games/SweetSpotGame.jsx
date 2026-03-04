@@ -244,7 +244,7 @@ const SweetSpotGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
         {/* ── HUD: Score + Vidas ── */}
         {gameState !== STATES.IDLE && (
-          <div className="absolute top-22 left-0 right-0 flex items-center justify-between px-8 z-3">
+          <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex items-center justify-between px-8 z-3">
             {/* Score */}
             <div className="flex items-center gap-2">
               <span className="text-3xl font-black text-white tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>

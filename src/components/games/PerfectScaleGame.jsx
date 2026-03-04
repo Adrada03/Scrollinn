@@ -228,7 +228,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
 
         {/* Instrucción durante juego */}
         {isReady && (
-          <div className="absolute top-20 inset-x-0 flex justify-center">
+          <div className="absolute top-[calc(var(--sat,0px)+5rem)] inset-x-0 flex justify-center">
             <span className="text-sm font-semibold text-white/50 bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl animate-pulse">
               {t("perfectscale.hold_inflate")}
             </span>
@@ -236,7 +236,7 @@ const PerfectScaleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRe
         )}
 
         {isInflating && (
-          <div className="absolute top-20 inset-x-0 flex justify-center">
+          <div className="absolute top-[calc(var(--sat,0px)+5rem)] inset-x-0 flex justify-center">
             <span className="text-sm font-bold text-cyan-400/70 bg-white/5 backdrop-blur-sm px-5 py-2.5 rounded-xl">
               {t("perfectscale.release")}
             </span>

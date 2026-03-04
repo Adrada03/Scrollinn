@@ -278,7 +278,7 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       {/* ── Timer bar ── */}
       {isPlaying && (
-        <div className="absolute top-20 left-6 right-16 z-3">
+        <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-6 right-6 z-3">
           <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
             <div
               ref={progressBarRef}
@@ -305,7 +305,7 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       {/* ── Score fantasma de fondo ── */}
       {isPlaying && score > 0 && (
-        <div className="absolute inset-x-0 top-28 flex justify-center pointer-events-none z-1">
+        <div className="absolute inset-x-0 top-[calc(var(--sat,0px)+7rem)] flex justify-center pointer-events-none z-1">
           <span
             className="text-9xl font-black text-white/4 tabular-nums"
             style={{ fontFeatureSettings: "'tnum'" }}
@@ -317,7 +317,7 @@ const RPSDuelGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       {/* ════════════ PLAYING STATE ════════════ */}
       {isPlaying && (
-        <div className="absolute inset-x-0 top-24 bottom-56 sm:bottom-64 z-2 flex flex-col items-center justify-center px-4">
+        <div className="absolute inset-x-0 top-[calc(var(--sat,0px)+6rem)] bottom-56 sm:bottom-64 z-2 flex flex-col items-center justify-center px-4">
           {/* Rival choice — icono gigante */}
           <div className="flex flex-col items-center shrink-0">
             <span className="text-xs uppercase tracking-widest text-white/30 font-bold mb-1">

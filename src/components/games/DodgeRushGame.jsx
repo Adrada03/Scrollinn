@@ -404,7 +404,7 @@ const DodgeRushGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
 
         {/* Score + Vidas */}
         {gameState !== STATES.IDLE && (
-          <div className="absolute top-22 left-0 right-0 flex items-center justify-between px-8">
+          <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex items-center justify-between px-8">
             <span className="text-3xl font-black text-white tabular-nums" style={{ fontFeatureSettings: "'tnum'" }}>
               {score}<span className="text-sm font-semibold text-white/40 ml-1">s</span>
             </span>

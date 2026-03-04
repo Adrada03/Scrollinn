@@ -268,6 +268,9 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
     canvas.height = H * devicePixelRatio;
     ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
 
+    // Safe-area offset for notched devices
+    const sat = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sat")) || 0;
+
     // Área de juego confinada
     const gameW   = g.gameW;
     const offsetX = g.offsetX;
@@ -353,6 +356,13 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         if (g.drawTimeLeft <= 0) {
           // Tiempo acabado → solidificar lo que haya y pasar a SIM
           if (!g.line && g.drawStart && g.drawEnd) {
+            // Clamp to zone before solidifying
+            const zoneTopF = g.ballY + g.ballR * 3.2;
+            const zoneBotF = g.goalY - g.goalS * 0.4;
+            const leftF = g.offsetX;
+            const rightF = g.offsetX + g.gameW;
+            g.drawEnd.x = Math.max(leftF, Math.min(rightF, g.drawEnd.x));
+            g.drawEnd.y = Math.max(zoneTopF, Math.min(zoneBotF, g.drawEnd.y));
             const dx = g.drawEnd.x - g.drawStart.x;
             const dy = g.drawEnd.y - g.drawStart.y;
             if (Math.hypot(dx, dy) > 10) {
@@ -950,7 +960,7 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         const barW = gameW - 40;
         const barH = 6;
         const barX = leftW + 20;
-        const barY = 52;
+        const barY = 52 + sat;
         const pct = g.drawTimeLeft / g.drawTimeCur;
         // Fondo
         ctx.fillStyle = TIMER_BG;
@@ -969,7 +979,7 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         const barW = gameW - 40;
         const barH = 6;
         const barX = leftW + 20;
-        const barY = 52;
+        const barY = 52 + sat;
         const elapsed = now - g.simStartTime;
         const pct = Math.max(0, 1 - elapsed / SIM_TIMEOUT_MS);
         // Fondo
@@ -985,18 +995,12 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         ctx.fill();
       }
 
-      // HUD Score
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.font = "bold 18px system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(`Score: ${scoreRef.current}`, leftW + gameW / 2, H - 18);
-
       // Instrucción fase draw
       if (g.phase === PHASE.DRAW && !g.drawing && !g.line) {
         ctx.fillStyle = "rgba(255,255,255,0.35)";
         ctx.font = "600 14px system-ui, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(t("gravitydraw.instruction"), leftW + gameW / 2, 76);
+        ctx.fillText(t("gravitydraw.instruction"), leftW + gameW / 2, 76 + sat);
       }
 
       rafRef.current = requestAnimationFrame(loop);
@@ -1037,13 +1041,30 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
   const handlePointerMove = useCallback((e) => {
     if (!g.drawing) return;
     e.preventDefault();
-    g.drawEnd = getPos(e);
+    const pos = getPos(e);
+    // Clamp to draw zone
+    const zoneTop = g.ballY + g.ballR * 3.2;
+    const zoneBot = g.goalY - g.goalS * 0.4;
+    const left = g.offsetX;
+    const right = g.offsetX + g.gameW;
+    pos.x = Math.max(left, Math.min(right, pos.x));
+    pos.y = Math.max(zoneTop, Math.min(zoneBot, pos.y));
+    g.drawEnd = pos;
   }, [g, getPos]);
 
   const handlePointerUp = useCallback((e) => {
     if (!g.drawing) return;
     e.preventDefault();
     g.drawing = false;
+    // Clamp final endpoint to zone
+    if (g.drawEnd) {
+      const zoneTop = g.ballY + g.ballR * 3.2;
+      const zoneBot = g.goalY - g.goalS * 0.4;
+      const left = g.offsetX;
+      const right = g.offsetX + g.gameW;
+      g.drawEnd.x = Math.max(left, Math.min(right, g.drawEnd.x));
+      g.drawEnd.y = Math.max(zoneTop, Math.min(zoneBot, g.drawEnd.y));
+    }
     if (g.drawStart && g.drawEnd) {
       const dx = g.drawEnd.x - g.drawStart.x;
       const dy = g.drawEnd.y - g.drawStart.y;
@@ -1071,6 +1092,15 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
       if (!g.drawing) return;
       e.preventDefault();
       g.drawing = false;
+      // Clamp final endpoint to zone
+      if (g.drawEnd) {
+        const zoneTop = g.ballY + g.ballR * 3.2;
+        const zoneBot = g.goalY - g.goalS * 0.4;
+        const left = g.offsetX;
+        const right = g.offsetX + g.gameW;
+        g.drawEnd.x = Math.max(left, Math.min(right, g.drawEnd.x));
+        g.drawEnd.y = Math.max(zoneTop, Math.min(zoneBot, g.drawEnd.y));
+      }
       if (g.drawStart && g.drawEnd) {
         const dx = g.drawEnd.x - g.drawStart.x;
         const dy = g.drawEnd.y - g.drawStart.y;
@@ -1153,6 +1183,18 @@ const GravityDrawGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
         onMouseUp={handlePointerUp}
         onMouseLeave={handlePointerUp}
       />
+
+      {/* ── HUD: Score ── */}
+      {!isIdle && (
+        <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
+          <span
+            className="text-5xl font-black text-white/80 tabular-nums"
+            style={{ fontFeatureSettings: "'tnum'" }}
+          >
+            {score}
+          </span>
+        </div>
+      )}
 
       {/* ── Hint IDLE ── */}
       {isIdle && (

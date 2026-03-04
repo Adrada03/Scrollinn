@@ -234,7 +234,7 @@ const MemorySequenceGame = ({ isActive, onNextGame, onReplay, userId }) => {
 
       {/* HUD: Round indicator */}
       {gameState === STATES.PLAYING && (
-        <div className="absolute top-20 left-0 right-0 flex justify-center z-10 pointer-events-none">
+        <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
           <div
             className={`
               px-5 py-2 rounded-full text-white font-bold text-lg

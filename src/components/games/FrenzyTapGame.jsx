@@ -209,7 +209,7 @@ const FrenzyTapGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, p
 
       {/* ── Barra de progreso (top) ── */}
       {gameState !== STATES.IDLE && (
-        <div className="absolute top-20 left-6 right-6 z-3">
+        <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-6 right-6 z-3">
           <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
             <div
               ref={progressBarRef}

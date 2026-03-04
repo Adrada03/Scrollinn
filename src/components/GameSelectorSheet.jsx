@@ -106,15 +106,13 @@ const GameSelectorSheet = ({ isOpen, onClose, games, onSelectGame, selectedGameI
                 ) : (
                   <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 pb-8">
                   {filtered.map((game) => {
-                    const isActive = selectedGameId === game.id;
                     return (
                       <button
                         key={game.id}
                         onClick={() => onSelectGame(getOriginalIndex(game))}
                         className={
                           `relative group overflow-hidden rounded-2xl bg-white/5 border border-white/10 flex flex-col cursor-pointer transition-colors duration-200 ` +
-                          `hover:border-cyan-500/50 hover:bg-white/10 active:scale-95 ` +
-                          (isActive ? "ring-2 ring-cyan-400 shadow-[0_0_25px_rgba(34,211,238,0.3)] border-cyan-400/60" : "")
+                          `hover:border-cyan-500/50 hover:bg-white/10 active:scale-95`
                         }
                       >
                         {/* Logo */}

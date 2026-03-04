@@ -481,7 +481,7 @@ const PerfectCircleGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardR
 
       {/* ── Timer display (during DRAWING) ── */}
       {isDrawing && (
-        <div className="absolute top-20 left-0 right-0 flex justify-center z-4 pointer-events-none">
+        <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-0 right-0 flex justify-center z-4 pointer-events-none">
           <span
             className={`text-5xl font-black tabular-nums transition-colors duration-200 ${
               timerDanger ? "text-red-500 animate-pulse" : "text-white/20"

@@ -412,7 +412,7 @@ const OverheatGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef })
 
       {/* ── Progress bar (top) ── */}
       {gameState !== STATES.IDLE && !isEnded && (
-        <div className="absolute top-20 left-6 right-6 z-3">
+        <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-6 right-6 z-3">
           <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden backdrop-blur-sm">
             <div
               ref={progressBarRef}

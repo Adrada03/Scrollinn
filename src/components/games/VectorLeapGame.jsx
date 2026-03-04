@@ -133,7 +133,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       if (!last) {
         // Inicializar base
         const startX = Math.max(50, dims.w * 0.12);
-        const startTopY = 60;
+        const startTopY = dims.h > 750 ? 60 + (dims.h - 750) * 0.18 : 60;
         last = { x: startX, w: INIT_PLAT_W, topY: startTopY };
         platforms.push(last);
       }
@@ -210,8 +210,8 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
       // La plataforma destino
       const targetPlat = g.platforms[g.targetPlatform];
       transitionToPlatA = { ...targetPlat };
-      // Destino del jugador: centro de la plataforma destino
-      const destPlayerX = targetPlat.x + targetPlat.w / 2 - PLAYER_SIZE / 2;
+      // Destino del jugador: mantener X donde aterrizó, solo ajustar Y
+      const destPlayerX = g.playerX;
       const destPlayerY = targetPlat.topY;
       transitionFromPlayerX = g.playerX;
       transitionFromPlayerY = g.playerY;
@@ -339,11 +339,14 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
         g.playerY = transitionFromPlayerY + (transitionToPlatA._destPlayerY - transitionFromPlayerY) * ease;
         if (progress >= 1) {
           // Commit: target platform becomes base
+          const landedX = g.playerX; // preserve landing X
           g.platforms = g.platforms.slice(g.targetPlatform);
           g.targetPlatform = 1;
           generatePlatB(scoreRef.current);
-          g.playerX = g.platforms[0].x + g.platforms[0].w / 2 - PLAYER_SIZE / 2;
-          g.playerY = g.platforms[0].topY;
+          // Clamp player X to stay on the new base platform
+          const plat0 = g.platforms[0];
+          g.playerX = Math.max(plat0.x, Math.min(plat0.x + plat0.w - PLAYER_SIZE, landedX));
+          g.playerY = plat0.topY;
           g.trail = [];
           phaseRef.current = PHASE.AIMING;
           setPhase(PHASE.AIMING);
@@ -456,7 +459,7 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
 
       {/* ── HUD: Score ── */}
       {phase !== PHASE.IDLE && (
-        <div className="absolute top-22 left-0 right-0 flex justify-center z-10 pointer-events-none">
+        <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
           <span
             className="text-5xl font-black text-white/80 tabular-nums"
             style={{ fontFeatureSettings: "'tnum'" }}
@@ -468,14 +471,14 @@ const VectorLeapGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef 
 
       {/* ── HUD: Estado actual ── */}
       {phase === PHASE.AIMING && (
-        <div className="absolute top-28 left-0 right-0 flex justify-center z-10 pointer-events-none">
+        <div className="absolute top-[calc(var(--sat,0px)+7rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
           <span className="text-xs font-bold text-amber-400/70 uppercase tracking-widest animate-pulse">
             {t("vectorleap.tap_angle")}
           </span>
         </div>
       )}
       {phase === PHASE.POWERING && (
-        <div className="absolute top-28 left-0 right-0 flex justify-center z-10 pointer-events-none">
+        <div className="absolute top-[calc(var(--sat,0px)+7rem)] left-0 right-0 flex justify-center z-10 pointer-events-none">
           <span className="text-xs font-bold text-sky-400/70 uppercase tracking-widest animate-pulse">
             {t("vectorleap.tap_power")}
           </span>

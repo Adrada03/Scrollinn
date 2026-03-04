@@ -467,7 +467,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
             HUD — CYBERPUNK TENSION UI
             ═══════════════════════════════════════════ */}
         {gameState !== STATES.IDLE && (
-          <div className="absolute top-20 left-4 right-4 z-10 flex flex-col items-center gap-2.5">
+          <div className="absolute top-[calc(var(--sat,0px)+5rem)] left-4 right-4 z-10 flex flex-col items-center gap-2.5">
             {/* Score */}
             <div className="flex items-baseline gap-1.5">
               <span
@@ -563,7 +563,7 @@ const ShadowDashGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock, 
             THE EYE — ROBOTIC GUARDIAN
             ═══════════════════════════════════════════ */}
         {isPlaying && (
-          <div className="absolute top-32 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2">
+          <div className="absolute top-[calc(var(--sat,0px)+11.5rem)] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2">
             <div
               className="relative flex items-center justify-center"
               style={{

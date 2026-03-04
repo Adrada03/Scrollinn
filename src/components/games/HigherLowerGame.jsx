@@ -355,7 +355,7 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
 
       {/* ── Score (arriba) ── */}
       {gameState !== STATES.IDLE && (
-        <div className="absolute top-22 left-0 right-0 z-3 flex flex-col items-center">
+        <div className="absolute top-[calc(var(--sat,0px)+5.5rem)] left-0 right-0 z-3 flex flex-col items-center">
           <span
             className="text-4xl font-black text-white tabular-nums drop-shadow-lg"
             style={{ fontFeatureSettings: "'tnum'" }}
@@ -372,7 +372,7 @@ const HigherLowerGame = ({ isActive, onNextGame, onReplay, userId, onScrollLock,
 
       {/* ── Instrucciones de prioridad ── */}
       {isPlaying && phase === PHASE.WAITING && (
-        <div className="absolute top-[6.5rem] left-0 right-0 z-3 flex justify-center pointer-events-none">
+        <div className="absolute top-[calc(var(--sat,0px)+8.5rem)] left-0 right-0 z-3 flex justify-center pointer-events-none">
           <span className="text-sm font-bold text-white/35 tracking-widest">
             2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · J · Q · K · A
           </span>

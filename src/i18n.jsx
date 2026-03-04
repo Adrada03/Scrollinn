@@ -339,6 +339,7 @@ const translations = {
     // ── Orbit Sniper ────────────────────────────
     "orbitsniper.instruction": "Dispara el satélite en el momento justo para cambiar de planeta",
     "orbitsniper.tap_to_shoot": "Dispara el satélite en el momento justo para cambiar de planeta",
+    "orbitsniper.tap_hint":    "Toca para disparar",
     "orbitsniper.subtitle":    "objetivos alcanzados",
 
     // ── Overheat ────────────────────────────────
@@ -789,6 +790,7 @@ const translations = {
     // ── Orbit Sniper ────────────────────────────
     "orbitsniper.instruction": "Shoot the satellite at the right moment to switch planets",
     "orbitsniper.tap_to_shoot": "Shoot the satellite at the right moment to switch planets",
+    "orbitsniper.tap_hint":    "Tap to shoot",
     "orbitsniper.subtitle":    "targets hit",
 
     // ── Overheat ────────────────────────────────
