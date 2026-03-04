@@ -337,7 +337,7 @@ const GhostPongGame = ({ isActive, onNextGame, onReplay, userId, pinchGuardRef }
       setIsRankingLoading(true);
 
       // Mínimo 2.5s mostrando el score antes del panel de ranking
-      const minDelay = new Promise(r => setTimeout(r, 2500));
+      const minDelay = new Promise(r => setTimeout(r, 1000));
 
       Promise.all([
         submitScore(score).catch(() => null),
