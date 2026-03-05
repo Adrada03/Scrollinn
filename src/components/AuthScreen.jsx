@@ -37,13 +37,20 @@ const AuthScreen = ({ onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const clearFeedback = () => { setError(""); };
 
   const switchMode = (m) => {
     setMode(m);
+    setTermsAccepted(false);
     clearFeedback();
   };
+
+  // ── Validation regexes ──
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
+  const PASSWORD_STRONG = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
   /* ── Email / Username Login ── */
   const handleLogin = async (e) => {
@@ -82,20 +89,54 @@ const AuthScreen = ({ onClose }) => {
   /* ── Email Sign Up (acceso directo, sin verificación) ── */
   const handleSignUp = async (e) => {
     e.preventDefault();
+
+    // 1. Terms
+    if (!termsAccepted) {
+      setError(t("authscreen.terms_required"));
+      return;
+    }
+    // 2. Username presence + format
     if (!username.trim()) {
       setError(t("authscreen.fill_username"));
       return;
     }
-    if (!email.trim() || !password.trim()) {
+    if (!USERNAME_REGEX.test(username.trim())) {
+      setError(t("authscreen.username_format"));
+      return;
+    }
+    // 3. Email presence + format
+    if (!email.trim()) {
       setError(t("authscreen.fill_both"));
       return;
     }
-    if (password.length < 6) {
-      setError(t("authscreen.password_min"));
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setError(t("authscreen.email_invalid"));
       return;
     }
+    // 4. Password strength
+    if (!password) {
+      setError(t("authscreen.fill_both"));
+      return;
+    }
+    if (!PASSWORD_STRONG.test(password)) {
+      setError(t("authscreen.password_weak"));
+      return;
+    }
+
     clearFeedback();
     setLoading(true);
+
+    // 5. Username uniqueness check
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("username", username.trim())
+      .maybeSingle();
+    if (existingUser) {
+      setError(t("authscreen.username_taken"));
+      setLoading(false);
+      return;
+    }
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
@@ -106,7 +147,13 @@ const AuthScreen = ({ onClose }) => {
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      // Translate common Supabase errors to friendly messages
+      const msg = signUpError.message?.toLowerCase() ?? "";
+      if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("email already")) {
+        setError(t("authscreen.email_taken"));
+      } else {
+        setError(signUpError.message);
+      }
       setLoading(false);
       return;
     }
@@ -252,6 +299,11 @@ const AuthScreen = ({ onClose }) => {
           <div>
             <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">
               {t("auth.password")}
+              {isRegister && (
+                <span className="ml-2 text-white/25 normal-case font-normal tracking-normal">
+                  ≥ 8 chars, 1 uppercase, 1 number
+                </span>
+              )}
             </label>
             <div className="relative">
               <input
@@ -272,6 +324,55 @@ const AuthScreen = ({ onClose }) => {
               </button>
             </div>
           </div>
+
+          {/* ── Terms checkbox (solo registro) ── */}
+          <AnimatePresence initial={false}>
+            {isRegister && (
+              <motion.div
+                key="terms-field"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <label
+                  className="flex items-start gap-2.5 cursor-pointer select-none group"
+                  style={{ marginTop: "0.25rem" }}
+                >
+                  {/* Custom checkbox */}
+                  <div
+                    onClick={() => setTermsAccepted((v) => !v)}
+                    className="mt-0.5 shrink-0 w-4 h-4 rounded border transition-all duration-150 flex items-center justify-center"
+                    style={{
+                      borderColor: termsAccepted ? "#06b6d4" : "rgba(255,255,255,0.2)",
+                      backgroundColor: termsAccepted ? "#06b6d4" : "transparent",
+                      boxShadow: termsAccepted ? "0 0 8px rgba(6,182,212,0.5)" : "none",
+                    }}
+                  >
+                    {termsAccepted && (
+                      <svg className="w-2.5 h-2.5" viewBox="0 0 10 8" fill="none">
+                        <path d="M1 4l3 3 5-6" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-xs text-white/45 leading-relaxed group-hover:text-white/60 transition-colors">
+                    {t("authscreen.terms_label")}{" "}
+                    <a
+                      href="https://scrollinn.gg/policy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline transition-colors"
+                      style={{ color: "#06b6d4" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {t("authscreen.terms_link")}
+                    </a>
+                  </span>
+                </label>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* ── Submit ── */}
           <button
