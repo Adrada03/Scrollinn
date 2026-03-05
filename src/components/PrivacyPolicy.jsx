@@ -89,8 +89,8 @@ const CONTENT = {
           <p>
             For any privacy-related questions or data requests, please contact:<br />
             <strong style={{color:"#e5e7eb"}}>Scrollinn</strong>&nbsp;—&nbsp;
-            <a href="mailto:scrollinnapp@gmail.com" style={{color: CYAN, textDecoration:"underline"}}>
-              scrollinnapp@gmail.com
+            <a href="mailto:scrollinn.app@gmail.com" style={{color: CYAN, textDecoration:"underline"}}>
+              scrollinn.app@gmail.com
             </a>
           </p>
         ),
@@ -177,8 +177,8 @@ const CONTENT = {
           <p>
             Para cualquier consulta sobre privacidad o solicitud de datos:<br />
             <strong style={{color:"#e5e7eb"}}>Scrollinn</strong>&nbsp;—&nbsp;
-            <a href="mailto:scrollinnapp@gmail.com" style={{color: CYAN, textDecoration:"underline"}}>
-              scrollinnapp@gmail.com
+            <a href="mailto:scrollinn.app@gmail.com" style={{color: CYAN, textDecoration:"underline"}}>
+              scrollinn.app@gmail.com
             </a>
           </p>
         ),
