@@ -22,7 +22,7 @@ export default function SmartAppBanner() {
   return (
     <div
       className="relative z-50 flex items-center gap-3 px-4 py-2.5 bg-slate-900 shrink-0"
-      style={{ borderBottom: "1.5px solid rgba(6,182,212,0.55)", boxShadow: "0 2px 18px rgba(6,182,212,0.18)" }}
+      style={{ borderTop: "1.5px solid rgba(6,182,212,0.55)", boxShadow: "0 -4px 18px rgba(6,182,212,0.18)" }}
     >
       {/* App icon */}
       <img

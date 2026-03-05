@@ -194,8 +194,6 @@ function App() {
       {/* ── Layout principal — flex column para evitar solapamiento ── */}
       <div className="h-dvh w-full flex flex-col bg-black overflow-hidden">
 
-        <SmartAppBanner />
-
         <main className="flex-1 relative overflow-hidden flex flex-col min-h-0">
         <AnimatePresence mode="wait" initial={false}>
           {/* ═══ PESTAÑA: TIENDA ═══ */}
@@ -302,6 +300,9 @@ function App() {
           )}
         </AnimatePresence>
         </main>
+
+        {/* ── Smart App Banner (Android web) ── */}
+        <SmartAppBanner />
 
         {/* ── Bottom Navigation Bar ── */}
         <BottomNavigationBar
