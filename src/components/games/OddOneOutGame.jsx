@@ -20,7 +20,7 @@ import { useLanguage } from "../../i18n";
 
 /* ─────────── Constantes ─────────── */
 
-const GAME_STATES = { IDLE: "idle", PLAYING: "playing", ENDED: "ended" };
+const GAME_STATES = { IDLE: "idle", PLAYING: "playing", REVEALING: "revealing", ENDED: "ended" };
 const INITIAL_TIME = 30;
 const MAX_GRID = 8;
 const TIME_BONUS = 1; // segundos extra por acierto
@@ -115,7 +115,7 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
       if (timeRef.current <= 0) {
         timeRef.current = 0;
         setTimeLeft(0);
-        setGameState(GAME_STATES.ENDED);
+        setGameState(GAME_STATES.REVEALING);
         if (progressBarRef.current) {
           progressBarRef.current.style.transform = "scaleX(0)";
         }
@@ -141,6 +141,13 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
     return () => cancelAnimationFrame(rafBarRef.current);
   }, [gameState, isActive]);
 
+  /* ── Reveal → Ended transition ── */
+  useEffect(() => {
+    if (gameState !== GAME_STATES.REVEALING) return;
+    const t = setTimeout(() => setGameState(GAME_STATES.ENDED), 750);
+    return () => clearTimeout(t);
+  }, [gameState]);
+
   /* ── Cleanup general ── */
   useEffect(() => () => { clearInterval(timerRef.current); cancelAnimationFrame(rafBarRef.current); }, []);
 
@@ -162,7 +169,7 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
         timeRef.current = Math.max(0, timeRef.current - TIME_PENALTY);
         if (timeRef.current <= 0) {
           setTimeLeft(0);
-          setGameState(GAME_STATES.ENDED);
+          setGameState(GAME_STATES.REVEALING);
         } else {
           prevSecondsRef.current = Math.ceil(timeRef.current);
           setTimeLeft(prevSecondsRef.current);
@@ -196,6 +203,7 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
   const timerPercent = Math.min(100, (timeLeft / INITIAL_TIME) * 100);
   const isLowTime = timeLeft <= 5;
   const isPlaying = gameState === GAME_STATES.PLAYING;
+  const isRevealing = gameState === GAME_STATES.REVEALING;
   const isEnded = gameState === GAME_STATES.ENDED;
 
   // Enviar puntuación al terminar
@@ -311,7 +319,7 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
                 key={`${level}-${i}`}
                 onClick={() => handleCellClick(i)}
                 disabled={!isPlaying}
-                className={`transition-transform duration-75 ${
+                className={`${
                   isPlaying
                     ? "cursor-pointer active:scale-90 hover:brightness-110"
                     : "cursor-default"
@@ -321,6 +329,11 @@ const OddOneOutGame = ({ isActive, onNextGame, onReplay, userId }) => {
                     i === grid.oddIndex ? grid.oddColor : grid.baseColor,
                   borderRadius: `${radius}px`,
                   aspectRatio: "1",
+                  transition: "transform 0.2s ease, box-shadow 0.15s ease",
+                  transform: isRevealing && i === grid.oddIndex ? "scale(1.22)" : "scale(1)",
+                  boxShadow: isRevealing && i === grid.oddIndex ? "0 0 0 3px #ef4444, 0 0 12px 2px rgba(239,68,68,0.5)" : "none",
+                  position: "relative",
+                  zIndex: isRevealing && i === grid.oddIndex ? 2 : 0,
                 }}
               />
             ))}
