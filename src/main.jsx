@@ -43,10 +43,19 @@ export const PrivacyPolicyContext = createContext({ openPrivacy: () => {}, close
 export const usePrivacyPolicy = () => useContext(PrivacyPolicyContext);
 
 // ─── Componente raíz ───────────────────────────────────────────────────────
+const PRIVACY_PATHS = ['/privacy', '/policy'];
+
 function RootApp() {
-  const [showPrivacy, setShowPrivacy] = useState(false);
+  const isPrivacyUrl = PRIVACY_PATHS.includes(window.location.pathname.toLowerCase());
+  const [showPrivacy, setShowPrivacy] = useState(isPrivacyUrl);
   const openPrivacy  = useCallback(() => setShowPrivacy(true),  []);
-  const closePrivacy = useCallback(() => setShowPrivacy(false), []);
+  const closePrivacy = useCallback(() => {
+    setShowPrivacy(false);
+    // Si llegó vía URL directa, volver a la raíz sin recargar
+    if (PRIVACY_PATHS.includes(window.location.pathname.toLowerCase())) {
+      window.history.replaceState(null, '', '/');
+    }
+  }, []);
 
   return (
     <OfflineGuard>
