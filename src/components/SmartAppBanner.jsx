@@ -3,7 +3,9 @@ import { useState } from "react";
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.scrollinn.app";
 const LS_KEY = "smartBannerDismissed";
 
+const isNativeApp = window.Capacitor?.isNativePlatform?.() ?? false;
 const isAndroidBrowser =
+  !isNativeApp &&
   /android/i.test(navigator.userAgent) &&
   !window.matchMedia("(display-mode: standalone)").matches;
 
