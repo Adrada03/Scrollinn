@@ -164,6 +164,7 @@ const GameOverPanel = ({
   const [profileUserId, setProfileUserId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [buttonsReady, setButtonsReady] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState(null); // null | 'shared' | 'whatsapp'
 
   /* Resultado de la partida (datos reales desde Supabase) */
   const [resultData, setResultData] = useState({
@@ -200,6 +201,7 @@ const GameOverPanel = ({
 
   /* ── Ref para auto-fit del tamaño del score ── */
   const scoreRef = useFitText(numericScore, { maxPx: 112, minPx: 32 });
+  const titleRef = useFitText(title, { maxPx: 24, minPx: 11 });
 
   /* ── Desbloquear scroll del Feed al montar ── */
   useEffect(() => {
@@ -344,6 +346,29 @@ const GameOverPanel = ({
     return () => { cancelled = true; };
   }, [propIsLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* ── Compartir puntuación ── */
+  const handleShare = useCallback(async () => {
+    const gameName = GAMES.find(g => g.id === gameId)?.title ?? gameId ?? 'Scrollinn';
+    const displayScore = displayScoreForGame(numericScore, gameId);
+    const text = `¡He hecho ${displayScore} puntos en ${gameName} de Scrollinn! 🎮 ¿Puedes superarlo? → https://scrollinn.gg`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+        setShareFeedback('shared');
+      } catch {
+        // El usuario canceló — no hacer nada
+        return;
+      }
+    } else {
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+      setShareFeedback('whatsapp');
+    }
+
+    setTimeout(() => setShareFeedback(null), 2500);
+  }, [gameId, numericScore]);
+
   /* ── Fetch Top 5 (lazy, al abrir el bottom sheet) ── */
   const fetchTop5 = useCallback(async () => {
     if (!gameId) return;
@@ -399,12 +424,18 @@ const GameOverPanel = ({
         transition={{ duration: 0.3 }}
         className="absolute inset-0 z-20 bg-black/60 backdrop-blur-md"
       >
-        {/* Contenedor con safe zones arriba/abajo + scroll de salvavidas */}
-        <div className="w-full h-full pt-25 pb-20 flex flex-col items-center overflow-y-auto scrollbar-hide">
+        {/* Contenedor con safe zones — overflow-hidden: nunca scrolleable */}
+        <div
+          className="w-full h-full flex flex-col items-center overflow-hidden"
+          style={{
+            paddingTop: "clamp(4.5rem, 11vh, 7rem)",
+            paddingBottom: "clamp(3rem, 7vh, 5rem)",
+          }}
+        >
           {/* Wrapper centrado — my-auto centra solo si cabe, nunca pisa el pt */}
           <div
-            className="w-full max-w-75 mx-auto flex flex-col items-center px-4 my-auto shrink-0"
-            style={{ gap: "clamp(0.75rem, 2vh, 1.25rem)" }}
+            className="w-full max-w-75 mx-auto flex flex-col items-center px-4 my-auto"
+            style={{ gap: "clamp(0.5rem, 1.8vh, 1.25rem)" }}
           >
           {/* ════════════════════════════════════
               TERCIO SUPERIOR — Puntuación
@@ -416,7 +447,11 @@ const GameOverPanel = ({
             className="flex flex-col items-center gap-1"
           >
             {/* Etiqueta superior */}
-            <p className="w-full text-center text-white/80 text-2xl font-bold uppercase tracking-[0.5em] pl-[0.5em] mb-1">
+            <p
+              ref={titleRef}
+              className="w-full text-center text-white/80 font-bold uppercase tracking-[0.5em] pl-[0.5em] mb-1 whitespace-nowrap overflow-hidden"
+              style={{ fontSize: "24px" }}
+            >
               {title}
             </p>
 
@@ -591,6 +626,30 @@ const GameOverPanel = ({
             >
               {t('gameover.view_top5')}
             </button>
+
+            {/* DESAFIAR AMIGOS — Neon cian/magenta */}
+            <div
+              className="w-full rounded-xl p-px"
+              style={{ background: "linear-gradient(135deg, #06b6d4 0%, #a855f7 100%)" }}
+            >
+              <button
+                onClick={buttonsReady ? handleShare : undefined}
+                className="w-full py-2 rounded-xl font-mono font-bold text-xs uppercase tracking-[0.18em]
+                           text-white cursor-pointer select-none
+                           transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+                style={{
+                  background: "rgba(5, 5, 15, 0.9)",
+                  textShadow: "0 0 10px rgba(6,182,212,0.7), 0 0 20px rgba(168,85,247,0.4)",
+                  boxShadow: "0 0 20px rgba(6,182,212,0.15), 0 0 40px rgba(168,85,247,0.08) inset",
+                }}
+              >
+                {shareFeedback === 'shared'
+                  ? '✓ ¡Compartido!'
+                  : shareFeedback === 'whatsapp'
+                  ? '↗ Abriendo WhatsApp...'
+                  : '⚡ DESAFIAR AMIGOS'}
+              </button>
+            </div>
 
           </motion.div>
           </div>

@@ -356,8 +356,9 @@ function App() {
         </div>
       )}
 
-      {/* Vercel Analytics */}
-      <Analytics />
+      {/* Vercel Analytics — omitido en builds nativos para evitar
+          errores CORS desde http://localhost (origen del WebView) */}
+      {import.meta.env.VITE_BUILD_TARGET !== 'native' && <Analytics />}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useState, useCallback, createContext, useContext } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
@@ -31,21 +31,45 @@ document.addEventListener('touchmove', (e) => {
   }
 }, { passive: false });
 
+// ─── Privacy Policy context ────────────────────────────────────────────────
+// Permite que AuthScreen y SettingsModal abran la Privacy Policy como
+// componente interno, sin depender de window.location (que siempre es '/'
+// en el WebView de Capacitor).
+//
+// Uso desde cualquier componente hijo:
+//   const { openPrivacy } = usePrivacyPolicy();
+//   <button onClick={openPrivacy}>Privacy Policy</button>
+export const PrivacyPolicyContext = createContext({ openPrivacy: () => {}, closePrivacy: () => {} });
+export const usePrivacyPolicy = () => useContext(PrivacyPolicyContext);
+
+// ─── Componente raíz ───────────────────────────────────────────────────────
+function RootApp() {
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const openPrivacy  = useCallback(() => setShowPrivacy(true),  []);
+  const closePrivacy = useCallback(() => setShowPrivacy(false), []);
+
+  return (
+    <OfflineGuard>
+      <PrivacyPolicyContext.Provider value={{ openPrivacy, closePrivacy }}>
+        {showPrivacy ? (
+          // PrivacyPolicy recibe onBack para volver a la app sin cambiar URL
+          <PrivacyPolicy onBack={closePrivacy} />
+        ) : (
+          <LanguageProvider>
+            <AuthProvider>
+              <SoundProvider>
+                <App />
+              </SoundProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        )}
+      </PrivacyPolicyContext.Provider>
+    </OfflineGuard>
+  );
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <OfflineGuard>
-      {/* Public routes — rendered before any auth context so they are always accessible */}
-      {['/privacy', '/policy'].includes(window.location.pathname) ? (
-        <PrivacyPolicy />
-      ) : (
-        <LanguageProvider>
-          <AuthProvider>
-            <SoundProvider>
-              <App />
-            </SoundProvider>
-          </AuthProvider>
-        </LanguageProvider>
-      )}
-    </OfflineGuard>
+    <RootApp />
   </StrictMode>,
 )

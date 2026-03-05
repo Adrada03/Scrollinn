@@ -24,11 +24,15 @@ import {
   useEffect,
   useRef,
 } from "react";
+// ?url le indica a Vite que resuelva el asset en tiempo de build y devuelva
+// su URL final (con hash de contenido). En web es '/assets/bgm-loop-XXXX.mp3';
+// en builds nativos es una ruta relativa compatible con el WebView de Capacitor.
+// Es el sufijo correcto en Vite ≥ 3 (incluyendo Vite 7) para obtener la URL.
+import bgmUrl from '/sounds/bgm-loop.mp3?url';
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
 const SOUND_KEY = "scrollinn-sound-muted";
-const BGM_SRC = "/sounds/bgm-loop.mp3";
 const BGM_VOLUME = 0.10;
 
 // ─── Helpers de localStorage ────────────────────────────────────────────────
@@ -62,7 +66,7 @@ let _bgm = null;
  */
 function getBgm() {
   if (!_bgm) {
-    _bgm = new Audio(BGM_SRC);
+    _bgm = new Audio(bgmUrl);
     _bgm.loop = true;
     _bgm.volume = BGM_VOLUME;
     _bgm.preload = "auto";
