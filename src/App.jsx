@@ -26,6 +26,7 @@ import Shop from "./components/Shop";
 import UserProfile from "./components/UserProfile";
 import CreditsModal from "./components/CreditsModal";
 import SettingsModal from "./components/SettingsModal";
+import SmartAppBanner from "./components/SmartAppBanner";
 
 // Datos
 import GAMES from "./data/games";
@@ -192,6 +193,8 @@ function App() {
     <>
       {/* ── Layout principal — flex column para evitar solapamiento ── */}
       <div className="h-dvh w-full flex flex-col bg-black overflow-hidden">
+
+        <SmartAppBanner />
 
         <main className="flex-1 relative overflow-hidden flex flex-col min-h-0">
         <AnimatePresence mode="wait" initial={false}>
