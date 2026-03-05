@@ -47,6 +47,12 @@ const SettingsModal = ({ isOpen, onClose, onLogout }) => {
   const { isMuted, toggleMute } = useSound();
   const { playNavigation } = useSoundEffect();
   const [showCredits, setShowCredits] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleClose = () => {
+    setShowLogoutConfirm(false);
+    onClose();
+  };
 
   return (
     <>
@@ -61,7 +67,7 @@ const SettingsModal = ({ isOpen, onClose, onLogout }) => {
             animate="visible"
             exit="hidden"
             transition={{ duration: 0.2 }}
-            onClick={onClose}
+            onClick={handleClose}
           />
 
           {/* Bottom Sheet (drag to dismiss) */}
@@ -77,7 +83,7 @@ const SettingsModal = ({ isOpen, onClose, onLogout }) => {
             dragConstraints={{ top: 0 }}
             dragElastic={0.2}
             onDragEnd={(_, info) => {
-              if (info.offset.y > 100 || info.velocity.y > 300) onClose();
+              if (info.offset.y > 100 || info.velocity.y > 300) handleClose();
             }}
           >
             {/* Handle */}
@@ -168,23 +174,55 @@ const SettingsModal = ({ isOpen, onClose, onLogout }) => {
               </button>
 
               {/* ── 4. Cerrar Sesión ── */}
-              <button
-                onClick={() => { playNavigation(); onLogout(); onClose(); }}
-                className="w-full p-4 rounded-xl border
-                  hover:bg-red-500/20 transition-colors cursor-pointer
-                  text-red-400 font-semibold text-center"
-                style={{
-                  background: "rgba(127,29,29,0.15)",
-                  borderColor: "rgba(239,68,68,0.3)",
-                  boxShadow: "0 0 15px rgba(239,68,68,0.1), inset 0 0 15px rgba(239,68,68,0.05)",
-                }}
-              >
-                {t("auth.logout")}
-              </button>
+              {!showLogoutConfirm ? (
+                <button
+                  onClick={() => { playNavigation(); setShowLogoutConfirm(true); }}
+                  className="w-full p-4 rounded-xl border
+                    hover:bg-red-500/20 transition-colors cursor-pointer
+                    text-red-400 font-semibold text-center"
+                  style={{
+                    background: "rgba(127,29,29,0.15)",
+                    borderColor: "rgba(239,68,68,0.3)",
+                    boxShadow: "0 0 15px rgba(239,68,68,0.1), inset 0 0 15px rgba(239,68,68,0.05)",
+                  }}
+                >
+                  {t("auth.logout")}
+                </button>
+              ) : (
+                <div className="w-full p-4 rounded-xl border space-y-3"
+                  style={{
+                    background: "rgba(127,29,29,0.15)",
+                    borderColor: "rgba(239,68,68,0.3)",
+                    boxShadow: "0 0 15px rgba(239,68,68,0.1), inset 0 0 15px rgba(239,68,68,0.05)",
+                  }}
+                >
+                  <p className="text-white/80 text-sm text-center font-medium">
+                    {t("auth.logout_confirm")}
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => { playNavigation(); setShowLogoutConfirm(false); }}
+                      className="flex-1 p-3 rounded-xl bg-white/5 border border-white/10
+                        text-white/60 font-semibold text-sm cursor-pointer
+                        hover:bg-white/10 transition-colors"
+                    >
+                      {t("auth.logout_no")}
+                    </button>
+                    <button
+                      onClick={() => { playNavigation(); onLogout(); handleClose(); }}
+                      className="flex-1 p-3 rounded-xl bg-red-500/20 border border-red-500/30
+                        text-red-400 font-semibold text-sm cursor-pointer
+                        hover:bg-red-500/30 transition-colors"
+                    >
+                      {t("auth.logout_yes")}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Botón Cerrar */}
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="w-full p-3 text-white/40 text-sm font-medium text-center cursor-pointer
                   hover:text-white/60 transition-colors"
               >
