@@ -1003,7 +1003,7 @@ const translations = {
 // ─── Store reactivo (funciona fuera de React) ────────────────────────────────
 
 let _lang = (() => {
-  try { return localStorage.getItem("scrollinn-lang") || "es"; } catch { return "es"; }
+  try { return localStorage.getItem("scrollinn-lang") || "en"; } catch { return "en"; }
 })();
 
 const _listeners = new Set();
